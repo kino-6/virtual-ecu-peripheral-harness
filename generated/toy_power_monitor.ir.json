@@ -1,0 +1,186 @@
+{
+  "component": {
+    "bus": {
+      "mode": "0",
+      "type": "spi",
+      "wordBits": "8"
+    },
+    "name": "ToyPowerMonitorIC",
+    "parameters": {
+      "undervoltageThreshold": {
+        "default": "7.0",
+        "name": "undervoltageThreshold",
+        "type": "V"
+      }
+    }
+  },
+  "flows": [
+    {
+      "label": "write CONTROL.enable",
+      "source": "ECU_App.control_task",
+      "target": "HAL_SPI"
+    },
+    {
+      "label": "spi write",
+      "source": "HAL_SPI",
+      "target": "ToyPowerMonitorIC.CONTROL"
+    },
+    {
+      "label": "spi read",
+      "source": "ToyPowerMonitorIC.STATUS",
+      "target": "HAL_SPI"
+    },
+    {
+      "label": "STATUS.ready, STATUS.undervoltageFault",
+      "source": "HAL_SPI",
+      "target": "ECU_App.diagnostics"
+    },
+    {
+      "label": "ready signal",
+      "source": "ToyPowerMonitorIC.ready",
+      "target": "ECU_App.diagnostics"
+    },
+    {
+      "label": "fault signal",
+      "source": "ToyPowerMonitorIC.fault",
+      "target": "ECU_App.diagnostics"
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "examples/toy_power_monitor.mbd.md"
+  },
+  "ports": {
+    "fault": {
+      "default": null,
+      "direction": "out",
+      "name": "fault",
+      "type": "bool"
+    },
+    "ready": {
+      "default": null,
+      "direction": "out",
+      "name": "ready",
+      "type": "bool"
+    },
+    "voltage": {
+      "default": "12.0",
+      "direction": "in",
+      "name": "voltage",
+      "type": "V"
+    }
+  },
+  "registers": {
+    "CONTROL": {
+      "access": "rw",
+      "address": "0x02",
+      "fields": {
+        "enable": {
+          "bit": 0,
+          "bits": "0",
+          "name": "enable",
+          "reset": "0"
+        }
+      },
+      "name": "CONTROL",
+      "width": 8
+    },
+    "FAULT": {
+      "access": "ro",
+      "address": "0x03",
+      "fields": {
+        "spiTimeout": {
+          "bit": 1,
+          "bits": "1",
+          "name": "spiTimeout",
+          "reset": "0"
+        },
+        "undervoltage": {
+          "bit": 0,
+          "bits": "0",
+          "name": "undervoltage",
+          "reset": "0"
+        }
+      },
+      "name": "FAULT",
+      "width": 8
+    },
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "ready": {
+          "bit": 7,
+          "bits": "7",
+          "name": "ready",
+          "reset": "0"
+        },
+        "undervoltageFault": {
+          "bit": 0,
+          "bits": "0",
+          "name": "undervoltageFault",
+          "reset": "0"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    },
+    "VOLTAGE": {
+      "access": "ro",
+      "address": "0x04",
+      "fields": {
+        "volts": {
+          "bit": 7,
+          "bits": "7..0",
+          "name": "volts",
+          "reset": "12"
+        }
+      },
+      "name": "VOLTAGE",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyPowerMonitorIC\nbus spi mode=0 wordBits=8\nparameter undervoltageThreshold: V = 7.0\n\nport in voltage: V = 12.0\nport out ready: bool\nport out fault: bool",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 7 ready reset=0\n  bit 0 undervoltageFault reset=0\n\nCONTROL 0x02 rw 8\n  bit 0 enable reset=0\n\nFAULT 0x03 ro 8\n  bit 0 undervoltage reset=0\n  bit 1 spiTimeout reset=0\n\nVOLTAGE 0x04 ro 8\n  bits 7..0 volts reset=12",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "RESET --> INIT: powerOn\nINIT --> NORMAL: initSequenceOk\nNORMAL --> FAULT_LATCHED: voltage < undervoltageThreshold\nFAULT_LATCHED --> RESET: clearFault",
+      "language": "mbd-state"
+    },
+    {
+      "body": "ECU_App.control_task -> HAL_SPI: write CONTROL.enable\nHAL_SPI -> ToyPowerMonitorIC.CONTROL: spi write\nToyPowerMonitorIC.STATUS -> HAL_SPI: spi read\nHAL_SPI -> ECU_App.diagnostics: STATUS.ready, STATUS.undervoltageFault\nToyPowerMonitorIC.ready -> ECU_App.diagnostics: ready signal\nToyPowerMonitorIC.fault -> ECU_App.diagnostics: fault signal",
+      "language": "mbd-flow"
+    }
+  ],
+  "source_path": "examples/toy_power_monitor.mbd.md",
+  "title": "Toy Power Monitor IC",
+  "transitions": [
+    {
+      "condition": "powerOn",
+      "source": "RESET",
+      "target": "INIT"
+    },
+    {
+      "condition": "initSequenceOk",
+      "source": "INIT",
+      "target": "NORMAL"
+    },
+    {
+      "condition": "voltage < undervoltageThreshold",
+      "source": "NORMAL",
+      "target": "FAULT_LATCHED"
+    },
+    {
+      "condition": "clearFault",
+      "source": "FAULT_LATCHED",
+      "target": "RESET"
+    }
+  ]
+}

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from html import escape
 
+from veph.ir import MbdModelIR
 from veph.model_loader import Block, Connection, PeripheralModel, Transition
 
 
-def export_demo_html(model: PeripheralModel) -> str:
+def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
+    if isinstance(model, MbdModelIR):
+        return _export_ir_demo_html(model)
     return "\n".join(
         [
             "<!doctype html>",
@@ -32,6 +35,89 @@ def export_demo_html(model: PeripheralModel) -> str:
             "",
         ]
     )
+
+
+def _export_ir_demo_html(model: MbdModelIR) -> str:
+    flow_rows = "\n".join(
+        f"          <tr><td>{escape(flow.source)}</td><td>{escape(flow.target)}</td><td>{escape(flow.label)}</td></tr>"
+        for flow in model.flows
+    )
+    state_rows = "\n".join(
+        f"          <tr><td>{escape(transition.source)}</td><td>{escape(transition.target)}</td><td>{escape(transition.condition)}</td></tr>"
+        for transition in model.transitions
+    )
+    port_rows = "\n".join(
+        f"          <tr><td>{escape(port.direction)}</td><td>{escape(port.name)}</td><td>{escape(port.type)}</td><td>{escape(port.default or '')}</td></tr>"
+        for port in model.ports.values()
+    )
+    return "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="en">',
+            "<head>",
+            '  <meta charset="utf-8">',
+            '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+            f"  <title>{escape(model.component.name)} Markup-to-MBD Demo</title>",
+            "  <style>",
+            _css(),
+            "  </style>",
+            "</head>",
+            "<body>",
+            '  <main class="shell">',
+            '    <section class="hero">',
+            '      <div class="hero-copy">',
+            "        <p>Author in text. Verify in MBD tools.</p>",
+            f"        <h1>{escape(model.component.name)} Markup-to-MBD Demo</h1>",
+            "        <span>Generated from Mermaid-like Markdown markup. This is a preview, not the verification backend.</span>",
+            "      </div>",
+            '      <div class="hero-facts" aria-label="model facts">',
+            f"        <div><strong>{len(model.ports)}</strong><span>ports</span></div>",
+            f"        <div><strong>{len(model.registers)}</strong><span>registers</span></div>",
+            f"        <div><strong>{len(model.transitions)}</strong><span>state transitions</span></div>",
+            f"        <div><strong>{len(model.flows)}</strong><span>flow edges</span></div>",
+            "      </div>",
+            "    </section>",
+            '    <section class="panel">',
+            "      <h2>Markup Sections</h2>",
+            "      <p>The source is the Markdown authoring file. The IR and diagrams are generated artifacts.</p>",
+            "      <ul>",
+            *(f"        <li><code>{escape(section.language)}</code></li>" for section in model.sections),
+            "      </ul>",
+            "    </section>",
+            '    <section class="grid">',
+            '      <section class="panel">',
+            "        <h2>Ports</h2>",
+            "        <table><thead><tr><th>Dir</th><th>Name</th><th>Type</th><th>Default</th></tr></thead><tbody>",
+            flow_or_empty(port_rows),
+            "        </tbody></table>",
+            "      </section>",
+            '      <section class="panel">',
+            "        <h2>State Handoff</h2>",
+            "        <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>",
+            flow_or_empty(state_rows),
+            "        </tbody></table>",
+            "      </section>",
+            "    </section>",
+            '    <section class="panel">',
+            "      <h2>Flow Handoff</h2>",
+            "      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th></tr></thead><tbody>",
+            flow_or_empty(flow_rows),
+            "      </tbody></table>",
+            "    </section>",
+            '    <section class="panel policy">',
+            "      <h2>Verification Boundary</h2>",
+            "      <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>",
+            "    </section>",
+            "  </main>",
+            "</body>",
+            "</html>",
+            "",
+        ]
+    )
+
+
+def flow_or_empty(rows: str) -> str:
+    return rows if rows else '          <tr><td colspan="4">None</td></tr>'
 
 
 def _hero(model: PeripheralModel) -> str:

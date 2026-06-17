@@ -1,0 +1,27 @@
+flowchart LR
+  %% Generated preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  ECU_App_control_task["ECU_App.control_task"]
+  HAL_SPI["HAL_SPI"]
+  %% ECU_App_control_task --> HAL_SPI
+  ECU_App_control_task -->|"write CONTROL.enable"| HAL_SPI
+  HAL_SPI["HAL_SPI"]
+  ToyPowerMonitorIC_CONTROL["ToyPowerMonitorIC.CONTROL"]
+  %% HAL_SPI --> ToyPowerMonitorIC_CONTROL
+  HAL_SPI -->|"spi write"| ToyPowerMonitorIC_CONTROL
+  ToyPowerMonitorIC_STATUS["ToyPowerMonitorIC.STATUS"]
+  HAL_SPI["HAL_SPI"]
+  %% ToyPowerMonitorIC_STATUS --> HAL_SPI
+  ToyPowerMonitorIC_STATUS -->|"spi read"| HAL_SPI
+  HAL_SPI["HAL_SPI"]
+  ECU_App_diagnostics["ECU_App.diagnostics"]
+  %% HAL_SPI --> ECU_App_diagnostics
+  HAL_SPI -->|"STATUS.ready, STATUS.undervoltageFault"| ECU_App_diagnostics
+  ToyPowerMonitorIC_ready["ToyPowerMonitorIC.ready"]
+  ECU_App_diagnostics["ECU_App.diagnostics"]
+  %% ToyPowerMonitorIC_ready --> ECU_App_diagnostics
+  ToyPowerMonitorIC_ready -->|"ready signal"| ECU_App_diagnostics
+  ToyPowerMonitorIC_fault["ToyPowerMonitorIC.fault"]
+  ECU_App_diagnostics["ECU_App.diagnostics"]
+  %% ToyPowerMonitorIC_fault --> ECU_App_diagnostics
+  ToyPowerMonitorIC_fault -->|"fault signal"| ECU_App_diagnostics

@@ -1,9 +1,90 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from veph.ir import MbdModelIR
 from veph.model_loader import PeripheralModel
 
 
-def export_markdown(model: PeripheralModel) -> str:
+def export_markdown(model: PeripheralModel | MbdModelIR) -> str:
+    if isinstance(model, MbdModelIR):
+        return _export_ir_markdown(model)
+    return _export_legacy_markdown(model)
+
+
+def _export_ir_markdown(model: MbdModelIR) -> str:
+    lines = [
+        f"# {model.title}",
+        "",
+        "> Generated review document from Mermaid-like MBD markup.",
+        "> Authoring source is the `.mbd.md` file; this document is a review artifact.",
+        "",
+        f"Source: `{_source_display(model.source_path)}`",
+        "",
+        "## Intent",
+        "",
+        "Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test helper.",
+        "",
+        "## Traceability To Markup Sections",
+        "",
+    ]
+    for section in model.sections:
+        lines.append(f"- `{section.language}`")
+    lines.extend(
+        [
+            "",
+            "## Component",
+            "",
+            f"- Name: `{model.component.name}`",
+            f"- Bus: `{model.component.bus.get('type', 'unknown')}`",
+        ]
+    )
+    for key, value in model.component.bus.items():
+        if key != "type":
+            lines.append(f"- Bus {key}: `{value}`")
+    lines.extend(["", "## Ports", "", "| Direction | Name | Type | Default |", "| --- | --- | --- | --- |"])
+    for port in model.ports.values():
+        lines.append(f"| {port.direction} | `{port.name}` | `{port.type}` | `{port.default or ''}` |")
+    lines.extend(["", "## Registers", ""])
+    for register in model.registers.values():
+        lines.append(f"### `{register.name}`")
+        lines.append("")
+        lines.append(f"- Address: `{register.address}`")
+        lines.append(f"- Access: `{register.access}`")
+        lines.append(f"- Width: `{register.width}`")
+        lines.append("")
+        for field in register.fields.values():
+            lines.append(f"- `{field.name}` bits `{field.bits}` reset `{field.reset}`")
+        lines.append("")
+    lines.extend(["## State Transitions", ""])
+    for transition in model.transitions:
+        lines.append(f"- `{transition.source}` -> `{transition.target}` when `{transition.condition}`")
+    lines.extend(["", "## Flow Preview", ""])
+    for flow in model.flows:
+        label = f" ({flow.label})" if flow.label else ""
+        lines.append(f"- `{flow.source}` -> `{flow.target}`{label}")
+    lines.extend(
+        [
+            "",
+            "## Verification Direction",
+            "",
+            "- Simulink `.m`, Modelica `.mo`, SCXML, Mermaid, PlantUML, and FMI metadata are generated handoff artifacts.",
+            "- Existing MBD tools are the intended verification backends.",
+            "- This repository does not claim certification.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _source_display(path: Path) -> str:
+    try:
+        return str(path.relative_to(Path.cwd()))
+    except ValueError:
+        return str(path)
+
+
+def _export_legacy_markdown(model: PeripheralModel) -> str:
     lines = [
         f"# {model.name}",
         "",

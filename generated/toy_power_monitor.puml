@@ -1,9 +1,10 @@
 @startuml
-' Generated from canonical Textual MBD YAML. Do not edit as source.
-' Fictional component for synthetic examples only.
-title ToyPowerMonitorIC State Machine
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToyPowerMonitorIC State Preview
 [*] --> RESET
 RESET --> INIT : powerOn
 INIT --> NORMAL : initSequenceOk
 NORMAL --> FAULT_LATCHED : voltage < undervoltageThreshold
+FAULT_LATCHED --> RESET : clearFault
 @enduml

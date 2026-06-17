@@ -2,11 +2,14 @@ from pathlib import Path
 
 from veph.cli import EXPORT_COMMANDS
 from veph.exporters.demo_html import export_demo_html
+from veph.exporters.fmi_metadata import export_fmi_metadata
 from veph.exporters.markdown import export_markdown
+from veph.exporters.mermaid import export_mermaid
 from veph.exporters.modelica import export_modelica
 from veph.exporters.plantuml import export_plantuml
 from veph.exporters.scxml import export_scxml
 from veph.exporters.simulink_m import export_simulink_m
+from veph.markup_parser import parse_markup_file
 from veph.model_loader import load_model
 
 
@@ -30,16 +33,17 @@ def test_each_exporter_creates_non_empty_output():
         assert "ToyPowerMonitor" in output
 
 
-def test_generated_artifacts_are_deterministic_from_canonical_yaml():
-    model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
+def test_generated_artifacts_are_deterministic_from_markup_source():
+    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
 
     expected_outputs = {
         "generated/toy_power_monitor.md": export_markdown(model),
-        "generated/demo.html": export_demo_html(model),
+        "generated/toy_power_monitor.mmd": export_mermaid(model),
         "generated/toy_power_monitor.puml": export_plantuml(model),
         "generated/toy_power_monitor.scxml": export_scxml(model),
         "generated/ToyPowerMonitor.mo": export_modelica(model),
         "generated/create_toy_power_monitor_model.m": export_simulink_m(model),
+        "generated/toy_power_monitor.fmi.json": export_fmi_metadata(model),
     }
 
     for relative_path, regenerated in expected_outputs.items():
@@ -50,14 +54,16 @@ def test_cli_export_commands_use_only_model_and_output_arguments():
     assert set(EXPORT_COMMANDS) == {
         "export-docs",
         "export-demo",
+        "export-mermaid",
         "export-plantuml",
         "export-scxml",
         "export-modelica",
         "export-simulink-m",
+        "export-fmi-metadata",
     }
 
     for command in EXPORT_COMMANDS.values():
-        assert command.model_required is True
+        assert command.source_required is True
         assert command.out_required is True
 
 

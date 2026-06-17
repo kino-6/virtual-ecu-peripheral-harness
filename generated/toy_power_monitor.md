@@ -1,136 +1,90 @@
-# ToyPowerMonitorIC
+# Toy Power Monitor IC
 
-> Generated artifact. This component is fictional and is provided for synthetic examples only.
-> Canonical source: Textual MBD YAML. Regenerate this file instead of editing it by hand.
+> Generated review document from Mermaid-like MBD markup.
+> Authoring source is the `.mbd.md` file; this document is a review artifact.
 
-## Overview
+Source: `examples/toy_power_monitor.mbd.md`
 
-Fictional power monitor IC for virtual ECU harness demos.
+## Intent
 
-## Bus Interface
+Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test helper.
 
-- Type: `spi`
-- Mode: `0`
-- Word bits: `8`
+## Traceability To Markup Sections
 
-## Register Map
+- `mbd-component`
+- `mbd-registers`
+- `mbd-state`
+- `mbd-flow`
 
-| Register | Address | Width | Access | Description |
-| --- | ---: | ---: | --- | --- |
-| STATUS | 0x01 | 8 | ro | Read-only status flags. |
-| CONTROL | 0x02 | 8 | rw | Control bits for starting monitoring. |
-| FAULT | 0x03 | 8 | ro | Latched fault flags. |
-| VOLTAGE | 0x04 | 8 | ro | Quantized voltage in volts for demo purposes. |
-| RESET_CAUSE | 0x05 | 8 | ro | Reset cause flags. |
+## Component
 
-## Fields
+- Name: `ToyPowerMonitorIC`
+- Bus: `spi`
+- Bus mode: `0`
+- Bus wordBits: `8`
 
-### STATUS
+## Ports
 
-| Field | Bits | Reset |
-| --- | --- | ---: |
-| ready | 7 | 0 |
-| undervoltageFault | 0 | 0 |
+| Direction | Name | Type | Default |
+| --- | --- | --- | --- |
+| in | `voltage` | `V` | `12.0` |
+| out | `ready` | `bool` | `` |
+| out | `fault` | `bool` | `` |
 
-### CONTROL
+## Registers
 
-| Field | Bits | Reset |
-| --- | --- | ---: |
-| enableMonitoring | 0 | 0 |
+### `STATUS`
 
-### FAULT
+- Address: `0x01`
+- Access: `ro`
+- Width: `8`
 
-| Field | Bits | Reset |
-| --- | --- | ---: |
-| undervoltage | 0 | 0 |
-| spiTimeout | 1 | 0 |
+- `ready` bits `7` reset `0`
+- `undervoltageFault` bits `0` reset `0`
 
-### VOLTAGE
+### `CONTROL`
 
-| Field | Bits | Reset |
-| --- | --- | ---: |
-| volts | 7, 6, 5, 4, 3, 2, 1, 0 | 12 |
+- Address: `0x02`
+- Access: `rw`
+- Width: `8`
 
-### RESET_CAUSE
+- `enable` bits `0` reset `0`
 
-| Field | Bits | Reset |
-| --- | --- | ---: |
-| powerOnReset | 0 | 1 |
+### `FAULT`
 
-## States And Transitions
+- Address: `0x03`
+- Access: `ro`
+- Width: `8`
 
-- Initial: `RESET`
-- State: `RESET`
-- State: `INIT`
-- State: `NORMAL`
-- State: `FAULT_LATCHED`
+- `undervoltage` bits `0` reset `0`
+- `spiTimeout` bits `1` reset `0`
+
+### `VOLTAGE`
+
+- Address: `0x04`
+- Access: `ro`
+- Width: `8`
+
+- `volts` bits `7..0` reset `12`
+
+## State Transitions
 
 - `RESET` -> `INIT` when `powerOn`
 - `INIT` -> `NORMAL` when `initSequenceOk`
 - `NORMAL` -> `FAULT_LATCHED` when `voltage < undervoltageThreshold`
+- `FAULT_LATCHED` -> `RESET` when `clearFault`
 
-## Signals
+## Flow Preview
 
-- Input `voltage` (V), default `12.0`
-- Output `ready` (bool)
+- `ECU_App.control_task` -> `HAL_SPI` (write CONTROL.enable)
+- `HAL_SPI` -> `ToyPowerMonitorIC.CONTROL` (spi write)
+- `ToyPowerMonitorIC.STATUS` -> `HAL_SPI` (spi read)
+- `HAL_SPI` -> `ECU_App.diagnostics` (STATUS.ready, STATUS.undervoltageFault)
+- `ToyPowerMonitorIC.ready` -> `ECU_App.diagnostics` (ready signal)
+- `ToyPowerMonitorIC.fault` -> `ECU_App.diagnostics` (fault signal)
 
-## Functional Blocks
+## Verification Direction
 
-### `VoltageInput`
-
-- Kind: `signalSource`
-- Description: Scenario-controlled input signal source.
-- Outputs: `voltage: real` (voltage)
-
-### `ThresholdParameter`
-
-- Kind: `parameter`
-- Description: Textual threshold parameter from the YAML model.
-- Outputs: `threshold: real` (undervoltageThreshold)
-
-### `UndervoltageComparator`
-
-- Kind: `comparator`
-- Description: Compares voltage against the undervoltage threshold.
-- Inputs: `voltage: real` (voltage), `threshold: real` (undervoltageThreshold)
-- Outputs: `undervoltageDetected: bool` (undervoltageDetected)
-
-### `FaultLatch`
-
-- Kind: `latch`
-- Description: Latches undervoltage into the fault state.
-- Inputs: `set: bool` (undervoltageDetected)
-- Outputs: `faultLatched: bool` (faultLatched)
-
-### `ReadyLogic`
-
-- Kind: `logic`
-- Description: Produces ready when initialization is complete and no stuck-ready fault is active.
-- Inputs: `stateNormal: bool` (state == NORMAL), `stuckReady: bool` (stuckReadyBit)
-- Outputs: `ready: bool` (ready)
-
-### `RegisterMap`
-
-- Kind: `registerMap`
-- Description: Maps internal signals to externally readable registers.
-- Inputs: `ready: bool` (ready), `undervoltageFault: bool` (faultLatched), `voltage: real` (voltage)
-- Outputs: `STATUS.ready: bit` (STATUS.ready), `STATUS.undervoltageFault: bit` (STATUS.undervoltageFault), `VOLTAGE.volts: uint8` (VOLTAGE.volts)
-
-## Connections
-
-- `VoltageInput.voltage` -> `UndervoltageComparator.voltage` via `voltage`
-- `ThresholdParameter.threshold` -> `UndervoltageComparator.threshold` via `undervoltageThreshold`
-- `UndervoltageComparator.undervoltageDetected` -> `FaultLatch.set` via `undervoltageDetected`
-- `FaultLatch.faultLatched` -> `RegisterMap.undervoltageFault` via `faultLatched`
-- `ReadyLogic.ready` -> `RegisterMap.ready` via `ready`
-- `VoltageInput.voltage` -> `RegisterMap.voltage` via `voltage`
-
-## Faults
-
-- `undervoltage`: set STATUS.undervoltageFault and transition to FAULT_LATCHED
-- `spiTimeout`: return no response for SPI transaction
-- `stuckReadyBit`: keep STATUS.ready fixed at 0
-
-## Timing
-
-- `tickMs`: `1`
+- Simulink `.m`, Modelica `.mo`, SCXML, Mermaid, PlantUML, and FMI metadata are generated handoff artifacts.
+- Existing MBD tools are the intended verification backends.
+- This repository does not claim certification.
