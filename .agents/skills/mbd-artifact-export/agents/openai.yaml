@@ -1,0 +1,4 @@
+interface:
+  display_name: "MBD Artifact Export"
+  short_description: "Generate and verify MBD handoff artifacts from IR."
+  default_prompt: "Use this skill when modifying exporters or generated MBD artifacts."

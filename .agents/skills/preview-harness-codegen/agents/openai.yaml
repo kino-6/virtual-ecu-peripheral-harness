@@ -1,0 +1,4 @@
+interface:
+  display_name: "Preview Harness Codegen"
+  short_description: "Build preview-only harnesses and generated C scaffolds."
+  default_prompt: "Use this skill when adding preview runtime, scenarios, or preview C code generation."

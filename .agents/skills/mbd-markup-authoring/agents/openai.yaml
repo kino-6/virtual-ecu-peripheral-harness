@@ -1,0 +1,4 @@
+interface:
+  display_name: "MBD Markup Authoring"
+  short_description: "Parse and evolve Mermaid-like MBD markdown specs."
+  default_prompt: "Use this skill when editing examples/*.mbd.md or extending MBD markup syntax."

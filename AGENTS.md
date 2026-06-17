@@ -1,16 +1,14 @@
 # Project Operating Rules
 
-This file is the project-level guidance for agents working in this repository.
-It captures the direction established during the early MVP work and the later
-pivot away from a custom YAML runtime.
+Project-level guidance for agents working in this repository.
 
 ## North Star
 
 Author in text. Verify in MBD tools.
 
 This repository is a Mermaid-like Markup-to-MBD bridge for virtual ECU and
-peripheral model authoring. The public authoring source should be readable
-Markdown, not a custom YAML modeling language.
+peripheral model authoring. Public authoring source is readable Markdown, not a
+custom YAML modeling language.
 
 The intended pipeline is:
 
@@ -28,70 +26,38 @@ examples/*.mbd.md
   -> optional Python preview only
 ```
 
-## What This Project Is
+## Project Boundary
 
-- A lightweight authoring and review layer for virtual ECU/peripheral models.
-- A bridge from LLM-readable Markdown markup to MBD-oriented artifacts.
-- A way to draft fictional IC/peripheral/control-system specs and hand them off
-  to existing MBD tools.
-- A commercial-tool-free authoring workflow that can export to commercial MBD
-  environments when those tools are available.
-
-## What This Project Is Not
-
-- Not a new MBD language.
-- Not a custom MBD runtime.
-- Not a Simulink, Stateflow, Modelica, FMI, or certified workflow replacement.
-- Not a production ECU simulator.
-- Not a physical electrical solver.
-- Not a certification claim.
+This is a lightweight authoring/review layer and handoff bridge to existing MBD
+tools. It is not a new MBD language, custom runtime, Simulink/Stateflow/Modelica
+/FMI replacement, production ECU simulator, physics solver, or certification
+claim.
 
 ## Source-Of-Truth Policy
 
-Public source is `examples/*.mbd.md`.
-
-YAML is not the public source of truth. Existing YAML support may remain only as
-legacy preview input, optional expanded machine-readable form, or implementation
-detail. Do not center new work around `*.tmbd.yml`.
-
-The internal IR is a tooling snapshot, not a public standard. It should stay
-small, pragmatic, and exporter-oriented.
+Public source is `examples/*.mbd.md`. YAML is not the public source of truth;
+keep YAML only as legacy preview input, optional expanded machine-readable form,
+or implementation detail. Internal IR is a tooling snapshot, not a public
+standard.
 
 ## Verification Policy
 
-Existing MBD tools are the intended verification backends.
-
-Python may parse markup, generate artifacts, run smoke tests, and provide local
-previews. Python must not be described as the main verification path or as a
-custom MBD semantic universe.
-
-When adding local preview behavior or local C generation, label it explicitly:
-
-```text
-preview-only; not a certified code generation or verification backend
-```
+Existing MBD tools are the intended verification backends. Python may parse
+markup, generate artifacts, run smoke tests, and provide previews, but must not
+be described as the main verification path. Label local preview behavior and C
+generation: `preview-only; not a certified code generation or verification backend`.
 
 ## Fictional-Only Safety Policy
 
 Use only fictional components, synthetic examples, and invented register maps.
-
-Do not use:
-
-- real IC names
-- real datasheets
-- real ECU specifications
-- real register maps
-- real company names
-- production-derived code
-- confidential project names or details
-
-Sample ECU code may look product-like, but it must remain synthetic and must
-communicate through HAL-style boundaries rather than Python internals.
+Do not use real IC names, datasheets, ECU specs, register maps, company names,
+production-derived code, or confidential project details. Sample ECU code may
+look product-like, but must remain synthetic and communicate through HAL-style
+boundaries rather than Python internals.
 
 ## Target Validation Story
 
-The next major validation should demonstrate a complete fictional control
-system:
+The next major validation should demonstrate a complete fictional control system:
 
 ```text
 fictional IC spec
@@ -103,29 +69,17 @@ fictional IC spec
   -> scenario smoke verification
 ```
 
-The preferred fictional example is a thermal fan control system with:
-
-- `ToyTempSensorIC`
-- `ToyFanDriverIC`
-- a virtual ECU controller
-- normal and fault scenarios
-- generated Simulink/Modelica/FMI handoff artifacts
-- preview-only generated C scaffold
+Preferred example: thermal fan control with `ToyTempSensorIC`,
+`ToyFanDriverIC`, a virtual ECU controller, normal/fault scenarios,
+Simulink/Modelica/FMI handoff artifacts, and preview-only C scaffold.
 
 ## Code Generation Boundary
 
-There are two separate routes:
-
-1. Tool-backed MBD code generation route:
-   - Markup generates Simulink `.m`, Modelica `.mo`, SCXML/Stateflow-oriented
-     tables, and FMI metadata.
-   - Existing tools perform real verification/code generation outside this repo.
-
-2. Local preview code generation route:
-   - IR may generate simple C scaffold for smoke testing.
-   - This is not certified and not the project’s main verification path.
-
-Never blur these two routes.
+Never blur the two code generation routes. Tool-backed route: markup generates
+Simulink `.m`, Modelica `.mo`, SCXML/Stateflow-oriented tables, and FMI metadata
+for existing tools to verify outside this repo. Local preview route: IR may
+generate simple C scaffold for smoke testing, but it is not certified and not
+the main verification path.
 
 ## Implementation Preferences
 
@@ -135,4 +89,69 @@ Never blur these two routes.
 - Avoid over-engineering physics or runtime semantics.
 - When adding a feature, update README, `docs/design_principles.md`, generated
   artifacts, and tests together.
+- Refactor regularly after tests are green. Keep refactors scoped, behavior
+  preserving, and separated from feature changes when practical.
 
+## Project Skills
+
+Project-local skills live under `.agents/skills/`:
+
+- `mbd-markup-authoring`: use for `examples/*.mbd.md`, markup grammar,
+  `markup_parser.py`, and `ir.py` work.
+- `mbd-artifact-export`: use for exporter changes, generated artifacts, and
+  source-to-artifact determinism.
+- `preview-harness-codegen`: use for preview runtime, `run-preview`,
+  `export-code-preview`, scenarios, and preview-only generated C scaffolds.
+
+Keep skills concise; move details into one-level `references/` files when needed.
+
+## Git Workflow Policy
+
+Use Git checkpoints to keep larger goals recoverable and reviewable.
+
+- Create a topic branch for substantial/risky multi-checkpoint work, e.g.
+  `codex/thermal-fan-preview`.
+- Stay on the current branch for tiny documentation edits unless a branch is expected.
+- Commit at meaningful green checkpoints: parser/IR, exporters, preview runtime,
+  code generation, scenario runner, and documentation updates.
+- Run the relevant tests before committing. Do not knowingly commit broken
+  generated artifacts or stale regenerated files.
+- Push regularly only when the user asks or the active goal includes remote
+  checkpointing. Before push, review `git status` and staged diff.
+- Prefer small, descriptive commits over one large opaque commit for multi-phase
+  work.
+
+## Agent And Claude Operating Practices
+
+Keep instructions concise, concrete, and actionable. Long background belongs in
+linked docs.
+
+- For Claude Code compatibility, keep a root `CLAUDE.md` that imports
+  `AGENTS.md` instead of duplicating instructions.
+- Prefer plan-first work for ambiguous or high-blast-radius changes. Write or
+  update `Tasks.md` before editing substantial code.
+- Use the loop: gather context, make a small change, verify it, then repeat.
+- For long-running goals, leave a clean handoff: tests run, generated files
+  refreshed, `Tasks.md` updated, Git checkpointed when appropriate.
+- Keep instruction files below roughly 200 lines when possible; move large or
+  historical detail to `docs/archive/` or focused docs and link it.
+- Keep references one level deep when practical. If a referenced file grows past
+  about 100 lines, add a short table of contents near the top.
+- Make instructions specific and testable. Prefer "run `pytest` after parser or
+  exporter changes" over vague instructions such as "test thoroughly."
+- Treat hooks, external services, credentials, pushes, and destructive commands
+  as explicit-boundary actions requiring approval/sandbox compliance.
+
+## Task Tracking Policy
+
+Use `Tasks.md` as the shared human/LLM progress ledger for larger goals.
+
+- Write implementation steps and acceptance checks as Markdown task-list items.
+- Use unchecked boxes (`- [ ]`) for pending work.
+- Mark items complete with checked boxes (`- [x]`) only after the work is
+  implemented and verified.
+- Keep task items small enough that progress is visible in code review.
+- When scope changes, update `Tasks.md` before continuing substantial work.
+- Keep `Tasks.md` concise. If it grows beyond 200 lines, move completed or
+  historical task detail into `docs/archive/` and leave only a short summary plus
+  links in `Tasks.md`.
