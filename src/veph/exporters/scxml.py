@@ -15,6 +15,7 @@ def export_scxml(model: PeripheralModel | MbdModelIR) -> str:
             '<?xml version="1.0" encoding="UTF-8"?>',
             f'<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="{escape(initial)}">',
             f"  <!-- Generated state-machine handoff from {escape(_source_display(model.source_path))}. -->",
+            f"  <!-- Requirement refs: {escape(', '.join(sorted(model.requirement_refs())))} -->",
         ]
         for state in states:
             outgoing = [transition for transition in model.transitions if transition.source == state]

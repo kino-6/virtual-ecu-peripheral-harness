@@ -16,6 +16,8 @@ not a custom MBD runtime. It does not claim certification.
 The intended pipeline is:
 
 ```text
+Requirements.md
+  -> specs/*.md
 examples/*.mbd.md
   -> markup parser
   -> internal IR snapshot
@@ -33,6 +35,12 @@ The public authoring source is Markdown with Mermaid-like fenced blocks, such as
 [examples/toy_power_monitor.mbd.md](examples/toy_power_monitor.mbd.md). The IR
 JSON is an internal snapshot for tooling. YAML files, where present, are legacy
 or optional machine-readable forms, not the public source of truth.
+
+For larger validation examples, start from [Requirements.md](Requirements.md),
+derive a human-readable specification under `specs/`, then author the MBD markup.
+The project uses ASPICE-aware habits such as requirement IDs, traceability,
+review gates, and reproducible evidence, but it does not claim ASPICE
+compliance, safety certification, or tool qualification.
 
 ## What This Project Is
 
@@ -64,6 +72,11 @@ The sample component is `ToyPowerMonitorIC`, a fictional SPI peripheral used to
 exercise the pipeline. It does not describe a real IC, real datasheet, real ECU
 specification, real register map, or production-derived project.
 
+The requirements-traceable validation example is `ToyThermalFanController`,
+with fictional `ToyTempSensorIC` and `ToyFanDriverIC` harness boundaries. It
+demonstrates readable requirements, a human-readable specification, MBD markup,
+generated handoff artifacts, preview-only generated C, and scenario reports.
+
 The sample C files under `ecu_app/` are product-like but synthetic. They use
 HAL-style boundaries and are not production-derived.
 
@@ -80,6 +93,18 @@ python -m veph export-fmi-metadata examples/toy_power_monitor.mbd.md --out gener
 pytest
 ```
 
+Thermal fan validation commands:
+
+```bash
+python -m veph parse examples/toy_thermal_fan_control.mbd.md --out generated/toy_thermal_fan_control.ir.json
+python -m veph export-mermaid examples/toy_thermal_fan_control.mbd.md --out generated/toy_thermal_fan_control.mmd
+python -m veph export-simulink-m examples/toy_thermal_fan_control.mbd.md --out generated/create_toy_thermal_fan_control_model.m
+python -m veph export-code-preview examples/toy_thermal_fan_control.mbd.md --out generated/ecu_preview/
+python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --scenario scenarios/thermal_fan_normal.yml --report reports/thermal_fan_normal.md
+python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --scenario scenarios/thermal_fan_fault.yml --report reports/thermal_fan_fault.md
+pytest
+```
+
 Legacy YAML preview commands may still exist while the project transitions, but
 new examples and public documentation should use `examples/*.mbd.md`.
 
@@ -92,6 +117,10 @@ new examples and public documentation should use `examples/*.mbd.md`.
 - `generated/create_toy_power_monitor_model.m`: plausible Simulink API handoff script
 - `generated/ToyPowerMonitor.mo`: readable Modelica text artifact
 - `generated/toy_power_monitor.fmi.json`: FMI-oriented metadata stub
+- `generated/toy_thermal_fan_control.mmd`: requirements-traceable Mermaid data-flow preview
+- `generated/ecu_preview/`: preview-only synthetic ECU C scaffold
+- `reports/thermal_fan_normal.md`: preview report with separated inputs, steps,
+  observed behavior, generated ECU command outputs, expected behavior, and result
 
 These files are generated from the Markdown markup source. If an artifact is
 wrong, update the markup or exporter and regenerate.

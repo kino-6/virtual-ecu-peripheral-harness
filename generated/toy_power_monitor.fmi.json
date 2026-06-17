@@ -1,6 +1,8 @@
 {
   "component": "ToyPowerMonitorIC",
+  "controlRules": [],
   "fmiIntent": "metadata stub only; no FMU is generated",
+  "harnessDevices": [],
   "inputs": [
     {
       "default": "12.0",
@@ -49,6 +51,7 @@
       "name": "VOLTAGE"
     }
   ],
+  "requirementRefs": [],
   "source": "examples/toy_power_monitor.mbd.md",
   "sourceFormat": "mbd-markdown",
   "states": [

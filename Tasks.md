@@ -9,21 +9,14 @@ here.
 
 ## Goal
 
-Build a fictional end-to-end validation case proving this repository can go from
-Mermaid-like markup to MBD handoff artifacts, virtual IC harness preview, and
-preview-only ECU C code generation.
+Build a fictional, requirements-first validation case proving this repository
+can go from a written intent to a human-readable specification, readable MBD
+markup, generated MBD handoff artifacts, virtual IC harness preview,
+preview-only ECU C scaffolding, scenario reports, and deterministic tests.
 
-Working example:
+Working example: `Toy Thermal Fan Control System`
 
-```text
-Toy Thermal Fan Control System
-```
-
-Fictional components:
-
-- `ToyTempSensorIC`
-- `ToyFanDriverIC`
-- `ToyThermalFanController`
+Primary requirements baseline: `Requirements.md`
 
 ## Done Criteria
 
@@ -43,145 +36,157 @@ python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --sce
 pytest
 ```
 
-## Phase 1: Markup Spec
+## Phase 0: Requirements Baseline
 
-- [ ] Add `examples/toy_thermal_fan_control.mbd.md`.
-- [ ] Include fictional component descriptions only.
-- [ ] Extend markup usage with `mbd-component`.
-- [ ] Extend markup usage with `mbd-registers`.
-- [ ] Extend markup usage with `mbd-state`.
-- [ ] Extend markup usage with `mbd-flow`.
-- [ ] Extend markup usage with `mbd-control`.
-- [ ] Decide whether `mbd-harness` is needed and add it only if it helps the
-      preview harness.
-- [ ] Define input `temperatureC`.
-- [ ] Define output `fanDuty`.
-- [ ] Define output `fault`.
-- [ ] Define parameter `fanOnThreshold`.
-- [ ] Define parameter `fanOffThreshold`.
-- [ ] Define parameter `safeDuty`.
-- [ ] Add fictional registers for `ToyTempSensorIC`.
-- [ ] Add fictional registers for `ToyFanDriverIC`.
-- [ ] Add normal and fault controller states.
+Requirement coverage: `PROC-001`, `PROC-002`
 
-Acceptance tests:
+- [x] Add `Requirements.md` with the fictional control-system intent.
+- [x] Add explicit ASPICE-aware but non-compliance process language.
+- [x] Add scenario YAML boundary: test input only, not MBD source of truth.
+- [x] Review `Requirements.md` with the user and adjust the fictional control
+      intent if needed.
+- [x] Confirm requirement IDs cover stakeholder, system, software, MBD handoff,
+      harness, and process needs.
+- [x] Confirm the example remains fictional and does not resemble a real IC
+      datasheet or production ECU specification.
+- [x] Confirm ASPICE is treated as process inspiration only, with no compliance,
+      certification, or tool qualification claim.
 
-- [ ] Parser reads the new markup file.
-- [ ] IR contains components, ports, registers, states, transitions, flows, and
+Verification:
+
+- [x] `Requirements.md` has stable requirement IDs.
+- [x] `Requirements.md` defines review gates and planned evidence.
+- [x] `Tasks.md` maps implementation phases back to requirements.
+
+## Phase 1: Human-Readable Specification
+
+Requirement coverage: `STK-001`, `STK-005`, `SYS-001` - `SYS-006`
+
+- [x] Add `specs/toy_thermal_fan_control.md` as a specification derived from
+      `Requirements.md`.
+- [x] Describe the fictional IC-facing behavior without real datasheet details.
+- [x] Include trace links from specification sections back to requirement IDs.
+- [x] Define the PDCA/TDD review path from specification to MBD artifacts and
+      harness reports.
+
+Verification:
+
+- [x] Specification has no untraced system behavior.
+- [x] Specification preserves the fictional-only and preview-only boundaries.
+
+## Phase 2: Markup From Specification
+
+Requirement coverage: `STK-001`, `SWE-001`
+
+- [x] Add `examples/toy_thermal_fan_control.mbd.md`.
+- [x] Use `Requirements.md` IDs and specification anchors in markup comments or
+      trace fields.
+- [x] Include fictional `ToyTempSensorIC`, `ToyFanDriverIC`, and
+      `ToyThermalFanController` only.
+- [x] Define component, register, state, flow, control, and optional harness
+      sections only where they support stated requirements.
+- [x] Define `temperatureC`, `fanDuty`, `fault`, `fanOnThreshold`,
+      `fanOffThreshold`, and `safeDuty`.
+
+Verification:
+
+- [x] Parser reads the new markup file.
+- [x] IR contains traceable components, ports, registers, states, flows, and
       control rules.
-- [ ] No YAML source is required for the example.
+- [x] No YAML source is required for the example.
 
-## Phase 2: Parser And IR
+## Phase 3: Parser And IR Traceability
 
-- [ ] Add IR structures for multiple components/peripherals.
-- [ ] Add IR structures for control rules.
-- [ ] Add IR structures for harness devices.
-- [ ] Add scenario or scenario-binding IR only if needed.
-- [ ] Parse `mbd-control` into simple control-rule IR.
-- [ ] Keep the IR internal and exporter-oriented.
+Requirement coverage: `SWE-002`, `SWE-003`, `PROC-003`
 
-Acceptance tests:
+- [x] Add or refine IR structures for multiple components, control rules,
+      harness devices, and requirement references.
+- [x] Parse deterministic rule blocks from markup.
+- [x] Keep IR documented as an internal tooling snapshot, not a public standard.
 
-- [ ] `mbd-control` parses deterministic rule blocks.
-- [ ] Parser errors are clear for malformed blocks.
-- [ ] IR JSON says it is an internal snapshot, not a public standard.
+Verification:
 
-## Phase 3: MBD Artifact Exporters
+- [x] Parser tests cover valid and malformed control/trace blocks.
+- [x] IR snapshot tests prove stable ordering and requirement references.
 
-- [ ] Update Markdown exporter to include control logic and harness boundaries.
-- [ ] Update Mermaid exporter to show control/data flow.
-- [ ] Update PlantUML or SCXML exporter to show controller mode states.
-- [ ] Update Simulink `.m` exporter to include `new_system`.
-- [ ] Update Simulink `.m` exporter to include `open_system`.
-- [ ] Update Simulink `.m` exporter to include `add_block`.
-- [ ] Update Simulink `.m` exporter to include `add_line`.
-- [ ] Update Simulink `.m` exporter to include `set_param`.
-- [ ] Update Simulink `.m` exporter to include threshold compare / switch /
-      subsystem blocks.
-- [ ] Update Modelica exporter with ports, parameters, states, and signal names.
-- [ ] Update FMI metadata exporter with inputs, outputs, parameters, states, and
-      preview variables.
+## Phase 4: MBD Handoff Artifact Exporters
 
-Acceptance tests:
+Requirement coverage: `STK-002`, `MBD-001` - `MBD-007`
 
-- [ ] Each generated artifact is non-empty.
-- [ ] Each generated artifact is deterministic from markup.
-- [ ] Simulink script contains block and line creation commands.
-- [ ] Modelica contains expected component and signal names.
-- [ ] FMI metadata clearly says no FMU is generated.
+- [x] Update Markdown exporter to show requirements, control logic, and harness
+      boundaries.
+- [x] Update Mermaid and PlantUML exporters to show control/data flow and
+      controller states.
+- [x] Update Simulink `.m` exporter with model, block, line, parameter, compare,
+      switch, and subsystem generation where appropriate.
+- [x] Update Modelica, SCXML/Stateflow-oriented, and FMI metadata exporters with
+      ports, parameters, states, signal names, and preview variables.
 
-## Phase 4: Virtual IC Harness Preview
+Verification:
 
-- [ ] Add preview-only harness modules under `src/veph/preview_runtime/`.
-- [ ] Implement minimal fictional device `ToyTempSensorIC`.
-- [ ] Implement minimal fictional device `ToyFanDriverIC`.
-- [ ] Add virtual bus/HAL boundary helpers.
-- [ ] Keep runtime simple: discrete scenario steps only, no physics solver.
-- [ ] Label all preview runtime docs and reports as preview-only.
+- [x] Each generated artifact is non-empty and deterministic from markup.
+- [x] Simulink script contains `new_system`, `open_system`, `add_block`,
+      `add_line`, and `set_param`.
+- [x] FMI metadata clearly says no FMU is generated.
 
-Acceptance tests:
+## Phase 5: Preview Harness And Scenarios
 
-- [ ] Normal scenario reads temperature and commands fan duty.
-- [ ] Fault scenario triggers safe duty.
-- [ ] Product-like ECU logic does not call Python internals directly.
+Requirement coverage: `STK-004`, `HAR-001` - `HAR-005`
 
-## Phase 5: Preview C Code Generation
+- [x] Add preview-only harness modules under `src/veph/preview_runtime/`.
+- [x] Implement minimal fictional `ToyTempSensorIC` and `ToyFanDriverIC`
+      behavior at virtual IC boundaries.
+- [x] Keep ECU logic behind HAL-style boundaries; do not call Python internals
+      from product-like controller logic.
+- [x] Add normal and fault scenario YAML files as test inputs only, with
+      discrete steps only.
 
-- [ ] Add `export-code-preview`.
-- [ ] Generate `generated/ecu_preview/controller.c`.
-- [ ] Generate `generated/ecu_preview/controller.h`.
-- [ ] Generate `generated/ecu_preview/hal_spi.h`.
-- [ ] Generate `generated/ecu_preview/hal_pwm.h`.
-- [ ] Generate `generated/ecu_preview/README.md`.
-- [ ] Generated C must use HAL-style boundaries.
-- [ ] Generated C must be explicitly marked preview-only and non-certified.
+Verification:
 
-Acceptance tests:
+- [x] Normal scenario reads temperature and commands fan duty.
+- [x] Fault scenario triggers safe duty.
+- [x] Reports separate model inputs, scenario steps, observed behavior,
+      expected behavior, and pass/fail result.
 
-- [ ] Generated C contains controller states and threshold logic.
-- [ ] Generated C includes HAL headers rather than Python bindings.
-- [ ] If a local C compiler is available, syntax-check the generated scaffold.
+## Phase 6: Preview C Code Generation
 
-## Phase 6: Preview Scenario Runner
+Requirement coverage: `STK-003`, `SWE-004`, `SWE-005`
 
-- [ ] Add `run-preview`.
-- [ ] Add `scenarios/thermal_fan_normal.yml`.
-- [ ] Add `scenarios/thermal_fan_fault.yml`.
-- [ ] Reports separate markup source.
-- [ ] Reports separate scenario inputs.
-- [ ] Reports separate virtual IC observations.
-- [ ] Reports separate generated ECU command outputs.
-- [ ] Reports separate expected behavior.
-- [ ] Reports separate pass/fail result.
+- [x] Add `export-code-preview`.
+- [x] Generate `controller.c`, `controller.h`, `hal_spi.h`, `hal_pwm.h`, and a
+      preview README under `generated/ecu_preview/`.
+- [x] Mark generated C as preview-only, synthetic, and non-certified.
 
-Acceptance tests:
+Verification:
 
-- [ ] Normal scenario passes.
-- [ ] Fault scenario passes.
-- [ ] Reports state that Python is preview-only.
+- [x] Generated C contains controller states and threshold logic.
+- [x] Generated C includes HAL headers rather than Python bindings.
+- [x] If a local C compiler is available, syntax-check the generated scaffold.
 
-## Phase 7: Documentation And Guardrails
+## Phase 7: PDCA/TDD Closure
 
-- [ ] Update README with the new thermal fan validation path.
-- [ ] Update `docs/design_principles.md` if any policy changes are needed.
-- [ ] Keep `AGENTS.md` aligned with the implementation.
-- [ ] Keep project-local skills under `.agents/skills/` aligned with the
+Requirement coverage: `STK-005`, `PROC-003`, `PROC-004`
+
+- [x] Add deterministic regeneration tests for all generated artifacts.
+- [x] Update README with the requirements-first thermal fan validation path.
+- [x] Update `docs/design_principles.md` if policy language changes.
+- [x] Keep project-local skills under `.agents/skills/` aligned with the
       implementation.
-- [ ] Add a short note explaining the MBD tool-backed code generation route.
-- [ ] Add a short note explaining the local preview-only code generation route.
+- [x] Refactor after tests are green, keeping behavior-preserving changes
+      separate where practical.
 
-Acceptance tests:
+Verification:
 
-- [ ] Project philosophy tests confirm `examples/*.mbd.md` is public source.
-- [ ] Project philosophy tests confirm YAML is not public source of truth.
-- [ ] Project philosophy tests confirm existing MBD tools are verification
-      backends.
-- [ ] Project philosophy tests confirm preview code generation is not certified.
+- [x] `pytest` passes.
+- [x] Project philosophy tests confirm markup is public source, YAML is not the
+      public source of truth, MBD tools are verification backends, and preview
+      code generation is not certified.
 
 ## Risks To Watch
 
-- [ ] Accidentally turning Python preview into the main verifier.
-- [ ] Accidentally making YAML central again.
-- [ ] Over-designing a new modeling language instead of staying Mermaid-like.
-- [ ] Making fake hardware too realistic or resembling a real datasheet.
-- [ ] Mixing preview C generation with certified/codegen claims.
+- [x] Skipping requirements and jumping straight into markup or runtime work.
+- [x] Accidentally turning Python preview into the main verifier.
+- [x] Accidentally making YAML central again.
+- [x] Over-designing a new modeling language instead of staying Mermaid-like.
+- [x] Making fictional hardware too realistic.
+- [x] Mixing preview C generation with certified code generation claims.

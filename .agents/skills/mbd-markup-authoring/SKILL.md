@@ -5,12 +5,14 @@ description: Project-local workflow for editing or extending Mermaid-like MBD Ma
 
 # MBD Markup Authoring
 
-Use this skill when changing `examples/*.mbd.md`, `src/veph/markup_parser.py`,
-or `src/veph/ir.py`.
+Use this skill when changing `Requirements.md`, `specs/*.md`,
+`examples/*.mbd.md`, `src/veph/markup_parser.py`, or `src/veph/ir.py`.
 
 ## Rules
 
 - Keep `examples/*.mbd.md` as the public authoring source.
+- For substantial examples, start from `Requirements.md` and a human-readable
+  specification before editing markup.
 - Do not promote YAML to public source of truth.
 - Keep the syntax compact and Mermaid-like.
 - Use only fictional components, registers, buses, and project names.
@@ -19,16 +21,18 @@ or `src/veph/ir.py`.
 ## Workflow
 
 1. Update `Tasks.md` before substantial syntax or IR work.
-2. Add or update parser tests first.
-3. Parse from Markdown fenced blocks into IR dataclasses.
-4. Preserve section traceability in `MarkupSectionIR`.
-5. Regenerate IR snapshots with:
+2. Confirm requirement IDs and specification anchors exist for new behavior.
+3. Add or update parser tests first.
+4. Parse from Markdown fenced blocks into IR dataclasses.
+5. Preserve section traceability in `MarkupSectionIR` and requirement refs in
+   parsed structures.
+6. Regenerate IR snapshots with:
 
 ```bash
 python -m veph parse examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.ir.json
 ```
 
-6. Run:
+7. Run:
 
 ```bash
 pytest tests/test_markup_parser.py tests/test_markup_exports.py

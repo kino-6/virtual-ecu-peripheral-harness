@@ -27,6 +27,25 @@ def export_fmi_metadata(model: MbdModelIR) -> str:
             for parameter in model.component.parameters.values()
         ],
         "states": _state_names(model),
+        "controlRules": [
+            {
+                "name": control.name,
+                "condition": control.condition,
+                "actions": control.actions,
+                "trace": control.trace,
+            }
+            for control in model.controls
+        ],
+        "harnessDevices": [
+            {
+                "name": device.name,
+                "role": device.role,
+                "boundary": device.boundary,
+                "trace": device.trace,
+            }
+            for device in model.harness_devices
+        ],
+        "requirementRefs": sorted(model.requirement_refs()),
         "registers": [
             {"name": register.name, "address": register.address, "access": register.access}
             for register in model.registers.values()

@@ -5,7 +5,9 @@ from pathlib import Path
 
 from veph.ir import (
     ComponentIR,
+    ControlRuleIR,
     FlowIR,
+    HarnessDeviceIR,
     MarkupSectionIR,
     MbdModelIR,
     ParameterIR,
@@ -45,6 +47,8 @@ def parse_markup(text: str, source_path: Path) -> MbdModelIR:
     registers = _parse_registers(by_language["mbd-registers"])
     transitions = _parse_state(by_language["mbd-state"])
     flows = _parse_flow(by_language["mbd-flow"])
+    controls = _parse_control(by_language.get("mbd-control", ""))
+    harness_devices = _parse_harness(by_language.get("mbd-harness", ""))
     return MbdModelIR(
         title=title,
         component=component,
@@ -54,6 +58,8 @@ def parse_markup(text: str, source_path: Path) -> MbdModelIR:
         flows=flows,
         sections=sections,
         source_path=source_path,
+        controls=controls,
+        harness_devices=harness_devices,
     )
 
 
@@ -69,12 +75,15 @@ def _parse_component(body: str) -> tuple[ComponentIR, dict[str, PortIR]]:
     bus: dict[str, str] = {}
     parameters: dict[str, ParameterIR] = {}
     ports: dict[str, PortIR] = {}
+    trace: list[str] = []
     for raw_line in body.splitlines():
         line = raw_line.strip()
         if not line:
             continue
         if line.startswith("component "):
             component_name = line.split()[1]
+        elif line.startswith("trace "):
+            trace = _parse_trace(line.removeprefix("trace "))
         elif line.startswith("bus "):
             parts = line.split()
             bus = {"type": parts[1]}
@@ -95,7 +104,7 @@ def _parse_component(body: str) -> tuple[ComponentIR, dict[str, PortIR]]:
             raise MarkupParseError(f"unknown component line: {line}")
     if component_name is None:
         raise MarkupParseError("component section missing component declaration")
-    return ComponentIR(name=component_name, bus=bus, parameters=parameters), ports
+    return ComponentIR(name=component_name, bus=bus, parameters=parameters, trace=trace), ports
 
 
 def _parse_typed_default(text: str) -> tuple[str, str, str | None]:
@@ -175,9 +184,106 @@ def _parse_flow(body: str) -> list[FlowIR]:
         line = raw_line.strip()
         if not line:
             continue
-        left, _, label = line.partition(":")
+        left, _, right = line.partition(":")
+        label, trace = _split_trace(right.strip())
         source, arrow, target = left.partition("->")
         if arrow != "->":
             raise MarkupParseError(f"invalid flow line: {line}")
-        flows.append(FlowIR(source=source.strip(), target=target.strip(), label=label.strip()))
+        flows.append(FlowIR(source=source.strip(), target=target.strip(), label=label.strip(), trace=trace))
     return flows
+
+
+def _parse_control(body: str) -> list[ControlRuleIR]:
+    controls: list[ControlRuleIR] = []
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if not line.startswith("rule "):
+            raise MarkupParseError(f"invalid control line: {line}")
+        name_part, separator, rule_part = line.removeprefix("rule ").partition(":")
+        if separator != ":":
+            raise MarkupParseError(f"invalid control line: {line}")
+        if not rule_part.strip().startswith("when "):
+            raise MarkupParseError(f"control rule missing when: {line}")
+        condition_part, then_separator, action_part = rule_part.strip().removeprefix("when ").partition(" then ")
+        if then_separator != " then ":
+            raise MarkupParseError(f"control rule missing then: {line}")
+        action_text, trace = _split_trace(action_part)
+        actions = _parse_actions(action_text)
+        controls.append(
+            ControlRuleIR(
+                name=name_part.strip(),
+                condition=condition_part.strip(),
+                actions=actions,
+                trace=trace,
+            )
+        )
+    return controls
+
+
+def _parse_harness(body: str) -> list[HarnessDeviceIR]:
+    devices: list[HarnessDeviceIR] = []
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) < 2 or parts[0] not in {"device", "ecu"}:
+            raise MarkupParseError(f"invalid harness line: {line}")
+        role = parts[0]
+        name = parts[1]
+        attr_tokens, trace = _split_trace_tokens(parts[2:])
+        attrs = _parse_attrs(attr_tokens)
+        devices.append(
+            HarnessDeviceIR(
+                name=name,
+                role=attrs.get("role", role),
+                boundary=attrs.get("boundary", ""),
+                trace=trace,
+            )
+        )
+    return devices
+
+
+def _parse_actions(text: str) -> dict[str, str]:
+    actions: dict[str, str] = {}
+    for item in text.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        key, separator, value = item.partition("=")
+        if separator != "=" or not key.strip() or not value.strip():
+            raise MarkupParseError(f"invalid control action: {item}")
+        actions[key.strip()] = value.strip()
+    if not actions:
+        raise MarkupParseError("control rule must contain at least one action")
+    return actions
+
+
+def _parse_attrs(tokens: list[str]) -> dict[str, str]:
+    attrs: dict[str, str] = {}
+    for token in tokens:
+        key, separator, value = token.partition("=")
+        if separator != "=" or not key or not value:
+            raise MarkupParseError(f"invalid attribute token: {token}")
+        attrs[key] = value
+    return attrs
+
+
+def _split_trace_tokens(tokens: list[str]) -> tuple[list[str], list[str]]:
+    if "trace" not in tokens:
+        return tokens, []
+    index = tokens.index("trace")
+    return tokens[:index], _parse_trace(" ".join(tokens[index + 1 :]))
+
+
+def _split_trace(text: str) -> tuple[str, list[str]]:
+    left, separator, right = text.partition(" trace ")
+    if separator:
+        return left.strip(), _parse_trace(right)
+    return text.strip(), []
+
+
+def _parse_trace(text: str) -> list[str]:
+    return [item.strip() for item in text.split() if item.strip()]

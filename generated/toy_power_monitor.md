@@ -16,6 +16,10 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - `mbd-state`
 - `mbd-flow`
 
+## Requirements Trace
+
+- No explicit requirement references declared.
+
 ## Component
 
 - Name: `ToyPowerMonitorIC`
@@ -82,6 +86,14 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - `HAL_SPI` -> `ECU_App.diagnostics` (STATUS.ready, STATUS.undervoltageFault)
 - `ToyPowerMonitorIC.ready` -> `ECU_App.diagnostics` (ready signal)
 - `ToyPowerMonitorIC.fault` -> `ECU_App.diagnostics` (fault signal)
+
+## Control Rules
+
+- No control rules declared.
+
+## Harness Boundary
+
+- No preview harness devices declared.
 
 ## Verification Direction
 

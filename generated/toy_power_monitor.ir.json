@@ -12,42 +12,52 @@
         "name": "undervoltageThreshold",
         "type": "V"
       }
-    }
+    },
+    "trace": []
   },
+  "controls": [],
   "flows": [
     {
       "label": "write CONTROL.enable",
       "source": "ECU_App.control_task",
-      "target": "HAL_SPI"
+      "target": "HAL_SPI",
+      "trace": []
     },
     {
       "label": "spi write",
       "source": "HAL_SPI",
-      "target": "ToyPowerMonitorIC.CONTROL"
+      "target": "ToyPowerMonitorIC.CONTROL",
+      "trace": []
     },
     {
       "label": "spi read",
       "source": "ToyPowerMonitorIC.STATUS",
-      "target": "HAL_SPI"
+      "target": "HAL_SPI",
+      "trace": []
     },
     {
       "label": "STATUS.ready, STATUS.undervoltageFault",
       "source": "HAL_SPI",
-      "target": "ECU_App.diagnostics"
+      "target": "ECU_App.diagnostics",
+      "trace": []
     },
     {
       "label": "ready signal",
       "source": "ToyPowerMonitorIC.ready",
-      "target": "ECU_App.diagnostics"
+      "target": "ECU_App.diagnostics",
+      "trace": []
     },
     {
       "label": "fault signal",
       "source": "ToyPowerMonitorIC.fault",
-      "target": "ECU_App.diagnostics"
+      "target": "ECU_App.diagnostics",
+      "trace": []
     }
   ],
+  "harness_devices": [],
   "metadata": {
     "irRole": "internal snapshot",
+    "requirementRefs": [],
     "sourceFormat": "mbd-markdown",
     "sourcePath": "examples/toy_power_monitor.mbd.md"
   },

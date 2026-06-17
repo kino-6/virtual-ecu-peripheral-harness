@@ -1,0 +1,20 @@
+name: thermal_fan_normal
+model: ToyThermalFanController
+steps:
+  - atMs: 0
+    setInput:
+      name: temperatureC
+      value: 25
+  - atMs: 10
+    setInput:
+      name: temperatureValid
+      value: true
+  - atMs: 100
+    setInput:
+      name: temperatureC
+      value: 82
+expect:
+  finalState: COOLING
+  outputs:
+    fanDuty: 80
+    fault: false

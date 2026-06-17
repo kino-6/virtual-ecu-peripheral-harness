@@ -23,6 +23,19 @@ YAML is not the public source of truth. Existing YAML files may remain as legacy
 preview inputs, optional expanded machine-readable forms, or temporary
 implementation details.
 
+For substantial validation examples, begin with `Requirements.md`, derive a
+human-readable specification under `specs/`, then write the `.mbd.md` source.
+Do not jump directly from a vague idea into runtime or generated artifacts.
+
+## ASPICE-Aware Process Boundary
+
+MBD examples are treated as stricter product-development work products than a
+casual demo. Use stable requirement IDs, trace links, review gates,
+deterministic regeneration tests, and explicit evidence files.
+
+This is process inspiration only. The repository does not claim ASPICE
+compliance, safety certification, production readiness, or tool qualification.
+
 ## Existing MBD Tools As Verification Backends
 
 The project does not try to replace Simulink, Stateflow, Modelica, FMI tools, or
@@ -45,6 +58,8 @@ If a generated artifact is wrong, fix the markup or exporter and regenerate it.
 Python preview is only a preview/smoke-test helper. It may parse markup, emit
 artifacts, and run lightweight sanity checks, but it must not be presented as
 the main verification path or a custom MBD semantic universe.
+
+Scenario YAML, if used, is test input only. It is not the MBD source of truth.
 
 ## YAML And IR Policy
 

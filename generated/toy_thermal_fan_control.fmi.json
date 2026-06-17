@@ -1,0 +1,160 @@
+{
+  "component": "ToyThermalFanController",
+  "controlRules": [
+    {
+      "actions": {
+        "fanDuty": "safeDuty",
+        "fault": "true",
+        "state": "FAULT"
+      },
+      "condition": "temperatureValid == false",
+      "name": "sensorFault",
+      "trace": [
+        "SYS-005",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "fanDuty": "coolingDuty",
+        "fault": "false",
+        "state": "COOLING"
+      },
+      "condition": "temperatureC >= fanOnThreshold",
+      "name": "highTemperature",
+      "trace": [
+        "SYS-003",
+        "SYS-006"
+      ]
+    },
+    {
+      "actions": {
+        "fanDuty": "0",
+        "fault": "false",
+        "state": "IDLE"
+      },
+      "condition": "temperatureC <= fanOffThreshold",
+      "name": "lowTemperature",
+      "trace": [
+        "SYS-004",
+        "SYS-006"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyTempSensorIC",
+      "role": "sensor",
+      "trace": [
+        "HAR-001",
+        "SYS-001"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyFanDriverIC",
+      "role": "actuator",
+      "trace": [
+        "HAR-001",
+        "SYS-002"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyThermalFanController",
+      "role": "controller",
+      "trace": [
+        "HAR-002",
+        "SWE-004"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "25",
+      "name": "temperatureC",
+      "type": "degC"
+    },
+    {
+      "default": "true",
+      "name": "temperatureValid",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "0",
+      "name": "fanDuty",
+      "type": "percent"
+    },
+    {
+      "default": "false",
+      "name": "fault",
+      "type": "bool"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "75",
+      "name": "fanOnThreshold",
+      "type": "degC"
+    },
+    {
+      "default": "65",
+      "name": "fanOffThreshold",
+      "type": "degC"
+    },
+    {
+      "default": "80",
+      "name": "coolingDuty",
+      "type": "percent"
+    },
+    {
+      "default": "35",
+      "name": "safeDuty",
+      "type": "percent"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x10",
+      "name": "TEMP_STATUS"
+    },
+    {
+      "access": "rw",
+      "address": "0x20",
+      "name": "FAN_COMMAND"
+    },
+    {
+      "access": "ro",
+      "address": "0x30",
+      "name": "FAULT_STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "HAR-001",
+    "HAR-002",
+    "HAR-004",
+    "HAR-005",
+    "STK-001",
+    "SWE-001",
+    "SWE-004",
+    "SYS-001",
+    "SYS-002",
+    "SYS-003",
+    "SYS-004",
+    "SYS-005",
+    "SYS-006"
+  ],
+  "source": "examples/toy_thermal_fan_control.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "RESET",
+    "IDLE",
+    "COOLING",
+    "FAULT"
+  ]
+}

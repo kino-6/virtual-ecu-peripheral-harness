@@ -15,16 +15,18 @@ scaffolds.
 - Product-like ECU logic must communicate through HAL-style boundaries.
 - Do not let generated C call Python internals.
 - Use fictional ICs, fictional registers, and synthetic scenarios only.
+- Scenario YAML is test input only, not MBD source of truth.
 
 ## Workflow
 
 1. Update `Tasks.md` and mark items only after verification.
-2. Add tests for normal and fault scenarios before implementation.
-3. Keep preview runtime discrete-step and simple.
-4. Generate C into `generated/ecu_preview/`.
-5. Include a `README.md` in generated C output stating preview-only status.
-6. If a local C compiler is available, syntax-check the generated scaffold.
-7. Run the relevant preview tests and `pytest`.
+2. Confirm the scenario maps back to requirement IDs and specification behavior.
+3. Add tests for normal and fault scenarios before implementation.
+4. Keep preview runtime discrete-step and simple.
+5. Generate C into `generated/ecu_preview/`.
+6. Include a `README.md` in generated C output stating preview-only status.
+7. If a local C compiler is available, syntax-check the generated scaffold.
+8. Run the relevant preview tests and `pytest`.
 
 ## Expected Commands
 

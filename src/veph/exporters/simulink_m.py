@@ -20,6 +20,14 @@ def export_simulink_m(model: PeripheralModel | MbdModelIR) -> str:
             y = 80 + (index // 3) * 120
             lines.append(f"add_block('simulink/Commonly Used Blocks/Subsystem', [model '/{safe}']);")
             lines.append(f"set_param([model '/{safe}'], 'Position', [{x} {y} {x + 150} {y + 60}]);")
+        for index, control in enumerate(model.controls):
+            safe = _simulink_block_name(f"Rule_{control.name}")
+            y = 420 + index * 100
+            lines.append(f"add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/{safe}_Compare']);")
+            lines.append(f"set_param([model '/{safe}_Compare'], 'Position', [80 {y} 230 {y + 60}]);")
+            lines.append(f"add_block('simulink/Signal Routing/Switch', [model '/{safe}_Switch']);")
+            lines.append(f"set_param([model '/{safe}_Switch'], 'Position', [300 {y} 430 {y + 60}]);")
+            lines.append(f"% {control.name}: when {control.condition} then {control.actions}")
         for flow in model.flows:
             lines.append(
                 f"add_line(model, '{_simulink_block_name(flow.source)}/1', '{_simulink_block_name(flow.target)}/1', 'autorouting', 'on');"

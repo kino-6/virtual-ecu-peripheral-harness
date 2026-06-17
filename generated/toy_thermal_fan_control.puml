@@ -1,0 +1,15 @@
+@startuml
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToyThermalFanController State Preview
+[*] --> RESET
+RESET --> IDLE : powerOn
+IDLE --> COOLING : temperatureC >= fanOnThreshold
+COOLING --> IDLE : temperatureC <= fanOffThreshold
+IDLE --> FAULT : temperatureValid == false
+COOLING --> FAULT : temperatureValid == false
+FAULT --> IDLE : temperatureValid == true
+' Trace sensorFault: SYS-005, HAR-004
+' Trace highTemperature: SYS-003, SYS-006
+' Trace lowTemperature: SYS-004, SYS-006
+@enduml

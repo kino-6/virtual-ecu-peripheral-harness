@@ -30,6 +30,13 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
     ]
     for section in model.sections:
         lines.append(f"- `{section.language}`")
+    lines.extend(["", "## Requirements Trace", ""])
+    refs = sorted(model.requirement_refs())
+    if refs:
+        for ref in refs:
+            lines.append(f"- `{ref}`")
+    else:
+        lines.append("- No explicit requirement references declared.")
     lines.extend(
         [
             "",
@@ -62,7 +69,23 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
     lines.extend(["", "## Flow Preview", ""])
     for flow in model.flows:
         label = f" ({flow.label})" if flow.label else ""
-        lines.append(f"- `{flow.source}` -> `{flow.target}`{label}")
+        trace = f" trace `{', '.join(flow.trace)}`" if flow.trace else ""
+        lines.append(f"- `{flow.source}` -> `{flow.target}`{label}{trace}")
+    lines.extend(["", "## Control Rules", ""])
+    if model.controls:
+        for control in model.controls:
+            actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
+            trace = f" trace `{', '.join(control.trace)}`" if control.trace else ""
+            lines.append(f"- `{control.name}`: when `{control.condition}` then `{actions}`{trace}")
+    else:
+        lines.append("- No control rules declared.")
+    lines.extend(["", "## Harness Boundary", ""])
+    if model.harness_devices:
+        for device in model.harness_devices:
+            trace = f" trace `{', '.join(device.trace)}`" if device.trace else ""
+            lines.append(f"- `{device.name}` role `{device.role}` boundary `{device.boundary}`{trace}")
+    else:
+        lines.append("- No preview harness devices declared.")
     lines.extend(
         [
             "",

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from veph.exporters.code_preview import export_code_preview
 from veph.exporters.fmi_metadata import export_fmi_metadata
 from veph.exporters.markdown import export_markdown
 from veph.exporters.demo_html import export_demo_html
@@ -16,6 +17,7 @@ from veph.exporters.scxml import export_scxml
 from veph.exporters.simulink_m import export_simulink_m
 from veph.markup_parser import MarkupParseError, parse_markup_file
 from veph.model_loader import ModelValidationError, load_model
+from veph.preview_runtime import PreviewScenarioError, run_preview_file
 from veph.scenario_runner import ScenarioError, run_scenario_file
 
 
@@ -47,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         args.func(args)
-    except (MarkupParseError, ModelValidationError, ScenarioError, OSError) as exc:
+    except (MarkupParseError, ModelValidationError, ScenarioError, PreviewScenarioError, OSError) as exc:
         parser.exit(1, f"error: {exc}\n")
     return 0
 
@@ -70,6 +72,17 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--scenario", required=True)
     run.add_argument("--report", required=True)
     run.set_defaults(func=_run)
+
+    run_preview = subparsers.add_parser("run-preview", help="run a preview-only scenario from MBD markdown")
+    run_preview.add_argument("--model", required=True)
+    run_preview.add_argument("--scenario", required=True)
+    run_preview.add_argument("--report", required=True)
+    run_preview.set_defaults(func=_run_preview)
+
+    export_code = subparsers.add_parser("export-code-preview", help="export preview-only ECU C scaffold")
+    export_code.add_argument("source")
+    export_code.add_argument("--out", required=True)
+    export_code.set_defaults(func=_export_code_preview)
 
     for name, command in EXPORT_COMMANDS.items():
         _add_export(subparsers, name, command)
@@ -105,6 +118,17 @@ def _run(args: argparse.Namespace) -> None:
     model = load_model(args.model)
     result = run_scenario_file(model, args.scenario, args.report)
     print(f"{result.name}: {'PASS' if result.passed else 'FAIL'}")
+
+
+def _run_preview(args: argparse.Namespace) -> None:
+    result = run_preview_file(args.model, args.scenario, args.report)
+    print(f"{result.name}: {'PASS' if result.passed else 'FAIL'}")
+
+
+def _export_code_preview(args: argparse.Namespace) -> None:
+    model = parse_markup_file(args.source)
+    written = export_code_preview(model, args.out)
+    print(f"wrote {len(written)} files to {Path(args.out)}")
 
 
 def _export(args: argparse.Namespace, exporter: Callable) -> None:

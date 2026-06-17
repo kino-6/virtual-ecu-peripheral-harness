@@ -70,3 +70,23 @@ def test_state_and_fmi_exports_are_handoff_stubs_not_full_toolchains():
     assert '"fmiIntent": "metadata stub only; no FMU is generated"' in fmi
     assert '"voltage"' in fmi
     assert '"ready"' in fmi
+
+
+def test_thermal_exports_include_trace_control_and_harness_boundaries():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+
+    markdown = export_markdown(model)
+    mermaid = export_mermaid(model)
+    simulink = export_simulink_m(model)
+    fmi = export_fmi_metadata(model)
+
+    assert "## Requirements Trace" in markdown
+    assert "`SYS-005`" in markdown
+    assert "## Control Rules" in markdown
+    assert "## Harness Boundary" in markdown
+    assert "ToyTempSensorIC" in mermaid
+    assert "Trace: SYS-001" in mermaid
+    assert "Compare To Constant" in simulink
+    assert "Switch" in simulink
+    assert '"requirementRefs"' in fmi
+    assert '"HAR-005"' in fmi

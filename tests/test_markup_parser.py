@@ -31,3 +31,19 @@ def test_internal_ir_json_is_not_public_authoring_format():
     assert data["metadata"]["sourceFormat"] == "mbd-markdown"
     assert data["metadata"]["irRole"] == "internal snapshot"
     assert data["component"]["name"] == "ToyPowerMonitorIC"
+
+
+def test_thermal_fan_markup_keeps_requirement_traceability():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+
+    assert model.component.name == "ToyThermalFanController"
+    assert "SYS-001" in model.component.trace
+    assert model.ports["temperatureC"].direction == "in"
+    assert model.registers["TEMP_STATUS"].fields["valid"].bit == 15
+    assert model.controls[0].name == "sensorFault"
+    assert model.controls[0].actions["fanDuty"] == "safeDuty"
+    assert "SYS-005" in model.controls[0].trace
+    assert model.harness_devices[0].name == "ToyTempSensorIC"
+    assert model.harness_devices[0].boundary == "virtual_ic"
+    assert "HAR-001" in model.flows[0].trace
+    assert "HAR-005" in model.to_dict()["metadata"]["requirementRefs"]

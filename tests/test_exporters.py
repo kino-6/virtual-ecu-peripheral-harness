@@ -67,6 +67,23 @@ def test_cli_export_commands_use_only_model_and_output_arguments():
         assert command.out_required is True
 
 
+def test_thermal_generated_artifacts_are_deterministic_from_markup_source():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+
+    expected_outputs = {
+        "generated/toy_thermal_fan_control.md": export_markdown(model),
+        "generated/toy_thermal_fan_control.mmd": export_mermaid(model),
+        "generated/toy_thermal_fan_control.puml": export_plantuml(model),
+        "generated/toy_thermal_fan_control.scxml": export_scxml(model),
+        "generated/ToyThermalFanControl.mo": export_modelica(model),
+        "generated/create_toy_thermal_fan_control_model.m": export_simulink_m(model),
+        "generated/toy_thermal_fan_control.fmi.json": export_fmi_metadata(model),
+    }
+
+    for relative_path, regenerated in expected_outputs.items():
+        assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+
+
 def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():
     model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
 

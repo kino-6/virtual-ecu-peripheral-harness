@@ -23,6 +23,11 @@ def export_modelica(model: PeripheralModel | MbdModelIR) -> str:
         lines.append("  // State placeholders generated from markup:")
         for index, state in enumerate(_state_names(model)):
             lines.append(f"  // {index}: {state}")
+        lines.append("  // Control rule handoff summary:")
+        for control in model.controls:
+            actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
+            trace = ", ".join(control.trace)
+            lines.append(f"  // {control.name}: when {control.condition} then {actions} trace {trace}")
         lines.append(f"end {model.component.name};")
         return "\n".join(lines) + "\n"
 

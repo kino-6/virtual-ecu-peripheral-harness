@@ -12,4 +12,5 @@ equation
   // 1: INIT
   // 2: NORMAL
   // 3: FAULT_LATCHED
+  // Control rule handoff summary:
 end ToyPowerMonitorIC;

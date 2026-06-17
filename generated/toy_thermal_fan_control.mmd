@@ -1,0 +1,58 @@
+flowchart LR
+  %% Generated preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  ToyTempSensorIC_temperatureC["ToyTempSensorIC.temperatureC"]
+  HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
+  %% Trace: SYS-001, HAR-001
+  %% ToyTempSensorIC_temperatureC --> HAL_SPI_read_temperature
+  ToyTempSensorIC_temperatureC -->|"virtual sensor sample"| HAL_SPI_read_temperature
+  HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
+  ToyThermalFanController_temperatureC["ToyThermalFanController.temperatureC"]
+  %% Trace: SWE-004, HAR-002
+  %% HAL_SPI_read_temperature --> ToyThermalFanController_temperatureC
+  HAL_SPI_read_temperature -->|"HAL input"| ToyThermalFanController_temperatureC
+  ToyThermalFanController_fanDuty["ToyThermalFanController.fanDuty"]
+  HAL_PWM_set_fan_duty["HAL_PWM.set_fan_duty"]
+  %% Trace: SYS-002, SWE-004
+  %% ToyThermalFanController_fanDuty --> HAL_PWM_set_fan_duty
+  ToyThermalFanController_fanDuty -->|"generated ECU command"| HAL_PWM_set_fan_duty
+  HAL_PWM_set_fan_duty["HAL_PWM.set_fan_duty"]
+  ToyFanDriverIC_dutyCommand["ToyFanDriverIC.dutyCommand"]
+  %% Trace: SYS-002, HAR-001
+  %% HAL_PWM_set_fan_duty --> ToyFanDriverIC_dutyCommand
+  HAL_PWM_set_fan_duty -->|"virtual actuator command"| ToyFanDriverIC_dutyCommand
+  ToyThermalFanController_fault["ToyThermalFanController.fault"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SYS-006, HAR-004
+  %% ToyThermalFanController_fault --> ScenarioReport_observedBehavior
+  ToyThermalFanController_fault -->|"fault observation"| ScenarioReport_observedBehavior
+  rule_sensorFault{"rule sensorFault"}
+  %% Trace: SYS-005, HAR-004
+  state["state"]
+  rule_sensorFault -->|"temperatureValid == false"| state
+  fanDuty["fanDuty"]
+  rule_sensorFault -->|"temperatureValid == false"| fanDuty
+  fault["fault"]
+  rule_sensorFault -->|"temperatureValid == false"| fault
+  rule_highTemperature{"rule highTemperature"}
+  %% Trace: SYS-003, SYS-006
+  state["state"]
+  rule_highTemperature -->|"temperatureC >= fanOnThreshold"| state
+  fanDuty["fanDuty"]
+  rule_highTemperature -->|"temperatureC >= fanOnThreshold"| fanDuty
+  fault["fault"]
+  rule_highTemperature -->|"temperatureC >= fanOnThreshold"| fault
+  rule_lowTemperature{"rule lowTemperature"}
+  %% Trace: SYS-004, SYS-006
+  state["state"]
+  rule_lowTemperature -->|"temperatureC <= fanOffThreshold"| state
+  fanDuty["fanDuty"]
+  rule_lowTemperature -->|"temperatureC <= fanOffThreshold"| fanDuty
+  fault["fault"]
+  rule_lowTemperature -->|"temperatureC <= fanOffThreshold"| fault
+  ToyTempSensorIC["ToyTempSensorIC<br/>virtual_ic"]
+  %% Trace: HAR-001, SYS-001
+  ToyFanDriverIC["ToyFanDriverIC<br/>virtual_ic"]
+  %% Trace: HAR-001, SYS-002
+  ToyThermalFanController["ToyThermalFanController<br/>hal"]
+  %% Trace: HAR-002, SWE-004

@@ -40,6 +40,27 @@ keep YAML only as legacy preview input, optional expanded machine-readable form,
 or implementation detail. Internal IR is a tooling snapshot, not a public
 standard.
 
+## Requirements And Process Policy
+
+Start substantial validation work from `Requirements.md`, then move to markup,
+parser/IR, generated artifacts, preview harness, preview C, and reports. Keep
+requirements fictional, ID-based, and traceable to markup, generated artifacts,
+preview scenarios, and tests. Use ASPICE-aware practices as process inspiration:
+requirements traceability, reviewable work products, verification evidence, and
+clear artifact boundaries. Do not claim ASPICE compliance, safety
+certification, production readiness, or tool qualification from this MVP.
+
+Recent direction decisions:
+
+- Do not jump from an idea directly into MBD markup or harness implementation.
+  First write the fictional intent in `Requirements.md`.
+- Derive a human-readable specification from requirements before expanding MBD
+  markup, generated artifacts, or preview runtime behavior.
+- Treat MBD usage as a stricter product-development context than an ordinary
+  demo. Favor traceability, review gates, and reproducible evidence.
+- Run the loop as PDCA/TDD: requirements, specification, failing checks, markup
+  and exporters, harness preview, reports, then task/status updates.
+
 ## Verification Policy
 
 Existing MBD tools are the intended verification backends. Python may parse

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +25,7 @@ class ComponentIR:
     name: str
     bus: dict[str, str]
     parameters: dict[str, ParameterIR]
+    trace: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,23 @@ class FlowIR:
     source: str
     target: str
     label: str = ""
+    trace: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class ControlRuleIR:
+    name: str
+    condition: str
+    actions: dict[str, str]
+    trace: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class HarnessDeviceIR:
+    name: str
+    role: str
+    boundary: str
+    trace: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -74,6 +92,8 @@ class MbdModelIR:
     flows: list[FlowIR]
     sections: list[MarkupSectionIR]
     source_path: Path
+    controls: list[ControlRuleIR] = field(default_factory=list)
+    harness_devices: list[HarnessDeviceIR] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -82,5 +102,16 @@ class MbdModelIR:
             "sourceFormat": "mbd-markdown",
             "irRole": "internal snapshot",
             "sourcePath": str(self.source_path),
+            "requirementRefs": sorted(self.requirement_refs()),
         }
         return data
+
+    def requirement_refs(self) -> set[str]:
+        refs = set(self.component.trace)
+        for flow in self.flows:
+            refs.update(flow.trace)
+        for control in self.controls:
+            refs.update(control.trace)
+        for device in self.harness_devices:
+            refs.update(device.trace)
+        return refs
