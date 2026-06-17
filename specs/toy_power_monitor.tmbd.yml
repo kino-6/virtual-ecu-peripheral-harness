@@ -1,0 +1,201 @@
+schemaVersion: 0.1
+kind: PeripheralModel
+name: ToyPowerMonitorIC
+description: Fictional power monitor IC for virtual ECU harness demos.
+
+bus:
+  type: spi
+  mode: 0
+  wordBits: 8
+
+parameters:
+  undervoltageThreshold: 7.0
+
+registers:
+  STATUS:
+    address: 0x01
+    width: 8
+    access: ro
+    description: Read-only status flags.
+    fields:
+      ready:
+        bits: [7]
+        reset: 0
+      undervoltageFault:
+        bits: [0]
+        reset: 0
+  CONTROL:
+    address: 0x02
+    width: 8
+    access: rw
+    description: Control bits for starting monitoring.
+    fields:
+      enableMonitoring:
+        bits: [0]
+        reset: 0
+  FAULT:
+    address: 0x03
+    width: 8
+    access: ro
+    description: Latched fault flags.
+    fields:
+      undervoltage:
+        bits: [0]
+        reset: 0
+      spiTimeout:
+        bits: [1]
+        reset: 0
+  VOLTAGE:
+    address: 0x04
+    width: 8
+    access: ro
+    description: Quantized voltage in volts for demo purposes.
+    fields:
+      volts:
+        bits: [7, 6, 5, 4, 3, 2, 1, 0]
+        reset: 12
+  RESET_CAUSE:
+    address: 0x05
+    width: 8
+    access: ro
+    description: Reset cause flags.
+    fields:
+      powerOnReset:
+        bits: [0]
+        reset: 1
+
+states:
+  initial: RESET
+  nodes:
+    - RESET
+    - INIT
+    - NORMAL
+    - FAULT_LATCHED
+  transitions:
+    - from: RESET
+      to: INIT
+      when: powerOn
+    - from: INIT
+      to: NORMAL
+      when: initSequenceOk
+    - from: NORMAL
+      to: FAULT_LATCHED
+      when: voltage < undervoltageThreshold
+
+signals:
+  inputs:
+    - name: voltage
+      unit: V
+      default: 12.0
+  outputs:
+    - name: ready
+      type: bool
+
+blocks:
+  - name: VoltageInput
+    kind: signalSource
+    description: Scenario-controlled input signal source.
+    outputs:
+      - name: voltage
+        signal: voltage
+        type: real
+  - name: ThresholdParameter
+    kind: parameter
+    description: Textual threshold parameter from the YAML model.
+    outputs:
+      - name: threshold
+        signal: undervoltageThreshold
+        type: real
+  - name: UndervoltageComparator
+    kind: comparator
+    description: Compares voltage against the undervoltage threshold.
+    inputs:
+      - name: voltage
+        signal: voltage
+        type: real
+      - name: threshold
+        signal: undervoltageThreshold
+        type: real
+    outputs:
+      - name: undervoltageDetected
+        signal: undervoltageDetected
+        type: bool
+  - name: FaultLatch
+    kind: latch
+    description: Latches undervoltage into the fault state.
+    inputs:
+      - name: set
+        signal: undervoltageDetected
+        type: bool
+    outputs:
+      - name: faultLatched
+        signal: faultLatched
+        type: bool
+  - name: ReadyLogic
+    kind: logic
+    description: Produces ready when initialization is complete and no stuck-ready fault is active.
+    inputs:
+      - name: stateNormal
+        signal: state == NORMAL
+        type: bool
+      - name: stuckReady
+        signal: stuckReadyBit
+        type: bool
+    outputs:
+      - name: ready
+        signal: ready
+        type: bool
+  - name: RegisterMap
+    kind: registerMap
+    description: Maps internal signals to externally readable registers.
+    inputs:
+      - name: ready
+        signal: ready
+        type: bool
+      - name: undervoltageFault
+        signal: faultLatched
+        type: bool
+      - name: voltage
+        signal: voltage
+        type: real
+    outputs:
+      - name: STATUS.ready
+        signal: STATUS.ready
+        type: bit
+      - name: STATUS.undervoltageFault
+        signal: STATUS.undervoltageFault
+        type: bit
+      - name: VOLTAGE.volts
+        signal: VOLTAGE.volts
+        type: uint8
+
+connections:
+  - from: VoltageInput.voltage
+    to: UndervoltageComparator.voltage
+    signal: voltage
+  - from: ThresholdParameter.threshold
+    to: UndervoltageComparator.threshold
+    signal: undervoltageThreshold
+  - from: UndervoltageComparator.undervoltageDetected
+    to: FaultLatch.set
+    signal: undervoltageDetected
+  - from: FaultLatch.faultLatched
+    to: RegisterMap.undervoltageFault
+    signal: faultLatched
+  - from: ReadyLogic.ready
+    to: RegisterMap.ready
+    signal: ready
+  - from: VoltageInput.voltage
+    to: RegisterMap.voltage
+    signal: voltage
+
+faults:
+  - name: undervoltage
+    effect: set STATUS.undervoltageFault and transition to FAULT_LATCHED
+  - name: spiTimeout
+    effect: return no response for SPI transaction
+  - name: stuckReadyBit
+    effect: keep STATUS.ready fixed at 0
+
+timing:
+  tickMs: 1

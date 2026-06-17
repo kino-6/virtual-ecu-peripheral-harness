@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="RESET">
+  <!-- ToyPowerMonitorIC fictional generated state machine. -->
+  <!-- Canonical source: Textual MBD YAML. Regenerate instead of editing as source. -->
+  <state id="RESET">
+    <transition event="powerOn" target="INIT" />
+  </state>
+  <state id="INIT">
+    <transition event="initSequenceOk" target="NORMAL" />
+  </state>
+  <state id="NORMAL">
+    <transition event="voltage &lt; undervoltageThreshold" target="FAULT_LATCHED" />
+  </state>
+  <state id="FAULT_LATCHED" />
+</scxml>

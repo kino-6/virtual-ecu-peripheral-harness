@@ -1,0 +1,17 @@
+name: spi_timeout
+model: ToyPowerMonitorIC
+steps:
+  - atMs: 0
+    event: powerOn
+  - atMs: 5
+    injectFault: spiTimeout
+  - atMs: 10
+    readRegister:
+      name: STATUS
+expect:
+  finalState: INIT
+  registers:
+    FAULT.spiTimeout: 1
+  reads:
+    - register: STATUS
+      response: timeout

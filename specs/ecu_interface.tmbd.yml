@@ -1,0 +1,16 @@
+schemaVersion: 0.1
+kind: EcuInterface
+name: ToyECUInterface
+description: Fictional ECU boundary used by the sample C application.
+
+hal:
+  spi:
+    readFunction: HalSpi_ReadRegister
+    writeFunction: HalSpi_WriteRegister
+  gpio:
+    readyPin: TOY_POWER_MONITOR_READY
+
+peripherals:
+  - name: ToyPowerMonitorIC
+    model: specs/toy_power_monitor.tmbd.yml
+    chipSelect: CS_TOY_POWER_MONITOR

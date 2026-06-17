@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToyPowerMonitorIC MBD Demo</title>
+  <style>
+:root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5f6f76;
+      --line: #c7d2d6;
+      --panel: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+      --accent-soft: #dcebea;
+      --warn: #8a4b25;
+      --warn-soft: #f6e7d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-copy, .hero-facts, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .hero-copy { padding: 28px; }
+    .hero-copy p {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    p, span, li, td, th { color: var(--muted); }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      background: var(--line);
+    }
+    .hero-facts div {
+      background: var(--panel);
+      padding: 18px;
+    }
+    .hero-facts strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .hero-facts span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+    }
+    .diagram {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+      margin-top: 16px;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .node, .state {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 2;
+    }
+    .mbd-block {
+      fill: #ffffff;
+      stroke: #78909a;
+      stroke-width: 2;
+      filter: drop-shadow(0 2px 2px rgba(23, 32, 38, 0.08));
+    }
+    .initial { fill: var(--accent-soft); stroke: var(--accent); }
+    .arrow, .state-arrow {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .state-arrow { stroke: #475569; marker-end: url(#stateArrow); }
+    .signal-line {
+      stroke: #256f3f;
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#signalArrow);
+    }
+    .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
+    .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
+    .node-title, .state-label {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .block-title {
+      fill: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .block-kind {
+      fill: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .port-label {
+      fill: #334155;
+      font-size: 11px;
+    }
+    .signal-label {
+      fill: #1f5f36;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-note, .edge-note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .edge-label {
+      fill: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); font-weight: 700; }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .policy {
+      border-color: #e0c3a8;
+      background: var(--warn-soft);
+    }
+    .policy h2 { color: var(--warn); }
+    @media (max-width: 840px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
+      .hero-copy, .panel { padding: 16px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p>Textual MBD YAML is the source of truth</p>
+        <h1>ToyPowerMonitorIC MBD Demo</h1>
+        <span>Fictional power monitor IC for virtual ECU harness demos.</span>
+      </div>
+      <div class="hero-facts" aria-label="model facts">
+        <div><strong>PeripheralModel</strong><span>model kind</span></div>
+        <div><strong>SPI mode 0</strong><span>bus</span></div>
+        <div><strong>5</strong><span>registers</span></div>
+        <div><strong>4</strong><span>states</span></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>MBD Block Diagram</h2>
+      <p>Functional blocks, typed ports, and signal lines are generated from the YAML `blocks` and `connections` sections.</p>
+      <svg class="diagram mbd" viewBox="0 0 1280 560" role="img" aria-label="MBD block diagram with ports and signal connections">
+        <defs>
+          <marker id="signalArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#256f3f"></path>
+          </marker>
+        </defs>
+        <path d="M 280 158 C 305 158, 305 236, 330 236" class="signal-line"></path>
+        <text x="305" y="189" text-anchor="middle" class="signal-label">voltage</text>
+        <path d="M 280 388 C 305 388, 305 260, 330 260" class="signal-line"></path>
+        <text x="305" y="316" text-anchor="middle" class="signal-label">undervoltageThreshold</text>
+        <path d="M 560 236 C 585 236, 585 236, 610 236" class="signal-line"></path>
+        <text x="585" y="226" text-anchor="middle" class="signal-label">undervoltageDetected</text>
+        <path d="M 840 236 C 870 236, 870 290, 900 290" class="signal-line"></path>
+        <text x="870" y="255" text-anchor="middle" class="signal-label">faultLatched</text>
+        <path d="M 840 430 C 870 430, 870 266, 900 266" class="signal-line"></path>
+        <text x="870" y="340" text-anchor="middle" class="signal-label">ready</text>
+        <path d="M 280 158 C 590 158, 590 314, 900 314" class="signal-line"></path>
+        <text x="590" y="228" text-anchor="middle" class="signal-label">voltage</text>
+        <rect x="50" y="82" width="230" height="128" rx="8" class="mbd-block"></rect>
+        <text x="66" y="110" class="block-title">VoltageInput</text>
+        <text x="66" y="132" class="block-kind">signalSource</text>
+        <circle cx="280" cy="158" r="5" class="output-port"></circle>
+        <text x="266" y="162" text-anchor="end" class="port-label">voltage : real</text>
+        <rect x="50" y="312" width="230" height="128" rx="8" class="mbd-block"></rect>
+        <text x="66" y="340" class="block-title">ThresholdParameter</text>
+        <text x="66" y="362" class="block-kind">parameter</text>
+        <circle cx="280" cy="388" r="5" class="output-port"></circle>
+        <text x="266" y="392" text-anchor="end" class="port-label">threshold : real</text>
+        <rect x="330" y="160" width="230" height="128" rx="8" class="mbd-block"></rect>
+        <text x="346" y="188" class="block-title">UndervoltageComparator</text>
+        <text x="346" y="210" class="block-kind">comparator</text>
+        <circle cx="330" cy="236" r="5" class="input-port"></circle>
+        <text x="344" y="240" class="port-label">voltage : real</text>
+        <circle cx="330" cy="260" r="5" class="input-port"></circle>
+        <text x="344" y="264" class="port-label">threshold : real</text>
+        <circle cx="560" cy="236" r="5" class="output-port"></circle>
+        <text x="546" y="240" text-anchor="end" class="port-label">undervoltageDetected : bool</text>
+        <rect x="610" y="160" width="230" height="128" rx="8" class="mbd-block"></rect>
+        <text x="626" y="188" class="block-title">FaultLatch</text>
+        <text x="626" y="210" class="block-kind">latch</text>
+        <circle cx="610" cy="236" r="5" class="input-port"></circle>
+        <text x="624" y="240" class="port-label">set : bool</text>
+        <circle cx="840" cy="236" r="5" class="output-port"></circle>
+        <text x="826" y="240" text-anchor="end" class="port-label">faultLatched : bool</text>
+        <rect x="610" y="354" width="230" height="128" rx="8" class="mbd-block"></rect>
+        <text x="626" y="382" class="block-title">ReadyLogic</text>
+        <text x="626" y="404" class="block-kind">logic</text>
+        <circle cx="610" cy="430" r="5" class="input-port"></circle>
+        <text x="624" y="434" class="port-label">stateNormal : bool</text>
+        <circle cx="610" cy="454" r="5" class="input-port"></circle>
+        <text x="624" y="458" class="port-label">stuckReady : bool</text>
+        <circle cx="840" cy="430" r="5" class="output-port"></circle>
+        <text x="826" y="434" text-anchor="end" class="port-label">ready : bool</text>
+        <rect x="900" y="190" width="230" height="140" rx="8" class="mbd-block"></rect>
+        <text x="916" y="218" class="block-title">RegisterMap</text>
+        <text x="916" y="240" class="block-kind">registerMap</text>
+        <circle cx="900" cy="266" r="5" class="input-port"></circle>
+        <text x="914" y="270" class="port-label">ready : bool</text>
+        <circle cx="900" cy="290" r="5" class="input-port"></circle>
+        <text x="914" y="294" class="port-label">undervoltageFault : bool</text>
+        <circle cx="900" cy="314" r="5" class="input-port"></circle>
+        <text x="914" y="318" class="port-label">voltage : real</text>
+        <circle cx="1130" cy="266" r="5" class="output-port"></circle>
+        <text x="1116" y="270" text-anchor="end" class="port-label">STATUS.ready : bit</text>
+        <circle cx="1130" cy="290" r="5" class="output-port"></circle>
+        <text x="1116" y="294" text-anchor="end" class="port-label">STATUS.undervoltageFault : bit</text>
+        <circle cx="1130" cy="314" r="5" class="output-port"></circle>
+        <text x="1116" y="318" text-anchor="end" class="port-label">VOLTAGE.volts : uint8</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Boundary Data Flow</h2>
+      <p>The model block diagram above defines peripheral behavior. This view shows how scenario inputs reach unchanged ECU-like code through the virtual hardware boundary.</p>
+      <svg class="diagram" viewBox="0 0 1280 390" role="img" aria-label="Data flow from Textual MBD YAML to virtual peripheral and generated artifacts">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <line x1="230" y1="111" x2="285" y2="151" class="arrow"></line>
+        <line x1="230" y1="225" x2="285" y2="181" class="arrow"></line>
+        <line x1="485" y1="164" x2="540" y2="164" class="arrow"></line>
+        <line x1="740" y1="164" x2="795" y2="164" class="arrow"></line>
+        <line x1="995" y1="164" x2="1050" y2="164" class="arrow"></line>
+        <line x1="640" y1="200" x2="640" y2="300" class="arrow"></line>
+        <line x1="130" y1="111" x2="540" y2="316" class="arrow"></line>
+        <rect x="30" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="130" y="106" text-anchor="middle" class="node-title">Textual MBD YAML</text>
+        <text x="130" y="128" text-anchor="middle" class="node-note">canonical model</text>
+        <rect x="30" y="190" width="200" height="70" rx="8" class="node"></rect>
+        <text x="130" y="220" text-anchor="middle" class="node-title">Scenario YAML</text>
+        <text x="130" y="242" text-anchor="middle" class="node-note">test stimulus</text>
+        <rect x="285" y="134" width="200" height="70" rx="8" class="node"></rect>
+        <text x="385" y="164" text-anchor="middle" class="node-title">Scenario Runner</text>
+        <text x="385" y="186" text-anchor="middle" class="node-note">time ordered steps</text>
+        <rect x="540" y="134" width="200" height="70" rx="8" class="node"></rect>
+        <text x="640" y="164" text-anchor="middle" class="node-title">Peripheral Runtime</text>
+        <text x="640" y="186" text-anchor="middle" class="node-note">register/state behavior</text>
+        <rect x="795" y="134" width="200" height="70" rx="8" class="node"></rect>
+        <text x="895" y="164" text-anchor="middle" class="node-title">Virtual SPI/HAL Boundary</text>
+        <text x="895" y="186" text-anchor="middle" class="node-note">hardware replacement</text>
+        <rect x="1050" y="134" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1150" y="164" text-anchor="middle" class="node-title">Product-like ECU code</text>
+        <text x="1150" y="186" text-anchor="middle" class="node-note">unchanged logic</text>
+        <rect x="540" y="300" width="200" height="70" rx="8" class="node"></rect>
+        <text x="640" y="330" text-anchor="middle" class="node-title">Generated Artifacts</text>
+        <text x="640" y="352" text-anchor="middle" class="node-note">docs, diagrams, exports</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine</h2>
+      <p>State nodes and transitions are generated from the YAML `states` section.</p>
+      <svg class="diagram" viewBox="0 0 1280 260" role="img" aria-label="State machine diagram">
+        <defs>
+          <marker id="stateArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#475569"></path>
+          </marker>
+        </defs>
+        <line x1="280" y1="128" x2="355" y2="128" class="state-arrow"></line>
+        <text x="318" y="112" text-anchor="middle" class="edge-label">RESET -> INIT</text>
+        <text x="318" y="156" text-anchor="middle" class="edge-note">powerOn</text>
+        <line x1="565" y1="128" x2="640" y2="128" class="state-arrow"></line>
+        <text x="602" y="112" text-anchor="middle" class="edge-label">INIT -> NORMAL</text>
+        <text x="602" y="156" text-anchor="middle" class="edge-note">initSequenceOk</text>
+        <line x1="850" y1="128" x2="925" y2="128" class="state-arrow"></line>
+        <text x="888" y="112" text-anchor="middle" class="edge-label">NORMAL -> FAULT_LATCHED</text>
+        <text x="888" y="156" text-anchor="middle" class="edge-note">voltage &lt; undervoltageThreshold</text>
+        <rect x="70" y="92" width="210" height="72" rx="8" class="state initial"></rect>
+        <text x="175" y="134" text-anchor="middle" class="state-label">RESET</text>
+        <rect x="355" y="92" width="210" height="72" rx="8" class="state"></rect>
+        <text x="460" y="134" text-anchor="middle" class="state-label">INIT</text>
+        <rect x="640" y="92" width="210" height="72" rx="8" class="state"></rect>
+        <text x="745" y="134" text-anchor="middle" class="state-label">NORMAL</text>
+        <rect x="925" y="92" width="210" height="72" rx="8" class="state"></rect>
+        <text x="1030" y="134" text-anchor="middle" class="state-label">FAULT_LATCHED</text>
+      </svg>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Register View</h2>
+        <table>
+          <thead><tr><th>Register</th><th>Address</th><th>Width</th><th>Access</th><th>Fields</th></tr></thead>
+          <tbody>
+          <tr><td>STATUS</td><td>0x01</td><td>8</td><td>ro</td><td>ready, undervoltageFault</td></tr>
+          <tr><td>CONTROL</td><td>0x02</td><td>8</td><td>rw</td><td>enableMonitoring</td></tr>
+          <tr><td>FAULT</td><td>0x03</td><td>8</td><td>ro</td><td>undervoltage, spiTimeout</td></tr>
+          <tr><td>VOLTAGE</td><td>0x04</td><td>8</td><td>ro</td><td>volts</td></tr>
+          <tr><td>RESET_CAUSE</td><td>0x05</td><td>8</td><td>ro</td><td>powerOnReset</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>Signals And Faults</h2>
+        <h3>Inputs</h3>
+        <ul>
+          <li><strong>voltage</strong>: default 12.0 V</li>
+        </ul>
+        <h3>Outputs</h3>
+        <ul>
+          <li><strong>ready</strong>: bool</li>
+        </ul>
+        <h3>Faults</h3>
+        <ul>
+          <li><strong>undervoltage</strong>: set STATUS.undervoltageFault and transition to FAULT_LATCHED</li>
+          <li><strong>spiTimeout</strong>: return no response for SPI transaction</li>
+          <li><strong>stuckReadyBit</strong>: keep STATUS.ready fixed at 0</li>
+        </ul>
+      </section>
+    </section>
+    <section class="panel policy">
+      <h2>Generated Artifact Policy</h2>
+      <p>This page is generated output. Edit the Textual MBD YAML, then regenerate the demo. Tool-specific files are views, not the model source.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+name: undervoltage_fault
+model: ToyPowerMonitorIC
+steps:
+  - atMs: 0
+    event: powerOn
+  - atMs: 10
+    writeRegister:
+      name: CONTROL
+      value: 0x01
+  - atMs: 20
+    setSignal:
+      name: voltage
+      value: 6.5
+  - atMs: 25
+    readRegister:
+      name: STATUS
+expect:
+  finalState: FAULT_LATCHED
+  registers:
+    STATUS.undervoltageFault: 1
+    FAULT.undervoltage: 1

@@ -1,0 +1,20 @@
+name: normal_startup
+model: ToyPowerMonitorIC
+steps:
+  - atMs: 0
+    event: powerOn
+  - atMs: 10
+    writeRegister:
+      name: CONTROL
+      value: 0x01
+  - atMs: 15
+    readRegister:
+      name: STATUS
+expect:
+  finalState: NORMAL
+  registers:
+    STATUS.ready: 1
+    STATUS.undervoltageFault: 0
+  reads:
+    - register: STATUS
+      response: 0x80
