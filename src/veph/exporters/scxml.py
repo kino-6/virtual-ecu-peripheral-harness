@@ -15,8 +15,18 @@ def export_scxml(model: PeripheralModel | MbdModelIR) -> str:
             '<?xml version="1.0" encoding="UTF-8"?>',
             f'<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="{escape(initial)}">',
             f"  <!-- Generated state-machine handoff from {escape(_source_display(model.source_path))}. -->",
+            "  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->",
             f"  <!-- Requirement refs: {escape(', '.join(sorted(model.requirement_refs())))} -->",
         ]
+        for control in sorted(model.controls, key=lambda item: (item.priority, item.name)):
+            lines.append(
+                "  <!-- "
+                f"priority {control.priority} {escape(control.name)} from {escape(control.state_scope)} "
+                f"when {escape(control.condition)} "
+                f"trace {escape(', '.join(control.trace))} "
+                f"scenarios {escape(', '.join(control.scenarios))}"
+                " -->"
+            )
         for state in states:
             outgoing = [transition for transition in model.transitions if transition.source == state]
             if outgoing:

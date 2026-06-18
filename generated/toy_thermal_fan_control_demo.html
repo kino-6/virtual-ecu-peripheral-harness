@@ -133,6 +133,29 @@
       fill: none;
       marker-end: url(#signalArrow);
     }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
     .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
     .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
     .node-title, .state-label {
@@ -140,6 +163,7 @@
       font-size: 17px;
       font-weight: 700;
     }
+    .node-title.small { font-size: 12px; }
     .block-title {
       fill: var(--ink);
       font-size: 16px;
@@ -215,6 +239,150 @@
       </div>
     </section>
     <section class="panel">
+      <h2>Spec-To-MBD Compliance Review</h2>
+      <p>This is the first review gate: each system requirement must point to concrete MBD elements and scenario evidence. Broad component-level trace is intentionally not used as proof.</p>
+      <table>
+        <thead><tr><th>Requirement</th><th>Expected behavior</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>SYS-001</code></td><td>Read fictional temperature and validity through HAL.</td><td>component:ToyThermalFanController, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td><td>thermal_protection_normal</td></tr>
+          <tr><td><code>SYS-002</code></td><td>Command fan duty through the virtual fan driver.</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyFanDriverIC</td><td>thermal_protection_normal, thermal_protection_derating</td></tr>
+          <tr><td><code>SYS-003</code></td><td>Enter COOLING and command 70 percent fan duty at 78 degC or above.</td><td>component:ToyThermalFanController, control:highTemperature</td><td>thermal_protection_normal</td></tr>
+          <tr><td><code>SYS-004</code></td><td>Return to IDLE only at 68 degC or below.</td><td>component:ToyThermalFanController, control:lowTemperature</td><td>thermal_protection_boundary</td></tr>
+          <tr><td><code>SYS-005</code></td><td>Enter DERATING and command fan/limiter protection outputs at 94 degC or above.</td><td>component:ToyThermalFanController, control:sensorFault</td><td>thermal_protection_derating</td></tr>
+          <tr><td><code>SYS-006</code></td><td>Enter sensor fault behavior and safe command when temperature validity is false.</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:highTemperature, control:lowTemperature</td><td>thermal_protection_fault_latch</td></tr>
+          <tr><td><code>SYS-007</code></td><td>Latch a fault when invalidDebounced is true.</td><td>Missing concrete MBD trace</td><td>thermal_protection_fault_latch</td></tr>
+          <tr><td><code>SYS-008</code></td><td>Recover only when valid, invalidDebounced is false, and recoveryRequest is true.</td><td>Missing concrete MBD trace</td><td>thermal_protection_recovery</td></tr>
+          <tr><td><code>SYS-009</code></td><td>Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.</td><td>Missing concrete MBD trace</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Checklist</h2>
+      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements traceability</td><td>Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.</td><td>Reject broad component-level trace as proof.</td></tr>
+          <tr><td>Interface and data-flow review</td><td>Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.</td><td>Reject hidden harness shortcuts.</td></tr>
+          <tr><td>State/control behavior</td><td>States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.</td><td>Reject split or contradictory behavior.</td></tr>
+          <tr><td>Requirements-based scenario evidence</td><td>Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.</td><td>Reject pass/fail without expected behavior.</td></tr>
+          <tr><td>Modeling standards and readability</td><td>Names are stable, diagrams are readable, and views are simpler than the behavior under review.</td><td>Reject needless visual complexity.</td></tr>
+          <tr><td>Generated artifact boundary</td><td>Handoff files and preview C are generated outputs from the MBD source.</td><td>Reject manual synchronization.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Control Semantics Ownership</h2>
+      <p><code>mbd-control</code> is the behavior owner for state and output decisions. State diagrams, SCXML, Simulink, Modelica, preview C, reports, and this HTML page are derived review or handoff views.</p>
+      <p>Selection policy: lower numeric priority wins after state scope and guard match. This removes hidden dependence on parser or runtime list order.</p>
+    </section>
+    <section class="panel">
+      <h2>MBD Data Flow Diagram</h2>
+      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 360" role="img" aria-label="MBD data flow generated from mbd-flow">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 266 73 C 296 73, 296 73, 326 73" class="ir-flow-line"></path>
+        <text x="296" y="65" text-anchor="middle" class="signal-label">virtual sensor sample</text>
+        <path d="M 556 73 C 586 73, 586 73, 616 73" class="ir-flow-line"></path>
+        <text x="586" y="65" text-anchor="middle" class="signal-label">HAL input</text>
+        <path d="M 846 143 C 586 143, 586 143, 326 143" class="ir-flow-line"></path>
+        <text x="586" y="135" text-anchor="middle" class="signal-label">generated ECU command</text>
+        <path d="M 556 143 C 731 143, 731 73, 906 73" class="ir-flow-line"></path>
+        <text x="731" y="100" text-anchor="middle" class="signal-label">virtual actuator command</text>
+        <path d="M 846 213 C 876 213, 876 143, 906 143" class="ir-flow-line"></path>
+        <text x="876" y="170" text-anchor="middle" class="signal-label">fault observation</text>
+        <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyTempSensorIC.temperatureC</text>
+        <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Sensor</text>
+        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="68" text-anchor="middle" class="node-title small">HAL_SPI.read_temperature</text>
+        <text x="441" y="88" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="326" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="138" text-anchor="middle" class="node-title small">HAL_PWM.set_fan_duty</text>
+        <text x="441" y="158" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyThermalFanController.temperatu...</text>
+        <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyThermalFanController.fanDuty</text>
+        <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyThermalFanController.fault</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ToyFanDriverIC.dutyCommand</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <rect x="906" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="138" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
+        <text x="1021" y="158" text-anchor="middle" class="node-note">Report</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine Diagram</h2>
+      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>
+      <svg class="diagram" viewBox="0 0 1180 320" role="img" aria-label="State machine generated from mbd-state">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">powerOn</text>
+        <path d="M 536 96 C 571 96, 571 96, 606 96" class="ir-state-line"></path>
+        <text x="571" y="86" text-anchor="middle" class="edge-note">temperatureC &gt;= fanOnThreshold</text>
+        <path d="M 711 128 C 571 128, 571 128, 431 128" class="ir-state-line"></path>
+        <text x="571" y="118" text-anchor="middle" class="edge-note">temperatureC &lt;= fanOffThreshold</text>
+        <path d="M 536 96 C 711 96, 711 96, 886 96" class="ir-state-line"></path>
+        <text x="711" y="86" text-anchor="middle" class="edge-note">temperatureValid == false</text>
+        <path d="M 816 96 C 851 96, 851 96, 886 96" class="ir-state-line"></path>
+        <text x="851" y="86" text-anchor="middle" class="edge-note">temperatureValid == false</text>
+        <path d="M 991 128 C 711 128, 711 128, 431 128" class="ir-state-line"></path>
+        <text x="711" y="118" text-anchor="middle" class="edge-note">temperatureValid == true</text>
+        <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="103" text-anchor="middle" class="state-label">RESET</text>
+        <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="103" text-anchor="middle" class="state-label">IDLE</text>
+        <rect x="606" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="711" y="103" text-anchor="middle" class="state-label">COOLING</text>
+        <rect x="886" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="991" y="103" text-anchor="middle" class="state-label">FAULT</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Harness Boundary Diagram</h2>
+      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Harness boundary generated from mbd-harness">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test inputs</text>
+        <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="386" y="148" text-anchor="middle" class="node-title">ToyTempSensorIC</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">virtual IC</text>
+        <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyThermalFanController</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">HAL controller</text>
+        <rect x="784" y="72" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="102" text-anchor="middle" class="node-title">ToyFanDriverIC</text>
+        <text x="884" y="124" text-anchor="middle" class="node-note">virtual IC</text>
+        <line x1="730" y1="153" x2="784" y2="107" class="ir-arrow"></line>
+        <rect x="1010" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1110" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="1110" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
+        <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
+        <line x1="984" y1="153" x2="1010" y2="153" class="ir-arrow"></line>
+      </svg>
+    </section>
+    <section class="panel">
       <h2>Requirements Trace Matrix</h2>
       <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
       <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
@@ -257,6 +425,7 @@
       </section>
       <section class="panel">
         <h2>State Handoff</h2>
+        <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>
         <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>
           <tr><td>RESET</td><td>IDLE</td><td>powerOn</td></tr>
           <tr><td>IDLE</td><td>COOLING</td><td>temperatureC &gt;= fanOnThreshold</td></tr>
@@ -269,11 +438,12 @@
     </section>
     <section class="grid">
       <section class="panel">
-        <h2>Control Rules</h2>
-        <table><thead><tr><th>Rule</th><th>Condition</th><th>Actions</th><th>Trace</th></tr></thead><tbody>
-          <tr><td>sensorFault</td><td>temperatureValid == false</td><td>state=FAULT, fanDuty=safeDuty, fault=true</td><td>SYS-005, HAR-004</td></tr>
-          <tr><td>highTemperature</td><td>temperatureC &gt;= fanOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, fault=false</td><td>SYS-003, SYS-006</td></tr>
-          <tr><td>lowTemperature</td><td>temperatureC &lt;= fanOffThreshold</td><td>state=IDLE, fanDuty=0, fault=false</td><td>SYS-004, SYS-006</td></tr>
+        <h2>Control Decision Table</h2>
+        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>1000</td><td>sensorFault</td><td>*</td><td>temperatureValid == false</td><td>state=FAULT, fanDuty=safeDuty, fault=true</td><td>SYS-005, HAR-004</td><td></td></tr>
+          <tr><td>1001</td><td>highTemperature</td><td>*</td><td>temperatureC &gt;= fanOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, fault=false</td><td>SYS-003, SYS-006</td><td></td></tr>
+          <tr><td>1002</td><td>lowTemperature</td><td>*</td><td>temperatureC &lt;= fanOffThreshold</td><td>state=IDLE, fanDuty=0, fault=false</td><td>SYS-004, SYS-006</td><td></td></tr>
         </tbody></table>
       </section>
       <section class="panel">

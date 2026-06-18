@@ -23,9 +23,11 @@ def export_mermaid(model: MbdModelIR) -> str:
             lines.append(f"  {source} --> {target}")
     for control in model.controls:
         control_id = _node_id(f"rule_{control.name}")
-        lines.append(f'  {control_id}{{"rule {control.name}"}}')
+        lines.append(f'  {control_id}{{"priority {control.priority}<br/>rule {control.name}<br/>from {control.state_scope}"}}')
         if control.trace:
             lines.append(f"  %% Trace: {', '.join(control.trace)}")
+        if control.scenarios:
+            lines.append(f"  %% Scenarios: {', '.join(control.scenarios)}")
         for target in control.actions:
             target_id = _node_id(target)
             lines.append(f'  {target_id}["{target}"]')

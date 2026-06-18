@@ -17,7 +17,7 @@ equation
   // 2: COOLING
   // 3: FAULT
   // Control rule handoff summary:
-  // sensorFault: when temperatureValid == false then state=FAULT, fanDuty=safeDuty, fault=true trace SYS-005, HAR-004
-  // highTemperature: when temperatureC >= fanOnThreshold then state=COOLING, fanDuty=coolingDuty, fault=false trace SYS-003, SYS-006
-  // lowTemperature: when temperatureC <= fanOffThreshold then state=IDLE, fanDuty=0, fault=false trace SYS-004, SYS-006
+  // priority 1000 sensorFault: from * when temperatureValid == false then state=FAULT, fanDuty=safeDuty, fault=true trace SYS-005, HAR-004
+  // priority 1001 highTemperature: from * when temperatureC >= fanOnThreshold then state=COOLING, fanDuty=coolingDuty, fault=false trace SYS-003, SYS-006
+  // priority 1002 lowTemperature: from * when temperatureC <= fanOffThreshold then state=IDLE, fanDuty=0, fault=false trace SYS-004, SYS-006
 end ToyThermalFanController;

@@ -125,3 +125,9 @@ def test_thermal_protection_fault_latch_and_recovery_scenarios_pass(tmp_path):
     assert recovery.final_state == "IDLE"
     assert recovery.generated_ecu_command_outputs["diagnosticFault"] is False
     assert recovery.generated_ecu_command_outputs["safeCommandActive"] is False
+    final_step = recovery.observed_behavior["stepEvidence"][-1]
+    assert final_step["appliedRule"] == "recoverFromLatch"
+    assert final_step["selectionPolicy"] == "lowest numeric priority wins after state scope and guard match"
+    assert final_step["controlRuleEvaluations"][0]["priority"] == 10
+    assert final_step["controlRuleEvaluations"][0]["stateScope"] == "FAULT_LATCHED"
+    assert final_step["controlRuleEvaluations"][0]["scenarios"] == ["thermal_protection_recovery"]

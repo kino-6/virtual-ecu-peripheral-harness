@@ -51,20 +51,22 @@ flowchart LR
   %% Trace: SYS-009, HAR-004
   %% ToyThermalProtectionController_safeCommandActive --> ScenarioReport_passFailResult
   ToyThermalProtectionController_safeCommandActive -->|"scenario pass/fail evidence"| ScenarioReport_passFailResult
-  rule_recoverFromLatch{"rule recoverFromLatch"}
+  rule_recoverFromLatch{"priority 10<br/>rule recoverFromLatch<br/>from FAULT_LATCHED"}
   %% Trace: SYS-008, HAR-006
+  %% Scenarios: thermal_protection_recovery
   state["state"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| state
+  rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| state
   fanDuty["fanDuty"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| fanDuty
+  rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| fanDuty
   deratingCommand["deratingCommand"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| deratingCommand
+  rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| deratingCommand
   diagnosticFault["diagnosticFault"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| diagnosticFault
+  rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| diagnosticFault
   safeCommandActive["safeCommandActive"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| safeCommandActive
-  rule_faultLatch{"rule faultLatch"}
+  rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| safeCommandActive
+  rule_faultLatch{"priority 20<br/>rule faultLatch<br/>from *"}
   %% Trace: SYS-007, SYS-006, HAR-004
+  %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
   rule_faultLatch -->|"invalidDebounced == true"| state
   fanDuty["fanDuty"]
@@ -75,20 +77,22 @@ flowchart LR
   rule_faultLatch -->|"invalidDebounced == true"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_faultLatch -->|"invalidDebounced == true"| safeCommandActive
-  rule_holdLatchedFault{"rule holdLatchedFault"}
+  rule_holdLatchedFault{"priority 30<br/>rule holdLatchedFault<br/>from FAULT_LATCHED"}
   %% Trace: SYS-007, HAR-004
+  %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
-  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| state
+  rule_holdLatchedFault -->|"always"| state
   fanDuty["fanDuty"]
-  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| fanDuty
+  rule_holdLatchedFault -->|"always"| fanDuty
   deratingCommand["deratingCommand"]
-  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| deratingCommand
+  rule_holdLatchedFault -->|"always"| deratingCommand
   diagnosticFault["diagnosticFault"]
-  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| diagnosticFault
+  rule_holdLatchedFault -->|"always"| diagnosticFault
   safeCommandActive["safeCommandActive"]
-  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| safeCommandActive
-  rule_sensorInvalid{"rule sensorInvalid"}
+  rule_holdLatchedFault -->|"always"| safeCommandActive
+  rule_sensorInvalid{"priority 40<br/>rule sensorInvalid<br/>from *"}
   %% Trace: SYS-006, HAR-004
+  %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
   rule_sensorInvalid -->|"temperatureValid == false"| state
   fanDuty["fanDuty"]
@@ -99,8 +103,9 @@ flowchart LR
   rule_sensorInvalid -->|"temperatureValid == false"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_sensorInvalid -->|"temperatureValid == false"| safeCommandActive
-  rule_derating{"rule derating"}
+  rule_derating{"priority 50<br/>rule derating<br/>from *"}
   %% Trace: SYS-005, SYS-002, HAR-004
+  %% Scenarios: thermal_protection_derating, thermal_protection_recovery
   state["state"]
   rule_derating -->|"temperatureC >= deratingEntryThreshold"| state
   fanDuty["fanDuty"]
@@ -111,8 +116,9 @@ flowchart LR
   rule_derating -->|"temperatureC >= deratingEntryThreshold"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_derating -->|"temperatureC >= deratingEntryThreshold"| safeCommandActive
-  rule_highCooling{"rule highCooling"}
+  rule_highCooling{"priority 60<br/>rule highCooling<br/>from *"}
   %% Trace: SYS-003, SYS-002, HAR-004
+  %% Scenarios: thermal_protection_normal
   state["state"]
   rule_highCooling -->|"temperatureC >= coolingOnThreshold"| state
   fanDuty["fanDuty"]
@@ -123,8 +129,9 @@ flowchart LR
   rule_highCooling -->|"temperatureC >= coolingOnThreshold"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_highCooling -->|"temperatureC >= coolingOnThreshold"| safeCommandActive
-  rule_lowCooling{"rule lowCooling"}
+  rule_lowCooling{"priority 70<br/>rule lowCooling<br/>from *"}
   %% Trace: SYS-004, HAR-004
+  %% Scenarios: thermal_protection_boundary
   state["state"]
   rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| state
   fanDuty["fanDuty"]

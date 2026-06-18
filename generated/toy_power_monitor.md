@@ -73,6 +73,8 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 
 ## State Transitions
 
+Lifecycle/topology view. Executable behavior is owned by `mbd-control` and derived generated views.
+
 - `RESET` -> `INIT` when `powerOn`
 - `INIT` -> `NORMAL` when `initSequenceOk`
 - `NORMAL` -> `FAULT_LATCHED` when `voltage < undervoltageThreshold`

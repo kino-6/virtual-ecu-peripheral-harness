@@ -65,7 +65,10 @@ class ControlRuleIR:
     name: str
     condition: str
     actions: dict[str, str]
+    priority: int = 1000
+    state_scope: str = "*"
     trace: list[str] = field(default_factory=list)
+    scenarios: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

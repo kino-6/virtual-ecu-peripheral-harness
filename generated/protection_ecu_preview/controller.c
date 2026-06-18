@@ -32,6 +32,7 @@ void toy_thermal_protection_controller_step(ToyThermalProtectionController *cont
     invalidDebounced = hal_spi_read_invalid_debounced();
     recoveryRequest = hal_spi_read_recovery_request();
 
+    /* priority 10 recoverFromLatch: from FAULT_LATCHED */
     if (controller->state == TOY_PROTECTION_STATE_FAULT_LATCHED &&
         temperatureValid && !invalidDebounced && recoveryRequest) {
         controller->state = TOY_PROTECTION_STATE_IDLE;
@@ -39,35 +40,41 @@ void toy_thermal_protection_controller_step(ToyThermalProtectionController *cont
         controller->deratingCommand = 0.0f;
         controller->diagnosticFault = false;
         controller->safeCommandActive = false;
+    /* priority 20 faultLatch: from * */
     } else if (invalidDebounced) {
         controller->state = TOY_PROTECTION_STATE_FAULT_LATCHED;
         controller->fanDuty = controller->safeDuty;
         controller->deratingCommand = 0.0f;
         controller->diagnosticFault = true;
         controller->safeCommandActive = true;
+    /* priority 30 holdLatchedFault: from FAULT_LATCHED */
     } else if (controller->state == TOY_PROTECTION_STATE_FAULT_LATCHED) {
         controller->fanDuty = controller->safeDuty;
         controller->deratingCommand = 0.0f;
         controller->diagnosticFault = true;
         controller->safeCommandActive = true;
+    /* priority 40 sensorInvalid: from * */
     } else if (!temperatureValid) {
         controller->state = TOY_PROTECTION_STATE_SENSOR_FAULT;
         controller->fanDuty = controller->safeDuty;
         controller->deratingCommand = 0.0f;
         controller->diagnosticFault = true;
         controller->safeCommandActive = true;
+    /* priority 50 derating: from * */
     } else if (temperatureC >= controller->deratingEntryThreshold) {
         controller->state = TOY_PROTECTION_STATE_DERATING;
         controller->fanDuty = controller->deratingFanDuty;
         controller->deratingCommand = controller->deratingLimit;
         controller->diagnosticFault = false;
         controller->safeCommandActive = false;
+    /* priority 60 highCooling: from * */
     } else if (temperatureC >= controller->coolingOnThreshold) {
         controller->state = TOY_PROTECTION_STATE_COOLING;
         controller->fanDuty = controller->coolingDuty;
         controller->deratingCommand = 0.0f;
         controller->diagnosticFault = false;
         controller->safeCommandActive = false;
+    /* priority 70 lowCooling: from * */
     } else if (temperatureC <= controller->coolingOffThreshold) {
         controller->state = TOY_PROTECTION_STATE_IDLE;
         controller->fanDuty = 0.0f;

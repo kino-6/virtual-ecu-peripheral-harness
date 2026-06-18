@@ -59,7 +59,13 @@ def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
         if transition.source == "FAULT_LATCHED" and transition.target == "IDLE"
     )
 
+    assert recover_rule.priority == 10
+    assert recover_rule.state_scope == "FAULT_LATCHED"
     assert "invalidDebounced == false" in recover_rule.condition
     assert "invalidDebounced == false" in recover_transition.condition
     assert "SYS-008" in recover_rule.trace
+    assert recover_rule.scenarios == ["thermal_protection_recovery"]
+    assert next(control for control in model.controls if control.name == "holdLatchedFault").condition == "always"
+    assert [control.priority for control in model.controls] == sorted(control.priority for control in model.controls)
+    assert all(control.scenarios for control in model.controls)
     assert all(not ref.startswith("SYS-") for ref in model.component.trace)

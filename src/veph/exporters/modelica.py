@@ -24,10 +24,14 @@ def export_modelica(model: PeripheralModel | MbdModelIR) -> str:
         for index, state in enumerate(_state_names(model)):
             lines.append(f"  // {index}: {state}")
         lines.append("  // Control rule handoff summary:")
-        for control in model.controls:
+        for control in sorted(model.controls, key=lambda item: (item.priority, item.name)):
             actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
             trace = ", ".join(control.trace)
-            lines.append(f"  // {control.name}: when {control.condition} then {actions} trace {trace}")
+            scenarios = f" scenarios {', '.join(control.scenarios)}" if control.scenarios else ""
+            lines.append(
+                f"  // priority {control.priority} {control.name}: from {control.state_scope} "
+                f"when {control.condition} then {actions} trace {trace}{scenarios}"
+            )
         lines.append(f"end {model.component.name};")
         return "\n".join(lines) + "\n"
 

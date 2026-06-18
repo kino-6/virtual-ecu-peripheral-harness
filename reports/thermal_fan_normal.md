@@ -35,6 +35,8 @@ ports:
     default: 'false'
 controlRules:
 - name: sensorFault
+  priority: 1000
+  stateScope: '*'
   condition: temperatureValid == false
   actions:
     state: FAULT
@@ -43,7 +45,10 @@ controlRules:
   trace:
   - SYS-005
   - HAR-004
+  scenarios: []
 - name: highTemperature
+  priority: 1001
+  stateScope: '*'
   condition: temperatureC >= fanOnThreshold
   actions:
     state: COOLING
@@ -52,7 +57,10 @@ controlRules:
   trace:
   - SYS-003
   - SYS-006
+  scenarios: []
 - name: lowTemperature
+  priority: 1002
+  stateScope: '*'
   condition: temperatureC <= fanOffThreshold
   actions:
     state: IDLE
@@ -61,6 +69,8 @@ controlRules:
   trace:
   - SYS-004
   - SYS-006
+  scenarios: []
+controlSelectionPolicy: lowest numeric priority wins after state scope and guard match
 requirementRefs:
 - HAR-001
 - HAR-002
@@ -75,6 +85,10 @@ requirementRefs:
 - SYS-004
 - SYS-005
 - SYS-006
+previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps represent
+  the Simulink-compatible subset. Timing behavior such as sensor invalid debounce
+  is represented by explicit scenario inputs and must be verified by external MBD/product-test
+  infrastructure.'
 ```
 
 ## Traceability Matrix
@@ -265,8 +279,12 @@ requirementRefs:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -274,9 +292,14 @@ requirementRefs:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -284,9 +307,14 @@ requirementRefs:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -294,6 +322,8 @@ requirementRefs:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -339,8 +369,12 @@ requirementRefs:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -348,9 +382,14 @@ requirementRefs:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -358,9 +397,14 @@ requirementRefs:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -368,6 +412,8 @@ requirementRefs:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -413,8 +459,12 @@ requirementRefs:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -422,9 +472,14 @@ requirementRefs:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -432,9 +487,14 @@ requirementRefs:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -442,6 +502,8 @@ requirementRefs:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: highTemperature
   generatedEcuCommandOutputs:
     fanDuty: 80
@@ -514,8 +576,12 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -523,9 +589,14 @@ stepEvidence:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -533,9 +604,14 @@ stepEvidence:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -543,6 +619,8 @@ stepEvidence:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -588,8 +666,12 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -597,9 +679,14 @@ stepEvidence:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -607,9 +694,14 @@ stepEvidence:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -617,6 +709,8 @@ stepEvidence:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -662,8 +756,12 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    priority: 1000
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT
       fanDuty: safeDuty
@@ -671,9 +769,14 @@ stepEvidence:
     trace:
     - SYS-005
     - HAR-004
+    scenarios: []
   - rule: highTemperature
+    priority: 1001
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= fanOnThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -681,9 +784,14 @@ stepEvidence:
     trace:
     - SYS-003
     - SYS-006
+    scenarios: []
   - rule: lowTemperature
+    priority: 1002
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= fanOffThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -691,6 +799,8 @@ stepEvidence:
     trace:
     - SYS-004
     - SYS-006
+    scenarios: []
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: highTemperature
   generatedEcuCommandOutputs:
     fanDuty: 80

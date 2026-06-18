@@ -43,8 +43,16 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
         for ref in sorted(model.requirement_refs())
     )
     control_rows = "\n".join(
-        f"          <tr><td>{escape(control.name)}</td><td>{escape(control.condition)}</td><td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td><td>{escape(', '.join(control.trace))}</td></tr>"
-        for control in model.controls
+        "          <tr>"
+        f"<td>{escape(str(control.priority))}</td>"
+        f"<td>{escape(control.name)}</td>"
+        f"<td>{escape(control.state_scope)}</td>"
+        f"<td>{escape(control.condition)}</td>"
+        f"<td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td>"
+        f"<td>{escape(', '.join(control.trace))}</td>"
+        f"<td>{escape(', '.join(control.scenarios))}</td>"
+        "</tr>"
+        for control in sorted(model.controls, key=lambda item: (item.priority, item.name))
     )
     harness_rows = "\n".join(
         f"          <tr><td>{escape(device.name)}</td><td>{escape(device.role)}</td><td>{escape(device.boundary)}</td><td>{escape(', '.join(device.trace))}</td></tr>"
@@ -91,6 +99,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "    </section>",
             _ir_spec_compliance_review(model),
             _ir_mbd_review_checklist(),
+            _ir_control_semantics_summary(),
             _ir_data_flow_svg(model),
             _ir_state_machine_svg(model),
             _ir_harness_boundary_svg(model),
@@ -117,6 +126,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "      </section>",
             '      <section class="panel">',
             "        <h2>State Handoff</h2>",
+            "        <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>",
             "        <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>",
             flow_or_empty(state_rows),
             "        </tbody></table>",
@@ -124,9 +134,10 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "    </section>",
             '    <section class="grid">',
             '      <section class="panel">',
-            "        <h2>Control Rules</h2>",
-            "        <table><thead><tr><th>Rule</th><th>Condition</th><th>Actions</th><th>Trace</th></tr></thead><tbody>",
-            flow_or_empty(control_rows),
+            "        <h2>Control Decision Table</h2>",
+            "        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>",
+            "        <table><thead><tr><th>Priority</th><th>Rule</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>",
+            flow_or_empty(control_rows, colspan=7),
             "        </tbody></table>",
             "      </section>",
             '      <section class="panel">',
@@ -202,7 +213,7 @@ def _ir_spec_row(model: MbdModelIR, req_id: str) -> str:
         "SYS-006": "Enter sensor fault behavior and safe command when temperature validity is false.",
         "SYS-007": "Latch a fault when invalidDebounced is true.",
         "SYS-008": "Recover only when valid, invalidDebounced is false, and recoveryRequest is true.",
-        "SYS-009": "Generate scenario reports for normal, derating, fault latch, and recovery.",
+        "SYS-009": "Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.",
     }[req_id]
     scenario = {
         "SYS-001": "thermal_protection_normal",
@@ -213,7 +224,7 @@ def _ir_spec_row(model: MbdModelIR, req_id: str) -> str:
         "SYS-006": "thermal_protection_fault_latch",
         "SYS-007": "thermal_protection_fault_latch",
         "SYS-008": "thermal_protection_recovery",
-        "SYS-009": "thermal_protection_*.md reports",
+        "SYS-009": "thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports",
     }[req_id]
     evidence = ", ".join(_ir_elements_for_ref(model, req_id)) or "Missing concrete MBD trace"
     return (
@@ -278,6 +289,18 @@ def _ir_mbd_review_checklist() -> str:
             body,
             "        </tbody>",
             "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_control_semantics_summary() -> str:
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>Control Semantics Ownership</h2>",
+            "      <p><code>mbd-control</code> is the behavior owner for state and output decisions. State diagrams, SCXML, Simulink, Modelica, preview C, reports, and this HTML page are derived review or handoff views.</p>",
+            "      <p>Selection policy: lower numeric priority wins after state scope and guard match. This removes hidden dependence on parser or runtime list order.</p>",
             "    </section>",
         ]
     )

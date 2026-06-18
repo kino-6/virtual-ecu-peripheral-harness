@@ -11,31 +11,39 @@ Archived task history:
 
 ## Current Goal
 
-Capture the MBD control-semantics lesson so future work integrates competing
-state/control views before claiming review readiness.
+Improve the thermal protection MBD so state/control behavior has one reviewable
+control semantics instead of competing `mbd-state`, `mbd-control`, preview
+runtime, and generated C behavior.
 
 ## Quality Gates
 
-- [x] Add a project-local control-semantics skill.
-- [x] Register the skill in `AGENTS.md`.
-- [x] Existing MBD authoring/review skills route state/control conflicts to the
-      new skill.
-- [x] The skill encodes the best-practice lesson: one behavior owner, explicit
-      priority/exclusivity, concrete trace, scenario evidence, and generated
-      artifact boundaries.
+- [x] `mbd-control` rows expose priority, state scope, guard, actions, trace,
+      and scenario evidence.
+- [x] `mbd-state` is documented as a lifecycle/topology view derived from the
+      same control semantics, not a competing executable source.
+- [x] Preview runtime selects rules by explicit priority and state scope, not
+      hidden list ordering.
+- [x] Generated Markdown, HTML, Mermaid, SCXML, Modelica, Simulink `.m`, FMI
+      metadata, preview C, and reports are regenerated from `.mbd.md`.
+- [x] Tests prove deterministic regeneration and reject missing control
+      semantics.
 
-## Phase 11: MBD Control Semantics Skill
+## Phase 12: Thermal Protection Control Semantics
 
-- [x] Add `mbd-control-semantics` project skill.
-- [x] Define `mbd-control` as the semantic owner when executable behavior and
-      state topology overlap.
-- [x] Require priority, state scope, guard, actions, trace, and scenario evidence
-      for reviewable control rows.
-- [x] Require generated views to be derived from the public `.mbd.md` source.
-- [x] Add `agents/openai.yaml`.
+- [x] Add parser/IR fields for control priority, state scope, and scenario
+      evidence while keeping older examples compatible.
+- [x] Update the thermal protection `.mbd.md` source to use priority-based
+      control rows.
+- [x] Update exporters and demo HTML to show the control decision table as the
+      first behavior review view.
+- [x] Update preview runtime and generated preview C to follow the same
+      priority order.
+- [x] Align `SYS-009` scenario coverage between requirements, spec, demo HTML,
+      and reports.
+- [x] Regenerate generated artifacts and reports.
 
 Verification:
 
-- [x] Skill metadata and `agents/openai.yaml` exist.
-- [x] `AGENTS.md` remains near the 200-line target.
+- [x] Focused parser/exporter/runtime/codegen tests pass.
+- [x] Full `pytest` passes.
 - [x] `git diff --check` passes.

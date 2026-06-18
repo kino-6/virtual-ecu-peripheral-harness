@@ -26,7 +26,7 @@ flowchart LR
   %% Trace: SYS-006, HAR-004
   %% ToyThermalFanController_fault --> ScenarioReport_observedBehavior
   ToyThermalFanController_fault -->|"fault observation"| ScenarioReport_observedBehavior
-  rule_sensorFault{"rule sensorFault"}
+  rule_sensorFault{"priority 1000<br/>rule sensorFault<br/>from *"}
   %% Trace: SYS-005, HAR-004
   state["state"]
   rule_sensorFault -->|"temperatureValid == false"| state
@@ -34,7 +34,7 @@ flowchart LR
   rule_sensorFault -->|"temperatureValid == false"| fanDuty
   fault["fault"]
   rule_sensorFault -->|"temperatureValid == false"| fault
-  rule_highTemperature{"rule highTemperature"}
+  rule_highTemperature{"priority 1001<br/>rule highTemperature<br/>from *"}
   %% Trace: SYS-003, SYS-006
   state["state"]
   rule_highTemperature -->|"temperatureC >= fanOnThreshold"| state
@@ -42,7 +42,7 @@ flowchart LR
   rule_highTemperature -->|"temperatureC >= fanOnThreshold"| fanDuty
   fault["fault"]
   rule_highTemperature -->|"temperatureC >= fanOnThreshold"| fault
-  rule_lowTemperature{"rule lowTemperature"}
+  rule_lowTemperature{"priority 1002<br/>rule lowTemperature<br/>from *"}
   %% Trace: SYS-004, SYS-006
   state["state"]
   rule_lowTemperature -->|"temperatureC <= fanOffThreshold"| state

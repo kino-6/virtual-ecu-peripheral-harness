@@ -80,6 +80,8 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 
 ## State Transitions
 
+Lifecycle/topology view. Executable behavior is owned by `mbd-control` and derived generated views.
+
 - `RESET` -> `IDLE` when `powerOn`
 - `IDLE` -> `COOLING` when `temperatureC >= fanOnThreshold`
 - `COOLING` -> `IDLE` when `temperatureC <= fanOffThreshold`
@@ -97,9 +99,9 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 
 ## Control Rules
 
-- `sensorFault`: when `temperatureValid == false` then `state=FAULT, fanDuty=safeDuty, fault=true` trace `SYS-005, HAR-004`
-- `highTemperature`: when `temperatureC >= fanOnThreshold` then `state=COOLING, fanDuty=coolingDuty, fault=false` trace `SYS-003, SYS-006`
-- `lowTemperature`: when `temperatureC <= fanOffThreshold` then `state=IDLE, fanDuty=0, fault=false` trace `SYS-004, SYS-006`
+- priority `1000` `sensorFault` from `*`: when `temperatureValid == false` then `state=FAULT, fanDuty=safeDuty, fault=true` trace `SYS-005, HAR-004`
+- priority `1001` `highTemperature` from `*`: when `temperatureC >= fanOnThreshold` then `state=COOLING, fanDuty=coolingDuty, fault=false` trace `SYS-003, SYS-006`
+- priority `1002` `lowTemperature` from `*`: when `temperatureC <= fanOffThreshold` then `state=IDLE, fanDuty=0, fault=false` trace `SYS-004, SYS-006`
 
 ## Harness Boundary
 

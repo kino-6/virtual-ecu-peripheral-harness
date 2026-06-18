@@ -165,6 +165,8 @@ def _parse_state(body: str) -> list[TransitionIR]:
         line = raw_line.strip()
         if not line:
             continue
+        if line.startswith("note:"):
+            continue
         match = re.match(r"(.+?)\s+-->\s+(.+?):\s+(.+)", line)
         if not match:
             raise MarkupParseError(f"invalid state transition: {line}")
@@ -195,28 +197,39 @@ def _parse_flow(body: str) -> list[FlowIR]:
 
 def _parse_control(body: str) -> list[ControlRuleIR]:
     controls: list[ControlRuleIR] = []
-    for raw_line in body.splitlines():
+    for index, raw_line in enumerate(body.splitlines()):
         line = raw_line.strip()
         if not line:
             continue
-        if not line.startswith("rule "):
+        match = re.match(r"(?:priority\s+(?P<priority>\d+)\s+)?rule\s+(?P<name>[^:]+):\s+(?P<body>.+)", line)
+        if not match:
             raise MarkupParseError(f"invalid control line: {line}")
-        name_part, separator, rule_part = line.removeprefix("rule ").partition(":")
-        if separator != ":":
-            raise MarkupParseError(f"invalid control line: {line}")
-        if not rule_part.strip().startswith("when "):
+        priority = int(match.group("priority")) if match.group("priority") else 1000 + index
+        name = match.group("name").strip()
+        rule_part = match.group("body").strip()
+        state_scope = "*"
+        if rule_part.startswith("from "):
+            state_scope_part, separator, rule_part = rule_part.removeprefix("from ").partition(" when ")
+            if separator != " when ":
+                raise MarkupParseError(f"control rule missing when after from: {line}")
+            state_scope = state_scope_part.strip()
+            rule_part = f"when {rule_part.strip()}"
+        if not rule_part.startswith("when "):
             raise MarkupParseError(f"control rule missing when: {line}")
-        condition_part, then_separator, action_part = rule_part.strip().removeprefix("when ").partition(" then ")
+        condition_part, then_separator, action_part = rule_part.removeprefix("when ").partition(" then ")
         if then_separator != " then ":
             raise MarkupParseError(f"control rule missing then: {line}")
-        action_text, trace = _split_trace(action_part)
+        action_text, trace, scenarios = _split_trace_and_scenarios(action_part)
         actions = _parse_actions(action_text)
         controls.append(
             ControlRuleIR(
-                name=name_part.strip(),
+                name=name,
                 condition=condition_part.strip(),
                 actions=actions,
+                priority=priority,
+                state_scope=state_scope,
                 trace=trace,
+                scenarios=scenarios,
             )
         )
     return controls
@@ -283,6 +296,13 @@ def _split_trace(text: str) -> tuple[str, list[str]]:
     if separator:
         return left.strip(), _parse_trace(right)
     return text.strip(), []
+
+
+def _split_trace_and_scenarios(text: str) -> tuple[str, list[str], list[str]]:
+    trace_text, scenario_separator, scenarios_text = text.partition(" scenarios ")
+    action_text, trace = _split_trace(trace_text)
+    scenarios = _parse_trace(scenarios_text) if scenario_separator else []
+    return action_text, trace, scenarios
 
 
 def _parse_trace(text: str) -> list[str]:

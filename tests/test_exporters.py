@@ -128,7 +128,7 @@ def test_thermal_demo_html_visualizes_trace_control_and_harness():
     html = export_demo_html(model)
 
     assert "Requirements Trace Matrix" in html
-    assert "Control Rules" in html
+    assert "Control Decision Table" in html
     assert "Harness Boundary" in html
     assert "ToyTempSensorIC" in html
     assert "sensorFault" in html
@@ -150,8 +150,13 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     assert "Requirements-based scenario evidence" in html
     assert "Modeling standards and readability" in html
     assert "SYS-008" in html
+    assert "Control Decision Table" in html
+    assert "Selection policy" in html
+    assert "Priority" in html
+    assert "State scope" in html
     assert "recoverFromLatch" in html
     assert "thermal_protection_recovery" in html
+    assert "thermal_protection_boundary" in html
     assert "MBD Data Flow Diagram" in html
     assert "State Machine Diagram" in html
     assert "Harness Boundary Diagram" in html

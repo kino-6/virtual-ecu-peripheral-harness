@@ -94,8 +94,8 @@ flowchart LR
 - `SYS-007`: enter `FAULT_LATCHED` when `invalidDebounced` is true.
 - `SYS-008`: recover from `FAULT_LATCHED` only when the sensor is valid,
   `invalidDebounced` is false, and `recoveryRequest` is true.
-- `SYS-009`: generate reports for normal cooling, derating, fault latch, and
-  recovery scenarios.
+- `SYS-009`: generate reports for normal cooling, threshold-boundary, derating,
+  sensor-invalid, fault-latch, and recovery scenario behavior.
 
 ## Scenario Evidence
 

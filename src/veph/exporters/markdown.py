@@ -64,6 +64,8 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
             lines.append(f"- `{field.name}` bits `{field.bits}` reset `{field.reset}`")
         lines.append("")
     lines.extend(["## State Transitions", ""])
+    lines.append("Lifecycle/topology view. Executable behavior is owned by `mbd-control` and derived generated views.")
+    lines.append("")
     for transition in model.transitions:
         lines.append(f"- `{transition.source}` -> `{transition.target}` when `{transition.condition}`")
     lines.extend(["", "## Flow Preview", ""])
@@ -76,7 +78,11 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
         for control in model.controls:
             actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
             trace = f" trace `{', '.join(control.trace)}`" if control.trace else ""
-            lines.append(f"- `{control.name}`: when `{control.condition}` then `{actions}`{trace}")
+            scenarios = f" scenarios `{', '.join(control.scenarios)}`" if control.scenarios else ""
+            lines.append(
+                f"- priority `{control.priority}` `{control.name}` from `{control.state_scope}`: "
+                f"when `{control.condition}` then `{actions}`{trace}{scenarios}"
+            )
     else:
         lines.append("- No control rules declared.")
     lines.extend(["", "## Harness Boundary", ""])

@@ -49,6 +49,9 @@
       },
       "condition": "temperatureValid == false",
       "name": "sensorFault",
+      "priority": 1000,
+      "scenarios": [],
+      "state_scope": "*",
       "trace": [
         "SYS-005",
         "HAR-004"
@@ -62,6 +65,9 @@
       },
       "condition": "temperatureC >= fanOnThreshold",
       "name": "highTemperature",
+      "priority": 1001,
+      "scenarios": [],
+      "state_scope": "*",
       "trace": [
         "SYS-003",
         "SYS-006"
@@ -75,6 +81,9 @@
       },
       "condition": "temperatureC <= fanOffThreshold",
       "name": "lowTemperature",
+      "priority": 1002,
+      "scenarios": [],
+      "state_scope": "*",
       "trace": [
         "SYS-004",
         "SYS-006"

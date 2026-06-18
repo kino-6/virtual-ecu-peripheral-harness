@@ -9,7 +9,7 @@
         "safeCommandActive": "false",
         "state": "IDLE"
       },
-      "condition": "state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+      "condition": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "name": "recoverFromLatch",
       "trace": [
         "SYS-008",
@@ -40,7 +40,7 @@
         "safeCommandActive": "true",
         "state": "FAULT_LATCHED"
       },
-      "condition": "state == FAULT_LATCHED",
+      "condition": "always",
       "name": "holdLatchedFault",
       "trace": [
         "SYS-007",

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="RESET">
   <!-- Generated state-machine handoff from examples/toy_power_monitor.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
   <!-- Requirement refs:  -->
   <state id="RESET">
     <transition event="powerOn" target="INIT" />

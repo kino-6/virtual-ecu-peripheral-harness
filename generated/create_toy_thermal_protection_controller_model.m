@@ -39,37 +39,37 @@ add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule
 set_param([model '/Rule_recoverFromLatch_Compare'], 'Position', [80 420 230 480]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_recoverFromLatch_Switch']);
 set_param([model '/Rule_recoverFromLatch_Switch'], 'Position', [300 420 430 480]);
-% recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
+% priority 10 recoverFromLatch: from FAULT_LATCHED when temperatureValid == true and invalidDebounced == false and recoveryRequest == true then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'} scenarios ['thermal_protection_recovery']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_faultLatch_Compare']);
 set_param([model '/Rule_faultLatch_Compare'], 'Position', [80 520 230 580]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_faultLatch_Switch']);
 set_param([model '/Rule_faultLatch_Switch'], 'Position', [300 520 430 580]);
-% faultLatch: when invalidDebounced == true then {'state': 'FAULT_LATCHED', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'}
+% priority 20 faultLatch: from * when invalidDebounced == true then {'state': 'FAULT_LATCHED', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'} scenarios ['thermal_protection_fault_latch', 'thermal_protection_recovery']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_holdLatchedFault_Compare']);
 set_param([model '/Rule_holdLatchedFault_Compare'], 'Position', [80 620 230 680]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_holdLatchedFault_Switch']);
 set_param([model '/Rule_holdLatchedFault_Switch'], 'Position', [300 620 430 680]);
-% holdLatchedFault: when state == FAULT_LATCHED then {'state': 'FAULT_LATCHED', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'}
+% priority 30 holdLatchedFault: from FAULT_LATCHED when always then {'state': 'FAULT_LATCHED', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'} scenarios ['thermal_protection_fault_latch', 'thermal_protection_recovery']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_sensorInvalid_Compare']);
 set_param([model '/Rule_sensorInvalid_Compare'], 'Position', [80 720 230 780]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_sensorInvalid_Switch']);
 set_param([model '/Rule_sensorInvalid_Switch'], 'Position', [300 720 430 780]);
-% sensorInvalid: when temperatureValid == false then {'state': 'SENSOR_FAULT', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'}
+% priority 40 sensorInvalid: from * when temperatureValid == false then {'state': 'SENSOR_FAULT', 'fanDuty': 'safeDuty', 'deratingCommand': '0', 'diagnosticFault': 'true', 'safeCommandActive': 'true'} scenarios ['thermal_protection_fault_latch', 'thermal_protection_recovery']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_derating_Compare']);
 set_param([model '/Rule_derating_Compare'], 'Position', [80 820 230 880]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_derating_Switch']);
 set_param([model '/Rule_derating_Switch'], 'Position', [300 820 430 880]);
-% derating: when temperatureC >= deratingEntryThreshold then {'state': 'DERATING', 'fanDuty': 'deratingFanDuty', 'deratingCommand': 'deratingLimit', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
+% priority 50 derating: from * when temperatureC >= deratingEntryThreshold then {'state': 'DERATING', 'fanDuty': 'deratingFanDuty', 'deratingCommand': 'deratingLimit', 'diagnosticFault': 'false', 'safeCommandActive': 'false'} scenarios ['thermal_protection_derating', 'thermal_protection_recovery']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_highCooling_Compare']);
 set_param([model '/Rule_highCooling_Compare'], 'Position', [80 920 230 980]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_highCooling_Switch']);
 set_param([model '/Rule_highCooling_Switch'], 'Position', [300 920 430 980]);
-% highCooling: when temperatureC >= coolingOnThreshold then {'state': 'COOLING', 'fanDuty': 'coolingDuty', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
+% priority 60 highCooling: from * when temperatureC >= coolingOnThreshold then {'state': 'COOLING', 'fanDuty': 'coolingDuty', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'} scenarios ['thermal_protection_normal']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_lowCooling_Compare']);
 set_param([model '/Rule_lowCooling_Compare'], 'Position', [80 1020 230 1080]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_lowCooling_Switch']);
 set_param([model '/Rule_lowCooling_Switch'], 'Position', [300 1020 430 1080]);
-% lowCooling: when temperatureC <= coolingOffThreshold then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
+% priority 70 lowCooling: from * when temperatureC <= coolingOffThreshold then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'} scenarios ['thermal_protection_boundary']
 add_line(model, 'ToyTempSensorIC_temperatureC/1', 'HAL_SPI_read_temperature/1', 'autorouting', 'on');
 add_line(model, 'ToyTempSensorIC_temperatureValid/1', 'HAL_SPI_read_temperature/1', 'autorouting', 'on');
 add_line(model, 'ToyTempSensorIC_invalidDebounced/1', 'ToyThermalProtectionController_invalidDebounced/1', 'autorouting', 'on');

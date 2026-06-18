@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="RESET">
   <!-- Generated state-machine handoff from examples/toy_thermal_fan_control.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
   <!-- Requirement refs: HAR-001, HAR-002, HAR-004, HAR-005, STK-001, SWE-001, SWE-004, SYS-001, SYS-002, SYS-003, SYS-004, SYS-005, SYS-006 -->
+  <!-- priority 1000 sensorFault from * when temperatureValid == false trace SYS-005, HAR-004 scenarios  -->
+  <!-- priority 1001 highTemperature from * when temperatureC &gt;= fanOnThreshold trace SYS-003, SYS-006 scenarios  -->
+  <!-- priority 1002 lowTemperature from * when temperatureC &lt;= fanOffThreshold trace SYS-004, SYS-006 scenarios  -->
   <state id="RESET">
     <transition event="powerOn" target="IDLE" />
   </state>

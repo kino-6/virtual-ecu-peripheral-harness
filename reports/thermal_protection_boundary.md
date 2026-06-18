@@ -54,8 +54,10 @@ ports:
     default: 'false'
 controlRules:
 - name: recoverFromLatch
-  condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-    == false and recoveryRequest == true
+  priority: 10
+  stateScope: FAULT_LATCHED
+  condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+    == true
   actions:
     state: IDLE
     fanDuty: '0'
@@ -65,7 +67,11 @@ controlRules:
   trace:
   - SYS-008
   - HAR-006
+  scenarios:
+  - thermal_protection_recovery
 - name: faultLatch
+  priority: 20
+  stateScope: '*'
   condition: invalidDebounced == true
   actions:
     state: FAULT_LATCHED
@@ -77,8 +83,13 @@ controlRules:
   - SYS-007
   - SYS-006
   - HAR-004
+  scenarios:
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
 - name: holdLatchedFault
-  condition: state == FAULT_LATCHED
+  priority: 30
+  stateScope: FAULT_LATCHED
+  condition: always
   actions:
     state: FAULT_LATCHED
     fanDuty: safeDuty
@@ -88,7 +99,12 @@ controlRules:
   trace:
   - SYS-007
   - HAR-004
+  scenarios:
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
 - name: sensorInvalid
+  priority: 40
+  stateScope: '*'
   condition: temperatureValid == false
   actions:
     state: SENSOR_FAULT
@@ -99,7 +115,12 @@ controlRules:
   trace:
   - SYS-006
   - HAR-004
+  scenarios:
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
 - name: derating
+  priority: 50
+  stateScope: '*'
   condition: temperatureC >= deratingEntryThreshold
   actions:
     state: DERATING
@@ -111,7 +132,12 @@ controlRules:
   - SYS-005
   - SYS-002
   - HAR-004
+  scenarios:
+  - thermal_protection_derating
+  - thermal_protection_recovery
 - name: highCooling
+  priority: 60
+  stateScope: '*'
   condition: temperatureC >= coolingOnThreshold
   actions:
     state: COOLING
@@ -123,7 +149,11 @@ controlRules:
   - SYS-003
   - SYS-002
   - HAR-004
+  scenarios:
+  - thermal_protection_normal
 - name: lowCooling
+  priority: 70
+  stateScope: '*'
   condition: temperatureC <= coolingOffThreshold
   actions:
     state: IDLE
@@ -134,6 +164,9 @@ controlRules:
   trace:
   - SYS-004
   - HAR-004
+  scenarios:
+  - thermal_protection_boundary
+controlSelectionPolicy: lowest numeric priority wins after state scope and guard match
 requirementRefs:
 - CGEN-003
 - ENG-002
@@ -516,9 +549,13 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -528,9 +565,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -541,9 +584,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -553,9 +603,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -565,9 +622,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -578,9 +642,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -591,9 +662,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -603,6 +680,9 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowCooling
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -661,9 +741,13 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -673,9 +757,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -686,9 +776,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -698,9 +795,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -710,9 +814,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -723,9 +834,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -736,9 +854,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -748,6 +872,9 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: highCooling
   generatedEcuCommandOutputs:
     fanDuty: 70
@@ -807,9 +934,13 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -819,9 +950,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -832,9 +969,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -844,9 +988,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -856,9 +1007,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -869,9 +1027,16 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -882,9 +1047,15 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -894,6 +1065,9 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowCooling
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -986,9 +1160,13 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -998,9 +1176,15 @@ stepEvidence:
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1011,9 +1195,16 @@ stepEvidence:
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1023,9 +1214,16 @@ stepEvidence:
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -1035,9 +1233,16 @@ stepEvidence:
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -1048,9 +1253,16 @@ stepEvidence:
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -1061,9 +1273,15 @@ stepEvidence:
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -1073,6 +1291,9 @@ stepEvidence:
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowCooling
   generatedEcuCommandOutputs:
     fanDuty: 0
@@ -1131,9 +1352,13 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -1143,9 +1368,15 @@ stepEvidence:
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1156,9 +1387,16 @@ stepEvidence:
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1168,9 +1406,16 @@ stepEvidence:
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -1180,9 +1425,16 @@ stepEvidence:
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -1193,9 +1445,16 @@ stepEvidence:
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -1206,9 +1465,15 @@ stepEvidence:
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -1218,6 +1483,9 @@ stepEvidence:
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: highCooling
   generatedEcuCommandOutputs:
     fanDuty: 70
@@ -1277,9 +1545,13 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
-      == false and recoveryRequest == true
+    priority: 10
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
+      == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -1289,9 +1561,15 @@ stepEvidence:
     trace:
     - SYS-008
     - HAR-006
+    scenarios:
+    - thermal_protection_recovery
   - rule: faultLatch
+    priority: 20
+    stateScope: '*'
+    stateScopeMatched: true
     condition: invalidDebounced == true
     matched: false
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1302,9 +1580,16 @@ stepEvidence:
     - SYS-007
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: holdLatchedFault
-    condition: state == FAULT_LATCHED
-    matched: false
+    priority: 30
+    stateScope: FAULT_LATCHED
+    stateScopeMatched: false
+    condition: always
+    matched: true
+    selectable: false
     actionsIfMatched:
       state: FAULT_LATCHED
       fanDuty: safeDuty
@@ -1314,9 +1599,16 @@ stepEvidence:
     trace:
     - SYS-007
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: sensorInvalid
+    priority: 40
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureValid == false
     matched: false
+    selectable: false
     actionsIfMatched:
       state: SENSOR_FAULT
       fanDuty: safeDuty
@@ -1326,9 +1618,16 @@ stepEvidence:
     trace:
     - SYS-006
     - HAR-004
+    scenarios:
+    - thermal_protection_fault_latch
+    - thermal_protection_recovery
   - rule: derating
+    priority: 50
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= deratingEntryThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: DERATING
       fanDuty: deratingFanDuty
@@ -1339,9 +1638,16 @@ stepEvidence:
     - SYS-005
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_derating
+    - thermal_protection_recovery
   - rule: highCooling
+    priority: 60
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC >= coolingOnThreshold
     matched: false
+    selectable: false
     actionsIfMatched:
       state: COOLING
       fanDuty: coolingDuty
@@ -1352,9 +1658,15 @@ stepEvidence:
     - SYS-003
     - SYS-002
     - HAR-004
+    scenarios:
+    - thermal_protection_normal
   - rule: lowCooling
+    priority: 70
+    stateScope: '*'
+    stateScopeMatched: true
     condition: temperatureC <= coolingOffThreshold
     matched: true
+    selectable: true
     actionsIfMatched:
       state: IDLE
       fanDuty: '0'
@@ -1364,6 +1676,9 @@ stepEvidence:
     trace:
     - SYS-004
     - HAR-004
+    scenarios:
+    - thermal_protection_boundary
+  selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowCooling
   generatedEcuCommandOutputs:
     fanDuty: 0

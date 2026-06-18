@@ -74,6 +74,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
                 "before": before,
                 "virtualIcObservation": _virtual_ic_observation(inputs),
                 "controlRuleEvaluations": evaluations,
+                "selectionPolicy": "lowest numeric priority wins after state scope and guard match",
                 "appliedRule": applied.name if applied else None,
                 "generatedEcuCommandOutputs": _generated_outputs(model, outputs),
                 "after": after,
@@ -121,18 +122,24 @@ def _evaluate_controls(
     context = {**parameters, **inputs, **outputs, "state": state}
     evaluations: list[dict[str, Any]] = []
     selected: ControlRuleIR | None = None
-    for control in controls:
+    for control in sorted(controls, key=lambda item: (item.priority, item.name)):
+        state_scope_matched = _state_scope_matches(control.state_scope, state)
         matched = _condition_is_true(control.condition, context)
         evaluations.append(
             {
                 "rule": control.name,
+                "priority": control.priority,
+                "stateScope": control.state_scope,
+                "stateScopeMatched": state_scope_matched,
                 "condition": control.condition,
                 "matched": matched,
+                "selectable": state_scope_matched and matched,
                 "actionsIfMatched": dict(control.actions),
                 "trace": list(control.trace),
+                "scenarios": list(control.scenarios),
             }
         )
-        if matched and selected is None:
+        if state_scope_matched and matched and selected is None:
             selected = control
     if selected is None:
         return state, None, evaluations
@@ -147,7 +154,13 @@ def _evaluate_controls(
     return state, selected, evaluations
 
 
+def _state_scope_matches(state_scope: str, state: str) -> bool:
+    return state_scope in {"*", state}
+
+
 def _condition_is_true(expression: str, context: dict[str, Any]) -> bool:
+    if expression == "always":
+        return True
     clauses = [clause.strip() for clause in expression.split(" and ")]
     return all(_simple_condition_is_true(clause, context) for clause in clauses)
 
@@ -194,12 +207,16 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
         "controlRules": [
             {
                 "name": control.name,
+                "priority": control.priority,
+                "stateScope": control.state_scope,
                 "condition": control.condition,
                 "actions": dict(control.actions),
                 "trace": list(control.trace),
+                "scenarios": list(control.scenarios),
             }
             for control in model.controls
         ],
+        "controlSelectionPolicy": "lowest numeric priority wins after state scope and guard match",
         "harnessBoundary": [
             {
                 "name": device.name,
