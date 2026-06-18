@@ -157,3 +157,16 @@ Verification:
 - [x] Tests fail if the demo HTML lacks the spec-to-MBD compliance view.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
+
+## Phase 7: Pre-Human Reject Loop Rule
+
+- [x] Add project rule requiring agent-side reject review before presenting
+      demos, reports, MBD visualizations, generated code, or trace artifacts as
+      complete.
+- [x] Add quality-gate skill guidance for rejecting spec mismatches, broad
+      trace, hidden assumptions, unclear review paths, and needless complexity.
+
+Verification:
+
+- [x] `AGENTS.md` includes the pre-human reject loop.
+- [x] `quality-gate-expectation-control` includes the pre-human reject loop.

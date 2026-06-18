@@ -71,6 +71,14 @@ like "MBD", "validation", "product-like", "ASPICE-aware", "demo", or "report"
 could imply different rigor levels. Tests passing is necessary evidence, not a
 complete definition of done.
 
+Before calling a demo, report, MBD visualization, generated code, or trace
+artifact complete, run an agent-side reject loop. Compare it against the
+human-readable spec, reject broad trace coverage, hidden assumptions,
+over-complex visuals, and demo-convenient behavior absent from the spec. A
+reviewer should see the path in about 30 seconds: requirement, expected
+behavior, MBD element, harness/scenario, observed behavior, expected behavior,
+and pass/fail. If not, update `Tasks.md` with the failed gate and iterate.
+
 ## Verification Policy
 
 Existing MBD tools are the intended verification backends. Python may parse
