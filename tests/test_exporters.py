@@ -144,6 +144,11 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     assert "<svg" in html
     assert "ToyThermalProtectionController" in html
     assert "Spec-To-MBD Compliance Review" in html
+    assert "MBD Review Checklist" in html
+    assert "Requirements traceability" in html
+    assert "Interface and data-flow review" in html
+    assert "Requirements-based scenario evidence" in html
+    assert "Modeling standards and readability" in html
     assert "SYS-008" in html
     assert "recoverFromLatch" in html
     assert "thermal_protection_recovery" in html

@@ -170,3 +170,17 @@ Verification:
 
 - [x] `AGENTS.md` includes the pre-human reject loop.
 - [x] `quality-gate-expectation-control` includes the pre-human reject loop.
+
+## Phase 8: MBD Review Practice Intake
+
+- [x] Research MBD review practices from MathWorks and NASA references.
+- [x] Add `docs/mbd_review_principles.md`.
+- [x] Add MBD review checklist guidance to AGENTS and quality-gate skill.
+- [x] Add the checklist to generated protection demo HTML.
+
+Verification:
+
+- [x] Exporter tests require the checklist.
+- [x] Regenerated demo HTML includes the checklist.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.

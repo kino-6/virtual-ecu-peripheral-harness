@@ -46,6 +46,10 @@ Reject and iterate when any of these are true:
 - The visualization is more complex than the behavior being reviewed.
 - Tests pass but the evidence would still invite an obvious retake request.
 
+For MBD artifacts, also apply `docs/mbd_review_principles.md`: traceability,
+interfaces/data flow, state/control behavior, requirements-based scenario
+evidence, readability/modeling standards, and generated artifact boundaries.
+
 If a reject condition is found, update `Tasks.md` with the failed gate, fix or
 simplify the artifact, regenerate outputs, and rerun verification before asking
 the user to review it again.

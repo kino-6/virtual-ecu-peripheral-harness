@@ -257,6 +257,21 @@
       </table>
     </section>
     <section class="panel">
+      <h2>MBD Review Checklist</h2>
+      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements traceability</td><td>Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.</td><td>Reject broad component-level trace as proof.</td></tr>
+          <tr><td>Interface and data-flow review</td><td>Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.</td><td>Reject hidden harness shortcuts.</td></tr>
+          <tr><td>State/control behavior</td><td>States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.</td><td>Reject split or contradictory behavior.</td></tr>
+          <tr><td>Requirements-based scenario evidence</td><td>Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.</td><td>Reject pass/fail without expected behavior.</td></tr>
+          <tr><td>Modeling standards and readability</td><td>Names are stable, diagrams are readable, and views are simpler than the behavior under review.</td><td>Reject needless visual complexity.</td></tr>
+          <tr><td>Generated artifact boundary</td><td>Handoff files and preview C are generated outputs from the MBD source.</td><td>Reject manual synchronization.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
       <h2>MBD Data Flow Diagram</h2>
       <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
       <svg class="diagram" viewBox="0 0 1180 520" role="img" aria-label="MBD data flow generated from mbd-flow">

@@ -78,6 +78,7 @@ over-complex visuals, and demo-convenient behavior absent from the spec. A
 reviewer should see the path in about 30 seconds: requirement, expected
 behavior, MBD element, harness/scenario, observed behavior, expected behavior,
 and pass/fail. If not, update `Tasks.md` with the failed gate and iterate.
+Use `docs/mbd_review_principles.md` as the lightweight review checklist.
 
 ## Verification Policy
 

@@ -90,6 +90,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "      </div>",
             "    </section>",
             _ir_spec_compliance_review(model),
+            _ir_mbd_review_checklist(),
             _ir_data_flow_svg(model),
             _ir_state_machine_svg(model),
             _ir_harness_boundary_svg(model),
@@ -222,6 +223,63 @@ def _ir_spec_row(model: MbdModelIR, req_id: str) -> str:
         f"<td>{escape(evidence)}</td>"
         f"<td>{escape(scenario)}</td>"
         "</tr>"
+    )
+
+
+def _ir_mbd_review_checklist() -> str:
+    rows = [
+        (
+            "Requirements traceability",
+            "Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.",
+            "Reject broad component-level trace as proof.",
+        ),
+        (
+            "Interface and data-flow review",
+            "Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.",
+            "Reject hidden harness shortcuts.",
+        ),
+        (
+            "State/control behavior",
+            "States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.",
+            "Reject split or contradictory behavior.",
+        ),
+        (
+            "Requirements-based scenario evidence",
+            "Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.",
+            "Reject pass/fail without expected behavior.",
+        ),
+        (
+            "Modeling standards and readability",
+            "Names are stable, diagrams are readable, and views are simpler than the behavior under review.",
+            "Reject needless visual complexity.",
+        ),
+        (
+            "Generated artifact boundary",
+            "Handoff files and preview C are generated outputs from the MBD source.",
+            "Reject manual synchronization.",
+        ),
+    ]
+    body = "\n".join(
+        "          <tr>"
+        f"<td>{escape(name)}</td>"
+        f"<td>{escape(review)}</td>"
+        f"<td>{escape(reject)}</td>"
+        "</tr>"
+        for name, review, reject in rows
+    )
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>MBD Review Checklist</h2>",
+            "      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>",
+            "      <table>",
+            "        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>",
+            "        <tbody>",
+            body,
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
     )
 
 
