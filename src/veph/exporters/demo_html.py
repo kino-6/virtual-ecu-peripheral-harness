@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from html import escape
 
-from veph.ir import MbdModelIR
+from veph.ir import FlowIR, MbdModelIR, TransitionIR
 from veph.model_loader import Block, Connection, PeripheralModel, Transition
 
 
@@ -89,6 +89,11 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             f"        <div><strong>{len(model.requirement_refs())}</strong><span>requirement refs</span></div>",
             "      </div>",
             "    </section>",
+            _ir_review_pipeline_svg(model),
+            _ir_data_flow_svg(model),
+            _ir_state_machine_svg(model),
+            _ir_control_rule_svg(model),
+            _ir_harness_boundary_svg(model),
             '    <section class="panel">',
             "      <h2>Requirements Trace Matrix</h2>",
             "      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>",
@@ -167,6 +172,259 @@ def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
         if ref in device.trace:
             elements.append(f"harness:{device.name}")
     return elements
+
+
+def _ir_review_pipeline_svg(model: MbdModelIR) -> str:
+    nodes = [
+        ("Requirements", 40, 76, "IDs and intent"),
+        ("Specification", 260, 76, "demo assumptions"),
+        ("MBD Source", 480, 76, model.source_path.name),
+        ("MBD IR", 700, 76, "parsed semantics"),
+        ("Handoff Artifacts", 920, 34, "MBD tools"),
+        ("Harness Reports", 920, 128, "preview evidence"),
+    ]
+    arrows = [
+        (220, 111, 260, 111),
+        (440, 111, 480, 111),
+        (660, 111, 700, 111),
+        (880, 111, 920, 69),
+        (880, 111, 920, 163),
+    ]
+    parts = [
+        '    <section class="panel">',
+        "      <h2>MBD Review Pipeline</h2>",
+        "      <p>The reviewer follows the generated chain from requirements to MBD IR, handoff artifacts, preview C, harness scenarios, and reports.</p>",
+        '      <svg class="diagram" viewBox="0 0 1180 230" role="img" aria-label="MBD review pipeline from requirements to generated artifacts">',
+        *(_svg_defs("irPipeArrow")),
+    ]
+    for x1, y1, x2, y2 in arrows:
+        parts.append(
+            f'        <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" class="ir-arrow"></line>'
+        )
+    for title, x, y, note in nodes:
+        parts.extend(_svg_node(title, x, y, note))
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _ir_data_flow_svg(model: MbdModelIR) -> str:
+    flows = model.flows
+    positions = _ir_flow_node_positions(flows)
+    height = max(360, 100 + 70 * max(_column_count(positions, column) for column in range(4)))
+    parts = [
+        '    <section class="panel">',
+        "      <h2>MBD Data Flow Diagram</h2>",
+        "      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="MBD data flow generated from mbd-flow">',
+        *(_svg_defs("irFlowArrow")),
+    ]
+    for flow in flows:
+        parts.extend(_ir_flow_line(flow, positions))
+    for name, (x, y, kind) in positions.items():
+        parts.extend(_ir_svg_node(name, x, y, kind))
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _ir_flow_node_positions(flows: list[FlowIR]) -> dict[str, tuple[int, int, str]]:
+    columns: list[list[str]] = [[], [], [], []]
+    for flow in flows:
+        for endpoint in [flow.source, flow.target]:
+            column = _ir_flow_column(endpoint)
+            if endpoint not in columns[column]:
+                columns[column].append(endpoint)
+    positions: dict[str, tuple[int, int, str]] = {}
+    x_by_column = [36, 326, 616, 906]
+    for column, endpoints in enumerate(columns):
+        for index, endpoint in enumerate(endpoints):
+            positions[endpoint] = (x_by_column[column], 46 + index * 70, _ir_flow_kind(endpoint))
+    return positions
+
+
+def _ir_flow_column(endpoint: str) -> int:
+    if endpoint.startswith("ToyTempSensorIC"):
+        return 0
+    if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
+        return 1
+    if endpoint.startswith("ToyThermalProtectionController") or endpoint.startswith("ToyThermalFanController"):
+        return 2
+    return 3
+
+
+def _ir_flow_kind(endpoint: str) -> str:
+    if endpoint.startswith("ToyTempSensorIC"):
+        return "Virtual Sensor"
+    if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
+        return "HAL Boundary"
+    if endpoint.startswith("ToyThermal"):
+        return "Controller"
+    if endpoint.startswith("ScenarioReport"):
+        return "Report"
+    return "Virtual Actuator"
+
+
+def _column_count(positions: dict[str, tuple[int, int, str]], column: int) -> int:
+    x_by_column = [36, 326, 616, 906]
+    return sum(1 for x, _, _ in positions.values() if x == x_by_column[column])
+
+
+def _ir_flow_line(flow: FlowIR, positions: dict[str, tuple[int, int, str]]) -> list[str]:
+    sx, sy, _ = positions[flow.source]
+    tx, ty, _ = positions[flow.target]
+    x1 = sx + 230
+    y1 = sy + 27
+    x2 = tx
+    y2 = ty + 27
+    mid_x = (x1 + x2) / 2
+    label_y = min(y1, y2) - 8 if abs(y1 - y2) < 24 else (y1 + y2) / 2 - 8
+    return [
+        f'        <path d="M {x1} {y1} C {mid_x:.0f} {y1}, {mid_x:.0f} {y2}, {x2} {y2}" class="ir-flow-line"></path>',
+        f'        <text x="{mid_x:.0f}" y="{label_y:.0f}" text-anchor="middle" class="signal-label">{escape(flow.label)}</text>',
+    ]
+
+
+def _ir_state_machine_svg(model: MbdModelIR) -> str:
+    states = _ordered_states(model.transitions)
+    positions = _ir_state_positions(states)
+    rows = max(1, (len(states) + 3) // 4)
+    height = 150 + rows * 170
+    parts = [
+        '    <section class="panel">',
+        "      <h2>State Machine Diagram</h2>",
+        "      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="State machine generated from mbd-state">',
+        *(_svg_defs("irStateArrow")),
+    ]
+    for transition in model.transitions:
+        parts.extend(_ir_state_transition_line(transition, positions))
+    for state, (x, y) in positions.items():
+        parts.append(f'        <rect x="{x}" y="{y}" width="210" height="64" rx="8" class="state"></rect>')
+        parts.append(f'        <text x="{x + 105}" y="{y + 39}" text-anchor="middle" class="state-label">{escape(state)}</text>')
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _ordered_states(transitions: list[TransitionIR]) -> list[str]:
+    states: list[str] = []
+    for transition in transitions:
+        for state in [transition.source, transition.target]:
+            if state not in states:
+                states.append(state)
+    return states
+
+
+def _ir_state_positions(states: list[str]) -> dict[str, tuple[int, int]]:
+    positions: dict[str, tuple[int, int]] = {}
+    for index, state in enumerate(states):
+        column = index % 4
+        row = index // 4
+        positions[state] = (46 + column * 280, 64 + row * 170)
+    return positions
+
+
+def _ir_state_transition_line(transition: TransitionIR, positions: dict[str, tuple[int, int]]) -> list[str]:
+    sx, sy = positions[transition.source]
+    tx, ty = positions[transition.target]
+    x1 = sx + 210
+    y1 = sy + 32
+    x2 = tx
+    y2 = ty + 32
+    if tx < sx:
+        x1 = sx + 105
+        y1 = sy + 64
+        x2 = tx + 105
+        y2 = ty + 64
+    mid_x = (x1 + x2) / 2
+    mid_y = (y1 + y2) / 2
+    return [
+        f'        <path d="M {x1} {y1} C {mid_x:.0f} {y1}, {mid_x:.0f} {y2}, {x2} {y2}" class="ir-state-line"></path>',
+        f'        <text x="{mid_x:.0f}" y="{mid_y - 10:.0f}" text-anchor="middle" class="edge-note">{escape(_shorten(transition.condition, 42))}</text>',
+    ]
+
+
+def _ir_control_rule_svg(model: MbdModelIR) -> str:
+    row_height = 78
+    height = 72 + row_height * max(1, len(model.controls))
+    parts = [
+        '    <section class="panel">',
+        "      <h2>Control Rule Map</h2>",
+        "      <p>Each rule shows the condition, generated actions, and requirement trace carried by the MBD IR.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Control rule map generated from mbd-control">',
+        *(_svg_defs("irRuleArrow")),
+    ]
+    for index, control in enumerate(model.controls):
+        y = 42 + index * row_height
+        condition = _shorten(control.condition, 44)
+        actions = _shorten(", ".join(f"{key}={value}" for key, value in control.actions.items()), 56)
+        trace = _shorten(", ".join(control.trace), 42)
+        parts.extend(
+            [
+                f'        <rect x="42" y="{y}" width="290" height="50" rx="8" class="rule-condition"></rect>',
+                f'        <text x="58" y="{y + 30}" class="node-note">{escape(condition)}</text>',
+                f'        <line x1="332" y1="{y + 25}" x2="390" y2="{y + 25}" class="ir-arrow"></line>',
+                f'        <rect x="390" y="{y}" width="220" height="50" rx="8" class="rule-node"></rect>',
+                f'        <text x="500" y="{y + 30}" text-anchor="middle" class="node-title">{escape(control.name)}</text>',
+                f'        <line x1="610" y1="{y + 25}" x2="668" y2="{y + 25}" class="ir-arrow"></line>',
+                f'        <rect x="668" y="{y}" width="320" height="50" rx="8" class="rule-action"></rect>',
+                f'        <text x="684" y="{y + 22}" class="node-note">{escape(actions)}</text>',
+                f'        <text x="684" y="{y + 40}" class="edge-note">trace {escape(trace)}</text>',
+            ]
+        )
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _ir_harness_boundary_svg(model: MbdModelIR) -> str:
+    sensors = [device for device in model.harness_devices if device.role == "sensor"]
+    controllers = [device for device in model.harness_devices if device.role == "controller"]
+    actuators = [device for device in model.harness_devices if device.role == "actuator"]
+    controller = controllers[0].name if controllers else model.component.name
+    actuator_names = [device.name for device in actuators] or ["Virtual Actuator"]
+    height = 310
+    parts = [
+        '    <section class="panel">',
+        "      <h2>Harness Boundary Diagram</h2>",
+        "      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Harness boundary generated from mbd-harness">',
+        *(_svg_defs("irHarnessArrow")),
+    ]
+    sensor_name = sensors[0].name if sensors else "Virtual Sensor"
+    parts.extend(_svg_node("Scenario Steps", 42, 118, "test inputs"))
+    parts.extend(_svg_node(sensor_name, 286, 118, "virtual IC"))
+    parts.extend(_svg_node(controller, 530, 118, "HAL controller"))
+    for index, actuator in enumerate(actuator_names):
+        parts.extend(_svg_node(actuator, 784, 72 + index * 94, "virtual IC"))
+        parts.append(
+            f'        <line x1="730" y1="153" x2="784" y2="{107 + index * 94}" class="ir-arrow"></line>'
+        )
+    parts.extend(_svg_node("Scenario Report", 1010, 118, "evidence"))
+    for x1, y1, x2, y2 in [(242, 153, 286, 153), (486, 153, 530, 153), (984, 153, 1010, 153)]:
+        parts.append(f'        <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" class="ir-arrow"></line>')
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _ir_svg_node(title: str, x: int, y: int, note: str) -> list[str]:
+    return [
+        f'        <rect x="{x}" y="{y}" width="230" height="54" rx="8" class="node"></rect>',
+        f'        <text x="{x + 115}" y="{y + 22}" text-anchor="middle" class="node-title small">{escape(_shorten(title, 34))}</text>',
+        f'        <text x="{x + 115}" y="{y + 42}" text-anchor="middle" class="node-note">{escape(note)}</text>',
+    ]
+
+
+def _svg_defs(marker_id: str) -> list[str]:
+    _ = marker_id
+    return [
+        "        <defs>",
+        '          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">',
+        '            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>',
+        "          </marker>",
+        "        </defs>",
+    ]
+
+
+def _shorten(text: str, limit: int) -> str:
+    return text if len(text) <= limit else text[: limit - 1] + "..."
 
 
 def _hero(model: PeripheralModel) -> str:
@@ -588,6 +846,29 @@ def _css() -> str:
       fill: none;
       marker-end: url(#signalArrow);
     }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
     .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
     .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
     .node-title, .state-label {
@@ -595,6 +876,7 @@ def _css() -> str:
       font-size: 17px;
       font-weight: 700;
     }
+    .node-title.small { font-size: 12px; }
     .block-title {
       fill: var(--ink);
       font-size: 16px;

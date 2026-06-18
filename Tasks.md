@@ -119,3 +119,19 @@ Verification:
 - [x] Preview C syntax-checks when `cc` is available.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
+
+## Phase 5: Reviewable MBD Visualization
+
+- [x] Add SVG-based process visualization for the MBD review pipeline.
+- [x] Add SVG-based data-flow visualization from virtual ICs through HAL,
+      controller, actuators, and reports.
+- [x] Add SVG-based state-machine visualization from `mbd-state`.
+- [x] Add SVG-based control-rule visualization from `mbd-control`.
+- [x] Add SVG-based harness-boundary visualization from `mbd-harness`.
+- [x] Regenerate `generated/toy_thermal_protection_controller_demo.html`.
+
+Verification:
+
+- [x] Exporter tests require visual review sections.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.

@@ -133,6 +133,29 @@
       fill: none;
       marker-end: url(#signalArrow);
     }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
     .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
     .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
     .node-title, .state-label {
@@ -140,6 +163,7 @@
       font-size: 17px;
       font-weight: 700;
     }
+    .node-title.small { font-size: 12px; }
     .block-title {
       fill: var(--ink);
       font-size: 16px;
@@ -213,6 +237,262 @@
         <div><strong>4</strong><span>harness boundaries</span></div>
         <div><strong>38</strong><span>requirement refs</span></div>
       </div>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Pipeline</h2>
+      <p>The reviewer follows the generated chain from requirements to MBD IR, handoff artifacts, preview C, harness scenarios, and reports.</p>
+      <svg class="diagram" viewBox="0 0 1180 230" role="img" aria-label="MBD review pipeline from requirements to generated artifacts">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <line x1="220" y1="111" x2="260" y2="111" class="ir-arrow"></line>
+        <line x1="440" y1="111" x2="480" y2="111" class="ir-arrow"></line>
+        <line x1="660" y1="111" x2="700" y2="111" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="69" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="163" class="ir-arrow"></line>
+        <rect x="40" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="140" y="106" text-anchor="middle" class="node-title">Requirements</text>
+        <text x="140" y="128" text-anchor="middle" class="node-note">IDs and intent</text>
+        <rect x="260" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="360" y="106" text-anchor="middle" class="node-title">Specification</text>
+        <text x="360" y="128" text-anchor="middle" class="node-note">demo assumptions</text>
+        <rect x="480" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="580" y="106" text-anchor="middle" class="node-title">MBD Source</text>
+        <text x="580" y="128" text-anchor="middle" class="node-note">toy_thermal_protection_controller.mbd.md</text>
+        <rect x="700" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="800" y="106" text-anchor="middle" class="node-title">MBD IR</text>
+        <text x="800" y="128" text-anchor="middle" class="node-note">parsed semantics</text>
+        <rect x="920" y="34" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="64" text-anchor="middle" class="node-title">Handoff Artifacts</text>
+        <text x="1020" y="86" text-anchor="middle" class="node-note">MBD tools</text>
+        <rect x="920" y="128" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="158" text-anchor="middle" class="node-title">Harness Reports</text>
+        <text x="1020" y="180" text-anchor="middle" class="node-note">preview evidence</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>MBD Data Flow Diagram</h2>
+      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 450" role="img" aria-label="MBD data flow generated from mbd-flow">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 266 73 C 296 73, 296 73, 326 73" class="ir-flow-line"></path>
+        <text x="296" y="65" text-anchor="middle" class="signal-label">virtual sensor sample</text>
+        <path d="M 266 143 C 296 143, 296 73, 326 73" class="ir-flow-line"></path>
+        <text x="296" y="100" text-anchor="middle" class="signal-label">virtual validity sample</text>
+        <path d="M 266 213 C 441 213, 441 73, 616 73" class="ir-flow-line"></path>
+        <text x="441" y="135" text-anchor="middle" class="signal-label">preview debounce input</text>
+        <path d="M 556 73 C 586 73, 586 143, 616 143" class="ir-flow-line"></path>
+        <text x="586" y="100" text-anchor="middle" class="signal-label">HAL temperature input</text>
+        <path d="M 846 213 C 586 213, 586 143, 326 143" class="ir-flow-line"></path>
+        <text x="586" y="170" text-anchor="middle" class="signal-label">generated ECU fan command</text>
+        <path d="M 846 283 C 586 283, 586 213, 326 213" class="ir-flow-line"></path>
+        <text x="586" y="240" text-anchor="middle" class="signal-label">generated ECU derating command</text>
+        <path d="M 556 143 C 731 143, 731 73, 906 73" class="ir-flow-line"></path>
+        <text x="731" y="100" text-anchor="middle" class="signal-label">virtual actuator command</text>
+        <path d="M 556 213 C 731 213, 731 143, 906 143" class="ir-flow-line"></path>
+        <text x="731" y="170" text-anchor="middle" class="signal-label">virtual load limiter command</text>
+        <path d="M 846 353 C 876 353, 876 213, 906 213" class="ir-flow-line"></path>
+        <text x="876" y="275" text-anchor="middle" class="signal-label">diagnostic observation</text>
+        <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyTempSensorIC.temperatureC</text>
+        <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Sensor</text>
+        <rect x="36" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="138" text-anchor="middle" class="node-title small">ToyTempSensorIC.temperatureValid</text>
+        <text x="151" y="158" text-anchor="middle" class="node-note">Virtual Sensor</text>
+        <rect x="36" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="208" text-anchor="middle" class="node-title small">ToyTempSensorIC.invalidDebounced</text>
+        <text x="151" y="228" text-anchor="middle" class="node-note">Virtual Sensor</text>
+        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="68" text-anchor="middle" class="node-title small">HAL_SPI.read_temperature</text>
+        <text x="441" y="88" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="326" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="138" text-anchor="middle" class="node-title small">HAL_PWM.set_fan_duty</text>
+        <text x="441" y="158" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="326" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="208" text-anchor="middle" class="node-title small">HAL_LIMITER.set_derating</text>
+        <text x="441" y="228" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyThermalProtectionController.in...</text>
+        <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyThermalProtectionController.te...</text>
+        <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyThermalProtectionController.fa...</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyThermalProtectionController.de...</text>
+        <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="326" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="348" text-anchor="middle" class="node-title small">ToyThermalProtectionController.di...</text>
+        <text x="731" y="368" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ToyFanDriverIC.dutyCommand</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <rect x="906" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="138" text-anchor="middle" class="node-title small">ToyLoadLimiterIC.limitCommand</text>
+        <text x="1021" y="158" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <rect x="906" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="208" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
+        <text x="1021" y="228" text-anchor="middle" class="node-note">Report</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine Diagram</h2>
+      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>
+      <svg class="diagram" viewBox="0 0 1180 490" role="img" aria-label="State machine generated from mbd-state">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">temperatureValid == true</text>
+        <path d="M 536 96 C 571 96, 571 96, 606 96" class="ir-state-line"></path>
+        <text x="571" y="86" text-anchor="middle" class="edge-note">temperatureC &gt;= coolingOnThreshold</text>
+        <path d="M 711 128 C 571 128, 571 128, 431 128" class="ir-state-line"></path>
+        <text x="571" y="118" text-anchor="middle" class="edge-note">temperatureC &lt;= coolingOffThreshold</text>
+        <path d="M 816 96 C 851 96, 851 96, 886 96" class="ir-state-line"></path>
+        <text x="851" y="86" text-anchor="middle" class="edge-note">temperatureC &gt;= deratingEntryThreshold</text>
+        <path d="M 991 128 C 851 128, 851 128, 711 128" class="ir-state-line"></path>
+        <text x="851" y="118" text-anchor="middle" class="edge-note">temperatureC &lt; deratingEntryThreshold</text>
+        <path d="M 431 128 C 291 128, 291 298, 151 298" class="ir-state-line"></path>
+        <text x="291" y="203" text-anchor="middle" class="edge-note">temperatureValid == false</text>
+        <path d="M 711 128 C 431 128, 431 298, 151 298" class="ir-state-line"></path>
+        <text x="431" y="203" text-anchor="middle" class="edge-note">temperatureValid == false</text>
+        <path d="M 991 128 C 571 128, 571 298, 151 298" class="ir-state-line"></path>
+        <text x="571" y="203" text-anchor="middle" class="edge-note">temperatureValid == false</text>
+        <path d="M 256 266 C 291 266, 291 266, 326 266" class="ir-state-line"></path>
+        <text x="291" y="256" text-anchor="middle" class="edge-note">invalidDebounced == true</text>
+        <path d="M 536 266 C 431 266, 431 96, 326 96" class="ir-state-line"></path>
+        <text x="431" y="171" text-anchor="middle" class="edge-note">recoveryRequest == true</text>
+        <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="103" text-anchor="middle" class="state-label">RESET</text>
+        <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="103" text-anchor="middle" class="state-label">IDLE</text>
+        <rect x="606" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="711" y="103" text-anchor="middle" class="state-label">COOLING</text>
+        <rect x="886" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="991" y="103" text-anchor="middle" class="state-label">DERATING</text>
+        <rect x="46" y="234" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="273" text-anchor="middle" class="state-label">SENSOR_FAULT</text>
+        <rect x="326" y="234" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="273" text-anchor="middle" class="state-label">FAULT_LATCHED</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Control Rule Map</h2>
+      <p>Each rule shows the condition, generated actions, and requirement trace carried by the MBD IR.</p>
+      <svg class="diagram" viewBox="0 0 1180 618" role="img" aria-label="Control rule map generated from mbd-control">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="42" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="72" class="node-note">state == FAULT_LATCHED and temperatureValid...</text>
+        <line x1="332" y1="67" x2="390" y2="67" class="ir-arrow"></line>
+        <rect x="390" y="42" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="72" text-anchor="middle" class="node-title">recoverFromLatch</text>
+        <line x1="610" y1="67" x2="668" y2="67" class="ir-arrow"></line>
+        <rect x="668" y="42" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="64" class="node-note">state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFau...</text>
+        <text x="684" y="82" class="edge-note">trace SYS-008, HAR-006</text>
+        <rect x="42" y="120" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="150" class="node-note">invalidDebounced == true</text>
+        <line x1="332" y1="145" x2="390" y2="145" class="ir-arrow"></line>
+        <rect x="390" y="120" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="150" text-anchor="middle" class="node-title">faultLatch</text>
+        <line x1="610" y1="145" x2="668" y2="145" class="ir-arrow"></line>
+        <rect x="668" y="120" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="142" class="node-note">state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=...</text>
+        <text x="684" y="160" class="edge-note">trace SYS-007, SYS-006, HAR-004</text>
+        <rect x="42" y="198" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="228" class="node-note">state == FAULT_LATCHED</text>
+        <line x1="332" y1="223" x2="390" y2="223" class="ir-arrow"></line>
+        <rect x="390" y="198" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="228" text-anchor="middle" class="node-title">holdLatchedFault</text>
+        <line x1="610" y1="223" x2="668" y2="223" class="ir-arrow"></line>
+        <rect x="668" y="198" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="220" class="node-note">state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=...</text>
+        <text x="684" y="238" class="edge-note">trace SYS-007, SYS-008, HAR-004</text>
+        <rect x="42" y="276" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="306" class="node-note">temperatureValid == false</text>
+        <line x1="332" y1="301" x2="390" y2="301" class="ir-arrow"></line>
+        <rect x="390" y="276" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="306" text-anchor="middle" class="node-title">sensorInvalid</text>
+        <line x1="610" y1="301" x2="668" y2="301" class="ir-arrow"></line>
+        <rect x="668" y="276" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="298" class="node-note">state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0...</text>
+        <text x="684" y="316" class="edge-note">trace SYS-006, HAR-004</text>
+        <rect x="42" y="354" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="384" class="node-note">temperatureC &gt;= deratingEntryThreshold</text>
+        <line x1="332" y1="379" x2="390" y2="379" class="ir-arrow"></line>
+        <rect x="390" y="354" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="384" text-anchor="middle" class="node-title">derating</text>
+        <line x1="610" y1="379" x2="668" y2="379" class="ir-arrow"></line>
+        <rect x="668" y="354" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="376" class="node-note">state=DERATING, fanDuty=deratingFanDuty, deratingComman...</text>
+        <text x="684" y="394" class="edge-note">trace SYS-005, SYS-002, HAR-004</text>
+        <rect x="42" y="432" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="462" class="node-note">temperatureC &gt;= coolingOnThreshold</text>
+        <line x1="332" y1="457" x2="390" y2="457" class="ir-arrow"></line>
+        <rect x="390" y="432" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="462" text-anchor="middle" class="node-title">highCooling</text>
+        <line x1="610" y1="457" x2="668" y2="457" class="ir-arrow"></line>
+        <rect x="668" y="432" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="454" class="node-note">state=COOLING, fanDuty=coolingDuty, deratingCommand=0, ...</text>
+        <text x="684" y="472" class="edge-note">trace SYS-003, SYS-002, HAR-004</text>
+        <rect x="42" y="510" width="290" height="50" rx="8" class="rule-condition"></rect>
+        <text x="58" y="540" class="node-note">temperatureC &lt;= coolingOffThreshold</text>
+        <line x1="332" y1="535" x2="390" y2="535" class="ir-arrow"></line>
+        <rect x="390" y="510" width="220" height="50" rx="8" class="rule-node"></rect>
+        <text x="500" y="540" text-anchor="middle" class="node-title">lowCooling</text>
+        <line x1="610" y1="535" x2="668" y2="535" class="ir-arrow"></line>
+        <rect x="668" y="510" width="320" height="50" rx="8" class="rule-action"></rect>
+        <text x="684" y="532" class="node-note">state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFau...</text>
+        <text x="684" y="550" class="edge-note">trace SYS-004, HAR-004</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Harness Boundary Diagram</h2>
+      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Harness boundary generated from mbd-harness">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test inputs</text>
+        <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="386" y="148" text-anchor="middle" class="node-title">ToyTempSensorIC</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">virtual IC</text>
+        <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyThermalProtectionController</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">HAL controller</text>
+        <rect x="784" y="72" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="102" text-anchor="middle" class="node-title">ToyFanDriverIC</text>
+        <text x="884" y="124" text-anchor="middle" class="node-note">virtual IC</text>
+        <line x1="730" y1="153" x2="784" y2="107" class="ir-arrow"></line>
+        <rect x="784" y="166" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="196" text-anchor="middle" class="node-title">ToyLoadLimiterIC</text>
+        <text x="884" y="218" text-anchor="middle" class="node-note">virtual IC</text>
+        <line x1="730" y1="153" x2="784" y2="201" class="ir-arrow"></line>
+        <rect x="1010" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1110" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="1110" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
+        <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
+        <line x1="984" y1="153" x2="1010" y2="153" class="ir-arrow"></line>
+      </svg>
     </section>
     <section class="panel">
       <h2>Requirements Trace Matrix</h2>

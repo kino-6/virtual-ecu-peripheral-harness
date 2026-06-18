@@ -89,6 +89,7 @@ def test_thermal_protection_generated_artifacts_are_deterministic_from_markup_so
 
     expected_outputs = {
         "generated/toy_thermal_protection_controller.md": export_markdown(model),
+        "generated/toy_thermal_protection_controller_demo.html": export_demo_html(model),
         "generated/toy_thermal_protection_controller.mmd": export_mermaid(model),
         "generated/toy_thermal_protection_controller.puml": export_plantuml(model),
         "generated/toy_thermal_protection_controller.scxml": export_scxml(model),
@@ -140,8 +141,15 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
 
     html = export_demo_html(model)
 
+    assert "<svg" in html
     assert "ToyThermalProtectionController" in html
     assert "Requirements Trace Matrix" in html
+    assert "MBD Data Flow Diagram" in html
+    assert "State Machine Diagram" in html
+    assert "Control Rule Map" in html
+    assert "Harness Boundary Diagram" in html
+    assert "ToyTempSensorIC.temperatureC" in html
+    assert "HAL_LIMITER.set_derating" in html
     assert "faultLatch" in html
     assert "recoverFromLatch" in html
     assert "ToyLoadLimiterIC" in html
