@@ -36,6 +36,10 @@ artifact as complete, review it as if the user will reject it in 30 seconds.
 Reject and iterate when any of these are true:
 
 - The artifact does not match the human-readable specification.
+- The specification reads like a small product datasheet when the user expects a
+  system or architecture-level MBD artifact with functional decomposition.
+- The MBD is a flat controller I/O table when the expected review target needs
+  system context, component responsibilities, signal ownership, and interfaces.
 - Requirement trace is broad or decorative instead of tied to concrete MBD
   elements, generated artifacts, scenarios, report checks, or tests.
 - The first review path is unclear. A reviewer should quickly see requirement,
@@ -61,6 +65,12 @@ Ask concise questions when any answer would change the artifact shape:
 - What should a human reviewer be convinced of after opening the report or demo?
 - Is the target a smoke-test proof, a reviewable engineering artifact, or a
   product-like validation story?
+- Is the target a single controller behavior model, or should the spec/MBD show
+  a decomposed system architecture with components and allocated
+  responsibilities?
+- Which functional responsibilities must be separated: sensing, validation,
+  debounce, state/latch management, command calculation, output mapping,
+  diagnostics, reporting, or harness behavior?
 - Which evidence is mandatory: trace matrix, step-by-step execution, generated
   code linkage, MBD handoff shape, or harness boundary proof?
 - What would make this unacceptable even if tests pass?

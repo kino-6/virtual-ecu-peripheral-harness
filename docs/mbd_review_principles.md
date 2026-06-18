@@ -10,18 +10,28 @@ ASPICE, DO-178C, or tool-qualification compliance.
 Review generated MBD artifacts in this order:
 
 1. Requirement and specification intent.
-2. Spec-to-MBD compliance table.
-3. Interface and data-flow boundaries.
-4. State transitions, guard conditions, and actions.
-5. Harness/scenario evidence.
-6. Generated handoff artifacts and preview C boundary.
-7. Known assumptions, unsupported semantics, and external verification needs.
+2. System context and functional decomposition.
+3. Requirement allocation to functions, components, and scenarios.
+4. Spec-to-MBD compliance table.
+5. Interface and data-flow boundaries.
+6. State transitions, guard conditions, and actions.
+7. Harness/scenario evidence.
+8. Generated handoff artifacts and preview C boundary.
+9. Known assumptions, unsupported semantics, and external verification needs.
 
 ## Checklist
 
 - Requirements traceability: each claimed requirement shall link to concrete
   MBD elements, tests/scenarios, generated artifacts, or report checks. Broad
   component-level trace is not enough.
+- Functional decomposition: the specification and MBD source shall identify the
+  system context, functional components, responsibility allocation, owned
+  signals, and interfaces before detailed control rules. Reject flat
+  controller-only models when the expected review target is a system or
+  architecture-level MBD artifact.
+- Allocation clarity: each high-risk behavior shall say which function owns
+  detection, state management, command calculation, output mapping, diagnostic
+  reporting, and scenario evidence. Reject duplicated or orphaned behavior.
 - Interface and data-flow review: inputs, outputs, virtual IC boundaries, HAL
   boundaries, and report observations shall be visible and directionally clear.
 - State/control behavior: states, guard conditions, actions, latches, recovery
@@ -40,6 +50,11 @@ Review generated MBD artifacts in this order:
 - MathWorks MAB/JMAAB guidance emphasizes common understanding for modelers and
   reviewers, with readability, simulation/verification, and code generation as
   key objectives.
+- MathWorks model-architecture guidance describes controller-model layers such
+  as function, sub-function, schedule, control-flow, selection, and data-flow
+  layers, and warns against splitting subsystems merely to save space.
+- MathWorks architecture guidance recommends component-based modeling for
+  complex systems and using hierarchy to communicate at an appropriate fidelity.
 - MathWorks Model Advisor/Simulink Check positions model checks as a way to
   enforce modeling guidelines and detect inefficient or inaccurate modeling
   conditions.
@@ -48,6 +63,9 @@ Review generated MBD artifacts in this order:
 - Requirements-based verification guidance emphasizes turning informal
   requirements into unambiguous assessments and tracing requirements to design
   and tests.
+- NASA logical decomposition guidance frames decomposition as functional
+  analysis that translates top-level requirements into functions, allocates
+  those functions downward, and identifies functional/subsystem interfaces.
 - NASA review terminology for preliminary design reviews expects evidence that
   the design meets requirements, interfaces are identified, and verification
   methods are described.
@@ -56,6 +74,12 @@ Review generated MBD artifacts in this order:
 
 - MathWorks, Model Advisor checks for MAB modeling guidelines:
   https://www.mathworks.com/help/slcheck/ref/model-advisor-checks-for-mab-modeling-guidelines.html
+- MathWorks, Understanding Model Architecture:
+  https://www.mathworks.com/help/simulink/mdl_gd/maab/understanding-model-architecture.html
+- MathWorks, System Architecture and Functionality:
+  https://www.mathworks.com/help/simulink/ug/mbd-sys-arch-and-functionality.html
+- MathWorks, Best Practices for Large-Scale Architecture Modeling:
+  https://www.mathworks.com/help/systemcomposer/ug/best-practices-for-large-scale-architecture-modeling.html
 - MathWorks, Modeling guidelines and Model Advisor checks for industry
   standards:
   https://www.mathworks.com/help/ecoder/ug/guidelines-checks-industry-stds-ecoder.html
@@ -63,5 +87,7 @@ Review generated MBD artifacts in this order:
   https://www.mathworks.com/products/requirements-toolbox.html
 - MathWorks, Requirements-based verification with Simulink Test:
   https://www.mathworks.com/videos/requirements-based-verification-with-simulink-test-1554822878413.html
+- NASA, Logical Decomposition:
+  https://www.nasa.gov/reference/4-3-logical-decomposition/
 - NASA Systems Engineering Handbook appendix:
   https://www.nasa.gov/reference/system-engineering-handbook-appendix/
