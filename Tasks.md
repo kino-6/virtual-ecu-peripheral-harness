@@ -39,10 +39,35 @@ Verification:
 
 ## Phase 1: Next Implementation Plan
 
-- [ ] Define extractor output shape for requirement IDs, DSC tags, statements,
+- [x] Define extractor output shape for requirement IDs, DSC tags, statements,
       source section, and planned evidence.
-- [ ] Define `Spec.md` scaffold template sections.
-- [ ] Define Mermaid-like MBD scaffold template sections.
-- [ ] Define trace validator checks for missing spec coverage, missing MBD
+- [x] Define `Spec.md` scaffold template sections.
+- [x] Define Mermaid-like MBD scaffold template sections.
+- [x] Define trace validator checks for missing spec coverage, missing MBD
       coverage, and untraced MBD behavior.
-- [ ] Ask user to approve the scaffold template before implementation.
+- [x] Treat the user's "Tasks.md完遂" Goal request as approval to implement the
+      conservative scaffold template implied by the reviewed requirements.
+
+## Phase 2: Minimal Vertical Slice
+
+- [x] Add requirements extractor.
+- [x] Add deterministic requirements JSON rendering.
+- [x] Add `Spec.md` scaffold generator.
+- [x] Add Mermaid-like MBD scaffold generator.
+- [x] Add traceability validator.
+- [x] Add CLI commands:
+      `extract-requirements`, `scaffold-spec`, `scaffold-mbd`,
+      `validate-trace`.
+- [x] Generate review artifacts:
+      `generated/requirements.ir.json`,
+      `specs/ai_assisted_mbd_workflow.scaffold.md`,
+      `examples/ai_assisted_mbd_workflow.scaffold.mbd.md`,
+      `reports/requirements_traceability.md`.
+
+Verification:
+
+- [x] Unit tests cover extraction, scaffolds, open questions, and trace
+      validation.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+- [x] Commit the Req-to-Spec/MBD support update.

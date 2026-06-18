@@ -18,6 +18,13 @@ from veph.exporters.simulink_m import export_simulink_m
 from veph.markup_parser import MarkupParseError, parse_markup_file
 from veph.model_loader import ModelValidationError, load_model
 from veph.preview_runtime import PreviewScenarioError, run_preview_file
+from veph.requirements_support import (
+    extract_requirements,
+    generate_mbd_scaffold,
+    generate_spec_scaffold,
+    render_requirements_json,
+    validate_traceability,
+)
 from veph.scenario_runner import ScenarioError, run_scenario_file
 
 
@@ -84,6 +91,40 @@ def build_parser() -> argparse.ArgumentParser:
     export_code.add_argument("--out", required=True)
     export_code.set_defaults(func=_export_code_preview)
 
+    extract_requirements_cmd = subparsers.add_parser(
+        "extract-requirements",
+        help="extract requirement records from Requirements.md",
+    )
+    extract_requirements_cmd.add_argument("source")
+    extract_requirements_cmd.add_argument("--out", required=True)
+    extract_requirements_cmd.set_defaults(func=_extract_requirements)
+
+    scaffold_spec = subparsers.add_parser(
+        "scaffold-spec",
+        help="generate a human-readable specification scaffold from requirements",
+    )
+    scaffold_spec.add_argument("source")
+    scaffold_spec.add_argument("--out", required=True)
+    scaffold_spec.set_defaults(func=_scaffold_spec)
+
+    scaffold_mbd = subparsers.add_parser(
+        "scaffold-mbd",
+        help="generate a Mermaid-like MBD scaffold from requirements",
+    )
+    scaffold_mbd.add_argument("source")
+    scaffold_mbd.add_argument("--out", required=True)
+    scaffold_mbd.set_defaults(func=_scaffold_mbd)
+
+    validate_trace = subparsers.add_parser(
+        "validate-trace",
+        help="validate requirements coverage in generated spec and MBD scaffold",
+    )
+    validate_trace.add_argument("--requirements", required=True)
+    validate_trace.add_argument("--spec", required=True)
+    validate_trace.add_argument("--mbd", required=True)
+    validate_trace.add_argument("--out", required=True)
+    validate_trace.set_defaults(func=_validate_trace)
+
     for name, command in EXPORT_COMMANDS.items():
         _add_export(subparsers, name, command)
     return parser
@@ -131,6 +172,31 @@ def _export_code_preview(args: argparse.Namespace) -> None:
     print(f"wrote {len(written)} files to {Path(args.out)}")
 
 
+def _extract_requirements(args: argparse.Namespace) -> None:
+    extracted = extract_requirements(args.source)
+    _write_text(args.out, render_requirements_json(extracted))
+
+
+def _scaffold_spec(args: argparse.Namespace) -> None:
+    extracted = extract_requirements(args.source)
+    _write_text(args.out, generate_spec_scaffold(extracted))
+
+
+def _scaffold_mbd(args: argparse.Namespace) -> None:
+    extracted = extract_requirements(args.source)
+    _write_text(args.out, generate_mbd_scaffold(extracted))
+
+
+def _validate_trace(args: argparse.Namespace) -> None:
+    extracted = extract_requirements(args.requirements)
+    spec_text = Path(args.spec).read_text(encoding="utf-8")
+    mbd_text = Path(args.mbd).read_text(encoding="utf-8")
+    report = validate_traceability(extracted, spec_text, mbd_text)
+    _write_text(args.out, report.to_markdown())
+    if not report.passed:
+        raise OSError("requirements trace validation failed")
+
+
 def _export(args: argparse.Namespace, exporter: Callable) -> None:
     source = args.source or args.model
     if not source:
@@ -139,6 +205,13 @@ def _export(args: argparse.Namespace, exporter: Callable) -> None:
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(exporter(model), encoding="utf-8")
+    print(f"wrote {output}")
+
+
+def _write_text(path: str | Path, content: str) -> None:
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
     print(f"wrote {output}")
 
 
