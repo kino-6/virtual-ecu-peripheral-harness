@@ -10,47 +10,39 @@ Archived task history:
 
 ## Current Goal
 
-Install a project-local quality gate and expectation-control workflow so agents
-ask back when the expected artifact quality is unclear, especially for MBD
-validation demos, reports, harnesses, generated code, and ASPICE-aware work.
+Introduce requirements-to-spec and requirements-to-MBD support so AI can propose
+reviewable scaffolds without inventing behavior that is not present in approved
+requirements or specification text.
 
-## Phase 0: Calibration From User Feedback
+## Quality Gates
 
-- [x] Capture the issue: tests passing and reports existing were not enough;
-      the work did not match the user's expected quality.
-- [x] Treat the failure as expectation alignment and quality-gate failure, not
-      just a report-format problem.
-- [x] Preserve the prior completed thermal fan task history in `docs/archive/`.
+- [x] User-visible expectation: `Requirements.md` shall explicitly require
+      Req-to-Spec and Req-to-MBD support before implementation.
+- [x] Unknowns: actual generator implementation is not started in this step.
+- [x] Acceptance check: new requirements shall force open questions instead of
+      silent behavior invention.
+- [x] Acceptance check: high-class requirements shall require explicit spec,
+      MBD, harness, scenario, and expected-behavior coverage.
 
-## Phase 1: Quality Gate Skill
+## Phase 0: Requirements Update
 
-- [x] Add `.agents/skills/quality-gate-expectation-control/`.
-- [x] Define when the skill must trigger.
-- [x] Define ask-back questions for unclear quality expectations.
-- [x] Define quality gate items that must be added to `Tasks.md` before large
-      implementation.
-- [x] Define stop conditions where the agent should ask the user before coding.
-
-Verification:
-
-- [x] Skill validates with the skill validator.
-- [x] `agents/openai.yaml` references `$quality-gate-expectation-control`.
-
-## Phase 2: Agent Rules
-
-- [x] Update `AGENTS.md` to require expectation alignment before substantial or
-      ambiguous validation work.
-- [x] Add the new skill to the Project Skills list.
-- [x] Clarify that agents should ask the user when "quality", "MBD",
-      "validation", "product-like", or "ASPICE-aware" expectations are unclear.
+- [x] Add `REQ2SPEC-*` requirements.
+- [x] Add `REQ2MBD-*` requirements.
+- [x] Update traceability seed for Req-to-Spec and Req-to-MBD evidence.
+- [x] Add review gates before accepting generated spec or MBD scaffold.
 
 Verification:
 
-- [x] `AGENTS.md` remains under 200 lines.
-- [x] The new rule is concise and actionable.
+- [x] `Requirements.md` includes deterministic scaffold requirements.
+- [x] `Requirements.md` includes no silent invention requirements.
+- [x] `git diff --check` passes.
 
-## Phase 3: Final Checkpoint
+## Phase 1: Next Implementation Plan
 
-- [x] Run the relevant documentation/skill validation checks.
-- [x] Review `git diff --check`.
-- [x] Commit the quality gate workflow update.
+- [ ] Define extractor output shape for requirement IDs, DSC tags, statements,
+      source section, and planned evidence.
+- [ ] Define `Spec.md` scaffold template sections.
+- [ ] Define Mermaid-like MBD scaffold template sections.
+- [ ] Define trace validator checks for missing spec coverage, missing MBD
+      coverage, and untraced MBD behavior.
+- [ ] Ask user to approve the scaffold template before implementation.

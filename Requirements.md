@@ -235,6 +235,41 @@ claiming ISO 26262 or ASIL compliance:
 - `M2M-006`: Mermaid diagrams shall be review artifacts; they shall not replace
   semantic MBD IR.
 
+## Requirements-To-Spec Support Requirements
+
+- `REQ2SPEC-001`: The repository shall extract requirement IDs, safety-class-like
+  tags, statements, source sections, and planned evidence from `Requirements.md`.
+- `REQ2SPEC-002`: The repository shall generate or update a human-readable
+  specification scaffold from extracted requirements.
+- `REQ2SPEC-003`: Generated specification scaffolds shall preserve requirement
+  IDs and expose assumptions, open questions, unresolved behavior, and expected
+  review evidence.
+- `REQ2SPEC-004`: The generated specification shall separate item behavior,
+  software/control behavior, harness behavior, MBD handoff behavior, preview
+  engine behavior, AI/RAG behavior, and process evidence.
+- `REQ2SPEC-005`: The agent shall ask the user before inventing behavior not
+  present in requirements or approved specification text.
+- `REQ2SPEC-006`: Specification updates shall be deterministic from unchanged
+  requirements and template rules.
+
+## Requirements-To-MBD Support Requirements
+
+- `REQ2MBD-001`: The repository shall generate Mermaid-like MBD scaffold from
+  approved requirements and human-readable specification content.
+- `REQ2MBD-002`: Generated MBD source shall include trace references from model
+  elements to requirement IDs and specification anchors.
+- `REQ2MBD-003`: `DSC-B` and `DSC-C` requirements shall require explicit
+  state, control, harness, scenario, and expected-behavior coverage before they
+  can be marked covered.
+- `REQ2MBD-004`: The validator shall report requirements that lack
+  specification coverage.
+- `REQ2MBD-005`: The validator shall report requirements that lack MBD coverage.
+- `REQ2MBD-006`: The validator shall report MBD behavior that lacks requirement
+  or specification trace.
+- `REQ2MBD-007`: The scaffold generator shall emit open questions instead of
+  silently inventing missing thresholds, timings, recovery rules, or fault
+  semantics.
+
 ## MBD IR Requirements
 
 - `IR-001`: MBD IR shall represent ports, parameters, states, transitions,
@@ -363,6 +398,8 @@ claiming ISO 26262 or ASIL compliance:
 | `SYS-001` - `SYS-009` | Markup components, control rules, scenarios, reports |
 | `SWE-001` - `SWE-005` | Parser tests, IR snapshot tests, preview C export tests |
 | `M2M-001` - `M2M-006` | Mermaid-to-MBD parser tests and diagnostics tests |
+| `REQ2SPEC-001` - `REQ2SPEC-006` | Requirements extraction tests and generated specification scaffold reviews |
+| `REQ2MBD-001` - `REQ2MBD-007` | MBD scaffold generation tests and coverage validation reports |
 | `IR-001` - `IR-005` | IR snapshot tests and source-to-IR trace tests |
 | `MBD-001` - `MBD-008` | Exporter tests and deterministic regeneration tests |
 | `ENG-001` - `ENG-007` | Preview engine semantic subset tests and execution traces |
@@ -375,6 +412,10 @@ claiming ISO 26262 or ASIL compliance:
 ## Review Gates
 
 - Requirements baseline reviewed before implementing the validation example.
+- Requirements-to-spec scaffold reviewed before authoring or regenerating MBD
+  source.
+- Requirements-to-MBD scaffold reviewed before accepting generated model
+  behavior.
 - Markup reviewed before expanding parser and exporter behavior.
 - Generated artifacts reviewed before preview harness work.
 - Preview engine supported subset reviewed before adding semantics.
