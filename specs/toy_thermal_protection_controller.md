@@ -102,7 +102,7 @@ flowchart LR
 | Scenario | Purpose | Expected result |
 | --- | --- | --- |
 | `thermal_protection_normal` | Normal high-temperature cooling | `COOLING`, fan duty 70 |
+| `thermal_protection_boundary` | Cooling hysteresis return below low threshold | `IDLE`, fan duty 0 |
 | `thermal_protection_derating` | High valid temperature protection | `DERATING`, fan duty 95, derating 45 |
 | `thermal_protection_fault_latch` | Persistent invalid sensor fault | `FAULT_LATCHED`, safe command active |
 | `thermal_protection_recovery` | Explicit recovery from latched fault | `IDLE`, diagnostic clear |
-

@@ -9,7 +9,7 @@
         "safeCommandActive": "false",
         "state": "IDLE"
       },
-      "condition": "state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true",
+      "condition": "state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "name": "recoverFromLatch",
       "trace": [
         "SYS-008",
@@ -44,7 +44,6 @@
       "name": "holdLatchedFault",
       "trace": [
         "SYS-007",
-        "SYS-008",
         "HAR-004"
       ]
     },
@@ -252,35 +251,17 @@
     }
   ],
   "requirementRefs": [
-    "CGEN-001",
-    "CGEN-002",
     "CGEN-003",
-    "CGEN-004",
-    "CGEN-005",
-    "ENG-001",
     "ENG-002",
-    "ENG-003",
-    "ENG-004",
-    "ENG-005",
-    "ENG-006",
     "HAR-001",
     "HAR-002",
     "HAR-003",
     "HAR-004",
     "HAR-006",
-    "HAR-007",
-    "STK-001",
-    "STK-002",
-    "STK-003",
-    "STK-004",
-    "STK-005",
-    "STK-006",
-    "STK-007",
     "SWE-001",
     "SWE-002",
     "SWE-003",
     "SWE-004",
-    "SWE-005",
     "SYS-001",
     "SYS-002",
     "SYS-003",

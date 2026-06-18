@@ -240,6 +240,7 @@ def _artifact_evidence(model: MbdModelIR) -> list[str]:
             "generated/toy_thermal_protection_controller.mmd",
             "generated/protection_ecu_preview/controller.c",
             "reports/thermal_protection_normal.md",
+            "reports/thermal_protection_boundary.md",
             "reports/thermal_protection_derating.md",
             "reports/thermal_protection_fault_latch.md",
             "reports/thermal_protection_recovery.md",

@@ -135,3 +135,25 @@ Verification:
 - [x] Exporter tests require visual review sections.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
+
+## Phase 6: Reject-Driven Retake
+
+- [x] Fix specification mismatch: recovery from `FAULT_LATCHED` shall require
+      `temperatureValid == true`, `invalidDebounced == false`, and
+      `recoveryRequest == true` in MBD control, state handoff, preview runtime,
+      generated C, and reports.
+- [x] Remove broad component-level trace that makes every requirement look
+      covered by the component instead of concrete model elements.
+- [x] Add a small spec-to-MBD compliance view that maps each `SYS-*`
+      requirement to the exact MBD rule/flow/harness/scenario evidence.
+- [x] Simplify the HTML review page so the first review path is specification
+      compliance, not a pile of diagrams.
+- [x] Regenerate MBD IR, handoff artifacts, preview C, reports, and demo HTML.
+
+Verification:
+
+- [x] Tests fail if recovery omits `invalidDebounced == false`.
+- [x] Tests fail if component trace contains broad `SYS-*` coverage.
+- [x] Tests fail if the demo HTML lacks the spec-to-MBD compliance view.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.

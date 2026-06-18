@@ -1,8 +1,8 @@
 # Scenario Report
 
-- Scenario: `thermal_protection_normal`
+- Scenario: `thermal_protection_boundary`
 - Result: **PASS**
-- Final state: `COOLING`
+- Final state: `IDLE`
 - Boundary: preview-only; not a certified code generation or verification backend.
 
 ## Model Inputs
@@ -453,6 +453,10 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   setInput:
     name: temperatureC
     value: 82
+- atMs: 80
+  setInput:
+    name: temperatureC
+    value: 66
 ```
 
 ## Harness Boundary Evidence
@@ -781,25 +785,171 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - HAR-004
   - SYS-002
   - SYS-003
+- stepIndex: 2
+  atMs: 80
+  scenarioInput:
+    name: temperatureC
+    value: 66
+  before:
+    state: COOLING
+    inputs:
+      temperatureC: 82
+      temperatureValid: true
+      invalidDebounced: false
+      recoveryRequest: false
+    outputs:
+      fanDuty: 70
+      deratingCommand: 0
+      diagnosticFault: false
+      safeCommandActive: false
+  virtualIcObservation:
+    ToyTempSensorIC.temperatureC: 66
+    ToyTempSensorIC.temperatureValid: true
+  controlRuleEvaluations:
+  - rule: recoverFromLatch
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
+    matched: false
+    actionsIfMatched:
+      state: IDLE
+      fanDuty: '0'
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-008
+    - HAR-006
+  - rule: faultLatch
+    condition: invalidDebounced == true
+    matched: false
+    actionsIfMatched:
+      state: FAULT_LATCHED
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-007
+    - SYS-006
+    - HAR-004
+  - rule: holdLatchedFault
+    condition: state == FAULT_LATCHED
+    matched: false
+    actionsIfMatched:
+      state: FAULT_LATCHED
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-007
+    - HAR-004
+  - rule: sensorInvalid
+    condition: temperatureValid == false
+    matched: false
+    actionsIfMatched:
+      state: SENSOR_FAULT
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-006
+    - HAR-004
+  - rule: derating
+    condition: temperatureC >= deratingEntryThreshold
+    matched: false
+    actionsIfMatched:
+      state: DERATING
+      fanDuty: deratingFanDuty
+      deratingCommand: deratingLimit
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-005
+    - SYS-002
+    - HAR-004
+  - rule: highCooling
+    condition: temperatureC >= coolingOnThreshold
+    matched: false
+    actionsIfMatched:
+      state: COOLING
+      fanDuty: coolingDuty
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-003
+    - SYS-002
+    - HAR-004
+  - rule: lowCooling
+    condition: temperatureC <= coolingOffThreshold
+    matched: true
+    actionsIfMatched:
+      state: IDLE
+      fanDuty: '0'
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-004
+    - HAR-004
+  appliedRule: lowCooling
+  generatedEcuCommandOutputs:
+    fanDuty: 0
+    deratingCommand: 0
+    diagnosticFault: false
+    safeCommandActive: false
+    halCalls:
+    - api: hal_spi_read_temperature_c
+      direction: virtual IC to controller
+      source: ToyTempSensorIC
+    - api: hal_pwm_set_fan_duty
+      direction: controller to virtual IC
+      target: ToyFanDriverIC
+      value: 0
+    - api: hal_load_limiter_set_derating
+      direction: controller to virtual IC
+      target: ToyLoadLimiterIC
+      value: 0
+    controllerSource: generated/protection_ecu_preview/controller.c
+  after:
+    state: IDLE
+    inputs:
+      temperatureC: 66
+      temperatureValid: true
+      invalidDebounced: false
+      recoveryRequest: false
+    outputs:
+      fanDuty: 0
+      deratingCommand: 0
+      diagnosticFault: false
+      safeCommandActive: false
+  requirementRefs:
+  - HAR-001
+  - HAR-002
+  - HAR-004
+  - SYS-004
 ```
 
 ## Observed Behavior
 
 ```yaml
-finalState: COOLING
+finalState: IDLE
 inputs:
-  temperatureC: 82
+  temperatureC: 66
   temperatureValid: true
   invalidDebounced: false
   recoveryRequest: false
 outputs:
-  fanDuty: 70
+  fanDuty: 0
   deratingCommand: 0
   diagnosticFault: false
   safeCommandActive: false
 appliedRules:
 - lowCooling
 - highCooling
+- lowCooling
 harnessDevices:
 - name: ToyTempSensorIC
   role: sensor
@@ -1105,12 +1255,157 @@ stepEvidence:
   - HAR-004
   - SYS-002
   - SYS-003
+- stepIndex: 2
+  atMs: 80
+  scenarioInput:
+    name: temperatureC
+    value: 66
+  before:
+    state: COOLING
+    inputs:
+      temperatureC: 82
+      temperatureValid: true
+      invalidDebounced: false
+      recoveryRequest: false
+    outputs:
+      fanDuty: 70
+      deratingCommand: 0
+      diagnosticFault: false
+      safeCommandActive: false
+  virtualIcObservation:
+    ToyTempSensorIC.temperatureC: 66
+    ToyTempSensorIC.temperatureValid: true
+  controlRuleEvaluations:
+  - rule: recoverFromLatch
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
+    matched: false
+    actionsIfMatched:
+      state: IDLE
+      fanDuty: '0'
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-008
+    - HAR-006
+  - rule: faultLatch
+    condition: invalidDebounced == true
+    matched: false
+    actionsIfMatched:
+      state: FAULT_LATCHED
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-007
+    - SYS-006
+    - HAR-004
+  - rule: holdLatchedFault
+    condition: state == FAULT_LATCHED
+    matched: false
+    actionsIfMatched:
+      state: FAULT_LATCHED
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-007
+    - HAR-004
+  - rule: sensorInvalid
+    condition: temperatureValid == false
+    matched: false
+    actionsIfMatched:
+      state: SENSOR_FAULT
+      fanDuty: safeDuty
+      deratingCommand: '0'
+      diagnosticFault: 'true'
+      safeCommandActive: 'true'
+    trace:
+    - SYS-006
+    - HAR-004
+  - rule: derating
+    condition: temperatureC >= deratingEntryThreshold
+    matched: false
+    actionsIfMatched:
+      state: DERATING
+      fanDuty: deratingFanDuty
+      deratingCommand: deratingLimit
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-005
+    - SYS-002
+    - HAR-004
+  - rule: highCooling
+    condition: temperatureC >= coolingOnThreshold
+    matched: false
+    actionsIfMatched:
+      state: COOLING
+      fanDuty: coolingDuty
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-003
+    - SYS-002
+    - HAR-004
+  - rule: lowCooling
+    condition: temperatureC <= coolingOffThreshold
+    matched: true
+    actionsIfMatched:
+      state: IDLE
+      fanDuty: '0'
+      deratingCommand: '0'
+      diagnosticFault: 'false'
+      safeCommandActive: 'false'
+    trace:
+    - SYS-004
+    - HAR-004
+  appliedRule: lowCooling
+  generatedEcuCommandOutputs:
+    fanDuty: 0
+    deratingCommand: 0
+    diagnosticFault: false
+    safeCommandActive: false
+    halCalls:
+    - api: hal_spi_read_temperature_c
+      direction: virtual IC to controller
+      source: ToyTempSensorIC
+    - api: hal_pwm_set_fan_duty
+      direction: controller to virtual IC
+      target: ToyFanDriverIC
+      value: 0
+    - api: hal_load_limiter_set_derating
+      direction: controller to virtual IC
+      target: ToyLoadLimiterIC
+      value: 0
+    controllerSource: generated/protection_ecu_preview/controller.c
+  after:
+    state: IDLE
+    inputs:
+      temperatureC: 66
+      temperatureValid: true
+      invalidDebounced: false
+      recoveryRequest: false
+    outputs:
+      fanDuty: 0
+      deratingCommand: 0
+      diagnosticFault: false
+      safeCommandActive: false
+  requirementRefs:
+  - HAR-001
+  - HAR-002
+  - HAR-004
+  - SYS-004
 ```
 
 ## Generated ECU Command Outputs
 
 ```yaml
-fanDuty: 70
+fanDuty: 0
 deratingCommand: 0
 diagnosticFault: false
 safeCommandActive: false
@@ -1121,7 +1416,7 @@ halCalls:
 - api: hal_pwm_set_fan_duty
   direction: controller to virtual IC
   target: ToyFanDriverIC
-  value: 70
+  value: 0
 - api: hal_load_limiter_set_derating
   direction: controller to virtual IC
   target: ToyLoadLimiterIC
@@ -1132,9 +1427,9 @@ controllerSource: generated/protection_ecu_preview/controller.c
 ## Expected Behavior
 
 ```yaml
-finalState: COOLING
+finalState: IDLE
 outputs:
-  fanDuty: 70
+  fanDuty: 0
   deratingCommand: 0
   diagnosticFault: false
   safeCommandActive: false
@@ -1142,8 +1437,8 @@ outputs:
 
 ## Pass/Fail Result
 
-- PASS finalState: actual COOLING, expected COOLING
-- PASS outputs.fanDuty: actual 70, expected 70
+- PASS finalState: actual IDLE, expected IDLE
+- PASS outputs.fanDuty: actual 0, expected 0
 - PASS outputs.deratingCommand: actual 0, expected 0
 - PASS outputs.diagnosticFault: actual False, expected False
 - PASS outputs.safeCommandActive: actual False, expected False
@@ -1155,6 +1450,8 @@ outputs:
 - rule lowCooling applied
 - input temperatureC=82
 - rule highCooling applied
+- input temperatureC=66
+- rule lowCooling applied
 
 ## Register Reads
 

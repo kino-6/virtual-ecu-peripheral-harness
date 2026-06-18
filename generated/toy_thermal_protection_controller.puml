@@ -12,10 +12,10 @@ IDLE --> SENSOR_FAULT : temperatureValid == false
 COOLING --> SENSOR_FAULT : temperatureValid == false
 DERATING --> SENSOR_FAULT : temperatureValid == false
 SENSOR_FAULT --> FAULT_LATCHED : invalidDebounced == true
-FAULT_LATCHED --> IDLE : recoveryRequest == true
+FAULT_LATCHED --> IDLE : temperatureValid == true and invalidDebounced == false and recoveryRequest == true
 ' Trace recoverFromLatch: SYS-008, HAR-006
 ' Trace faultLatch: SYS-007, SYS-006, HAR-004
-' Trace holdLatchedFault: SYS-007, SYS-008, HAR-004
+' Trace holdLatchedFault: SYS-007, HAR-004
 ' Trace sensorInvalid: SYS-006, HAR-004
 ' Trace derating: SYS-005, SYS-002, HAR-004
 ' Trace highCooling: SYS-003, SYS-002, HAR-004

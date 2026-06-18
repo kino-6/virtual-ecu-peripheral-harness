@@ -46,18 +46,23 @@ flowchart LR
   %% Trace: SYS-006, SYS-007, HAR-004
   %% ToyThermalProtectionController_diagnosticFault --> ScenarioReport_observedBehavior
   ToyThermalProtectionController_diagnosticFault -->|"diagnostic observation"| ScenarioReport_observedBehavior
+  ToyThermalProtectionController_safeCommandActive["ToyThermalProtectionController.safeCommandActive"]
+  ScenarioReport_passFailResult["ScenarioReport.passFailResult"]
+  %% Trace: SYS-009, HAR-004
+  %% ToyThermalProtectionController_safeCommandActive --> ScenarioReport_passFailResult
+  ToyThermalProtectionController_safeCommandActive -->|"scenario pass/fail evidence"| ScenarioReport_passFailResult
   rule_recoverFromLatch{"rule recoverFromLatch"}
   %% Trace: SYS-008, HAR-006
   state["state"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| state
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| state
   fanDuty["fanDuty"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| fanDuty
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| fanDuty
   deratingCommand["deratingCommand"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| deratingCommand
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| deratingCommand
   diagnosticFault["diagnosticFault"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| diagnosticFault
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| diagnosticFault
   safeCommandActive["safeCommandActive"]
-  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| safeCommandActive
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| safeCommandActive
   rule_faultLatch{"rule faultLatch"}
   %% Trace: SYS-007, SYS-006, HAR-004
   state["state"]
@@ -71,7 +76,7 @@ flowchart LR
   safeCommandActive["safeCommandActive"]
   rule_faultLatch -->|"invalidDebounced == true"| safeCommandActive
   rule_holdLatchedFault{"rule holdLatchedFault"}
-  %% Trace: SYS-007, SYS-008, HAR-004
+  %% Trace: SYS-007, HAR-004
   state["state"]
   rule_holdLatchedFault -->|"state == FAULT_LATCHED"| state
   fanDuty["fanDuty"]

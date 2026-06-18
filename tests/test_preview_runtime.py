@@ -84,6 +84,25 @@ def test_thermal_protection_derating_scenario_passes_with_report_sections(tmp_pa
     assert "generated/protection_ecu_preview/controller.c" in report
 
 
+def test_thermal_protection_boundary_scenario_proves_low_threshold_return(tmp_path):
+    result = run_preview_file(
+        ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",
+        ROOT / "scenarios" / "thermal_protection_boundary.yml",
+        report_path=tmp_path / "thermal_protection_boundary.md",
+    )
+
+    assert result.passed is True
+    assert result.final_state == "IDLE"
+    assert result.generated_ecu_command_outputs["fanDuty"] == 0
+    assert result.observed_behavior["stepEvidence"][-1]["appliedRule"] == "lowCooling"
+    assert result.observed_behavior["stepEvidence"][-1]["requirementRefs"] == [
+        "HAR-001",
+        "HAR-002",
+        "HAR-004",
+        "SYS-004",
+    ]
+
+
 def test_thermal_protection_fault_latch_and_recovery_scenarios_pass(tmp_path):
     fault = run_preview_file(
         ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",

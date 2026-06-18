@@ -143,17 +143,17 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
 
     assert "<svg" in html
     assert "ToyThermalProtectionController" in html
-    assert "Requirements Trace Matrix" in html
+    assert "Spec-To-MBD Compliance Review" in html
+    assert "SYS-008" in html
+    assert "recoverFromLatch" in html
+    assert "thermal_protection_recovery" in html
     assert "MBD Data Flow Diagram" in html
     assert "State Machine Diagram" in html
-    assert "Control Rule Map" in html
     assert "Harness Boundary Diagram" in html
     assert "ToyTempSensorIC.temperatureC" in html
     assert "HAL_LIMITER.set_derating" in html
     assert "faultLatch" in html
-    assert "recoverFromLatch" in html
     assert "ToyLoadLimiterIC" in html
-    assert "SYS-008" in html
 
 
 def test_markdown_documents_mbd_blocks_and_connections():

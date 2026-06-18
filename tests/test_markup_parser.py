@@ -47,3 +47,19 @@ def test_thermal_fan_markup_keeps_requirement_traceability():
     assert model.harness_devices[0].boundary == "virtual_ic"
     assert "HAR-001" in model.flows[0].trace
     assert "HAR-005" in model.to_dict()["metadata"]["requirementRefs"]
+
+
+def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    recover_rule = next(control for control in model.controls if control.name == "recoverFromLatch")
+    recover_transition = next(
+        transition
+        for transition in model.transitions
+        if transition.source == "FAULT_LATCHED" and transition.target == "IDLE"
+    )
+
+    assert "invalidDebounced == false" in recover_rule.condition
+    assert "invalidDebounced == false" in recover_transition.condition
+    assert "SYS-008" in recover_rule.trace
+    assert all(not ref.startswith("SYS-") for ref in model.component.trace)

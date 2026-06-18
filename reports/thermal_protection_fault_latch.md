@@ -54,8 +54,8 @@ ports:
     default: 'false'
 controlRules:
 - name: recoverFromLatch
-  condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-    == true
+  condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+    == false and recoveryRequest == true
   actions:
     state: IDLE
     fanDuty: '0'
@@ -87,7 +87,6 @@ controlRules:
     safeCommandActive: 'true'
   trace:
   - SYS-007
-  - SYS-008
   - HAR-004
 - name: sensorInvalid
   condition: temperatureValid == false
@@ -136,35 +135,17 @@ controlRules:
   - SYS-004
   - HAR-004
 requirementRefs:
-- CGEN-001
-- CGEN-002
 - CGEN-003
-- CGEN-004
-- CGEN-005
-- ENG-001
 - ENG-002
-- ENG-003
-- ENG-004
-- ENG-005
-- ENG-006
 - HAR-001
 - HAR-002
 - HAR-003
 - HAR-004
 - HAR-006
-- HAR-007
-- STK-001
-- STK-002
-- STK-003
-- STK-004
-- STK-005
-- STK-006
-- STK-007
 - SWE-001
 - SWE-002
 - SWE-003
 - SWE-004
-- SWE-005
 - SYS-001
 - SYS-002
 - SYS-003
@@ -183,31 +164,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
 ## Traceability Matrix
 
 ```yaml
-- requirement: CGEN-001
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: CGEN-002
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
 - requirement: CGEN-003
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyThermalProtectionController.fanDuty->HAL_PWM.set_fan_duty
   - flow:ToyThermalProtectionController.deratingCommand->HAL_LIMITER.set_derating
   - harness:ToyThermalProtectionController
@@ -216,101 +174,24 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: CGEN-004
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: CGEN-005
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: ENG-001
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: ENG-002
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: ENG-003
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: ENG-004
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: ENG-005
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: ENG-006
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: HAR-001
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.temperatureC->HAL_SPI.read_temperature
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - flow:HAL_PWM.set_fan_duty->ToyFanDriverIC.dutyCommand
@@ -321,12 +202,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: HAR-002
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:HAL_SPI.read_temperature->ToyThermalProtectionController.temperatureC
   - harness:ToyThermalProtectionController
   evidence:
@@ -334,25 +215,26 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: HAR-003
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: HAR-004
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
+  - flow:ToyThermalProtectionController.safeCommandActive->ScenarioReport.passFailResult
   - control:faultLatch
   - control:holdLatchedFault
   - control:sensorInvalid
@@ -364,12 +246,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: HAR-006
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:HAL_LIMITER.set_derating->ToyLoadLimiterIC.limitCommand
   - control:recoverFromLatch
   - harness:ToyLoadLimiterIC
@@ -378,94 +260,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: HAR-007
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-001
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-002
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-003
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-004
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-005
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-006
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: STK-007
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
@@ -477,6 +272,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
@@ -488,6 +284,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
@@ -499,12 +296,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SWE-004
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:HAL_SPI.read_temperature->ToyThermalProtectionController.temperatureC
   - flow:ToyThermalProtectionController.fanDuty->HAL_PWM.set_fan_duty
   - flow:ToyThermalProtectionController.deratingCommand->HAL_LIMITER.set_derating
@@ -514,23 +311,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
-- requirement: SWE-005
-  modelElements:
-  - component:ToyThermalProtectionController
-  evidence:
-  - examples/toy_thermal_protection_controller.mbd.md
-  - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-001
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.temperatureC->HAL_SPI.read_temperature
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - harness:ToyTempSensorIC
@@ -539,12 +325,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-002
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyThermalProtectionController.fanDuty->HAL_PWM.set_fan_duty
   - flow:HAL_PWM.set_fan_duty->ToyFanDriverIC.dutyCommand
   - control:derating
@@ -555,36 +341,36 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-003
   modelElements:
-  - component:ToyThermalProtectionController
   - control:highCooling
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-004
   modelElements:
-  - component:ToyThermalProtectionController
   - control:lowCooling
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-005
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyThermalProtectionController.deratingCommand->HAL_LIMITER.set_derating
   - flow:HAL_LIMITER.set_derating->ToyLoadLimiterIC.limitCommand
   - control:derating
@@ -594,12 +380,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-006
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
   - control:faultLatch
@@ -610,12 +396,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-007
   modelElements:
-  - component:ToyThermalProtectionController
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
   - control:faultLatch
@@ -626,30 +412,31 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-008
   modelElements:
-  - component:ToyThermalProtectionController
   - control:recoverFromLatch
-  - control:holdLatchedFault
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
 - requirement: SYS-009
   modelElements:
-  - component:ToyThermalProtectionController
+  - flow:ToyThermalProtectionController.safeCommandActive->ScenarioReport.passFailResult
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
   - generated/protection_ecu_preview/controller.c
   - reports/thermal_protection_normal.md
+  - reports/thermal_protection_boundary.md
   - reports/thermal_protection_derating.md
   - reports/thermal_protection_fault_latch.md
   - reports/thermal_protection_recovery.md
@@ -729,8 +516,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -765,7 +552,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false
@@ -876,8 +662,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -912,7 +698,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false
@@ -1022,8 +807,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -1058,7 +843,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false
@@ -1203,8 +987,8 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -1239,7 +1023,6 @@ stepEvidence:
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false
@@ -1350,8 +1133,8 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -1386,7 +1169,6 @@ stepEvidence:
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false
@@ -1496,8 +1278,8 @@ stepEvidence:
     ToyTempSensorIC.temperatureValid: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
-    condition: state == FAULT_LATCHED and temperatureValid == true and recoveryRequest
-      == true
+    condition: state == FAULT_LATCHED and temperatureValid == true and invalidDebounced
+      == false and recoveryRequest == true
     matched: false
     actionsIfMatched:
       state: IDLE
@@ -1532,7 +1314,6 @@ stepEvidence:
       safeCommandActive: 'true'
     trace:
     - SYS-007
-    - SYS-008
     - HAR-004
   - rule: sensorInvalid
     condition: temperatureValid == false

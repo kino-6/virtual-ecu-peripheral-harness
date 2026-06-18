@@ -44,44 +44,9 @@
       }
     },
     "trace": [
-      "STK-001",
-      "STK-002",
-      "STK-003",
-      "STK-004",
-      "STK-005",
-      "STK-006",
-      "STK-007",
-      "SYS-001",
-      "SYS-002",
-      "SYS-003",
-      "SYS-004",
-      "SYS-005",
-      "SYS-006",
-      "SYS-007",
-      "SYS-008",
-      "SYS-009",
       "SWE-001",
       "SWE-002",
-      "SWE-003",
-      "SWE-004",
-      "SWE-005",
-      "ENG-001",
-      "ENG-002",
-      "ENG-003",
-      "ENG-004",
-      "ENG-005",
-      "ENG-006",
-      "HAR-001",
-      "HAR-002",
-      "HAR-003",
-      "HAR-004",
-      "HAR-006",
-      "HAR-007",
-      "CGEN-001",
-      "CGEN-002",
-      "CGEN-003",
-      "CGEN-004",
-      "CGEN-005"
+      "SWE-003"
     ]
   },
   "controls": [
@@ -93,7 +58,7 @@
         "safeCommandActive": "false",
         "state": "IDLE"
       },
-      "condition": "state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true",
+      "condition": "state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "name": "recoverFromLatch",
       "trace": [
         "SYS-008",
@@ -128,7 +93,6 @@
       "name": "holdLatchedFault",
       "trace": [
         "SYS-007",
-        "SYS-008",
         "HAR-004"
       ]
     },
@@ -281,6 +245,15 @@
         "SYS-007",
         "HAR-004"
       ]
+    },
+    {
+      "label": "scenario pass/fail evidence",
+      "source": "ToyThermalProtectionController.safeCommandActive",
+      "target": "ScenarioReport.passFailResult",
+      "trace": [
+        "SYS-009",
+        "HAR-004"
+      ]
     }
   ],
   "harness_devices": [
@@ -327,35 +300,17 @@
   "metadata": {
     "irRole": "internal snapshot",
     "requirementRefs": [
-      "CGEN-001",
-      "CGEN-002",
       "CGEN-003",
-      "CGEN-004",
-      "CGEN-005",
-      "ENG-001",
       "ENG-002",
-      "ENG-003",
-      "ENG-004",
-      "ENG-005",
-      "ENG-006",
       "HAR-001",
       "HAR-002",
       "HAR-003",
       "HAR-004",
       "HAR-006",
-      "HAR-007",
-      "STK-001",
-      "STK-002",
-      "STK-003",
-      "STK-004",
-      "STK-005",
-      "STK-006",
-      "STK-007",
       "SWE-001",
       "SWE-002",
       "SWE-003",
       "SWE-004",
-      "SWE-005",
       "SYS-001",
       "SYS-002",
       "SYS-003",
@@ -501,7 +456,7 @@
   },
   "sections": [
     {
-      "body": "component ToyThermalProtectionController\ntrace STK-001 STK-002 STK-003 STK-004 STK-005 STK-006 STK-007 SYS-001 SYS-002 SYS-003 SYS-004 SYS-005 SYS-006 SYS-007 SYS-008 SYS-009 SWE-001 SWE-002 SWE-003 SWE-004 SWE-005 ENG-001 ENG-002 ENG-003 ENG-004 ENG-005 ENG-006 HAR-001 HAR-002 HAR-003 HAR-004 HAR-006 HAR-007 CGEN-001 CGEN-002 CGEN-003 CGEN-004 CGEN-005\nbus virtual mode=preview wordBits=16\nparameter coolingOnThreshold: degC = 78\nparameter coolingOffThreshold: degC = 68\nparameter deratingEntryThreshold: degC = 94\nparameter coolingDuty: percent = 70\nparameter deratingFanDuty: percent = 95\nparameter deratingLimit: percent = 45\nparameter safeDuty: percent = 30\n\nport in temperatureC: degC = 25\nport in temperatureValid: bool = true\nport in invalidDebounced: bool = false\nport in recoveryRequest: bool = false\nport out fanDuty: percent = 0\nport out deratingCommand: percent = 0\nport out diagnosticFault: bool = false\nport out safeCommandActive: bool = false",
+      "body": "component ToyThermalProtectionController\ntrace SWE-001 SWE-002 SWE-003\nbus virtual mode=preview wordBits=16\nparameter coolingOnThreshold: degC = 78\nparameter coolingOffThreshold: degC = 68\nparameter deratingEntryThreshold: degC = 94\nparameter coolingDuty: percent = 70\nparameter deratingFanDuty: percent = 95\nparameter deratingLimit: percent = 45\nparameter safeDuty: percent = 30\n\nport in temperatureC: degC = 25\nport in temperatureValid: bool = true\nport in invalidDebounced: bool = false\nport in recoveryRequest: bool = false\nport out fanDuty: percent = 0\nport out deratingCommand: percent = 0\nport out diagnosticFault: bool = false\nport out safeCommandActive: bool = false",
       "language": "mbd-component"
     },
     {
@@ -509,15 +464,15 @@
       "language": "mbd-registers"
     },
     {
-      "body": "RESET --> IDLE: temperatureValid == true\nIDLE --> COOLING: temperatureC >= coolingOnThreshold\nCOOLING --> IDLE: temperatureC <= coolingOffThreshold\nCOOLING --> DERATING: temperatureC >= deratingEntryThreshold\nDERATING --> COOLING: temperatureC < deratingEntryThreshold\nIDLE --> SENSOR_FAULT: temperatureValid == false\nCOOLING --> SENSOR_FAULT: temperatureValid == false\nDERATING --> SENSOR_FAULT: temperatureValid == false\nSENSOR_FAULT --> FAULT_LATCHED: invalidDebounced == true\nFAULT_LATCHED --> IDLE: recoveryRequest == true",
+      "body": "RESET --> IDLE: temperatureValid == true\nIDLE --> COOLING: temperatureC >= coolingOnThreshold\nCOOLING --> IDLE: temperatureC <= coolingOffThreshold\nCOOLING --> DERATING: temperatureC >= deratingEntryThreshold\nDERATING --> COOLING: temperatureC < deratingEntryThreshold\nIDLE --> SENSOR_FAULT: temperatureValid == false\nCOOLING --> SENSOR_FAULT: temperatureValid == false\nDERATING --> SENSOR_FAULT: temperatureValid == false\nSENSOR_FAULT --> FAULT_LATCHED: invalidDebounced == true\nFAULT_LATCHED --> IDLE: temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "language": "mbd-state"
     },
     {
-      "body": "ToyTempSensorIC.temperatureC -> HAL_SPI.read_temperature: virtual sensor sample trace SYS-001 HAR-001\nToyTempSensorIC.temperatureValid -> HAL_SPI.read_temperature: virtual validity sample trace SYS-001 SYS-006 HAR-001\nToyTempSensorIC.invalidDebounced -> ToyThermalProtectionController.invalidDebounced: preview debounce input trace SYS-007 ENG-002 HAR-003\nHAL_SPI.read_temperature -> ToyThermalProtectionController.temperatureC: HAL temperature input trace SWE-004 HAR-002\nToyThermalProtectionController.fanDuty -> HAL_PWM.set_fan_duty: generated ECU fan command trace SYS-002 SWE-004 CGEN-003\nToyThermalProtectionController.deratingCommand -> HAL_LIMITER.set_derating: generated ECU derating command trace SYS-005 SWE-004 CGEN-003\nHAL_PWM.set_fan_duty -> ToyFanDriverIC.dutyCommand: virtual actuator command trace SYS-002 HAR-001\nHAL_LIMITER.set_derating -> ToyLoadLimiterIC.limitCommand: virtual load limiter command trace SYS-005 HAR-006\nToyThermalProtectionController.diagnosticFault -> ScenarioReport.observedBehavior: diagnostic observation trace SYS-006 SYS-007 HAR-004",
+      "body": "ToyTempSensorIC.temperatureC -> HAL_SPI.read_temperature: virtual sensor sample trace SYS-001 HAR-001\nToyTempSensorIC.temperatureValid -> HAL_SPI.read_temperature: virtual validity sample trace SYS-001 SYS-006 HAR-001\nToyTempSensorIC.invalidDebounced -> ToyThermalProtectionController.invalidDebounced: preview debounce input trace SYS-007 ENG-002 HAR-003\nHAL_SPI.read_temperature -> ToyThermalProtectionController.temperatureC: HAL temperature input trace SWE-004 HAR-002\nToyThermalProtectionController.fanDuty -> HAL_PWM.set_fan_duty: generated ECU fan command trace SYS-002 SWE-004 CGEN-003\nToyThermalProtectionController.deratingCommand -> HAL_LIMITER.set_derating: generated ECU derating command trace SYS-005 SWE-004 CGEN-003\nHAL_PWM.set_fan_duty -> ToyFanDriverIC.dutyCommand: virtual actuator command trace SYS-002 HAR-001\nHAL_LIMITER.set_derating -> ToyLoadLimiterIC.limitCommand: virtual load limiter command trace SYS-005 HAR-006\nToyThermalProtectionController.diagnosticFault -> ScenarioReport.observedBehavior: diagnostic observation trace SYS-006 SYS-007 HAR-004\nToyThermalProtectionController.safeCommandActive -> ScenarioReport.passFailResult: scenario pass/fail evidence trace SYS-009 HAR-004",
       "language": "mbd-flow"
     },
     {
-      "body": "rule recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-008 HAR-006\nrule faultLatch: when invalidDebounced == true then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 SYS-006 HAR-004\nrule holdLatchedFault: when state == FAULT_LATCHED then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 SYS-008 HAR-004\nrule sensorInvalid: when temperatureValid == false then state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-006 HAR-004\nrule derating: when temperatureC >= deratingEntryThreshold then state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false trace SYS-005 SYS-002 HAR-004\nrule highCooling: when temperatureC >= coolingOnThreshold then state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-003 SYS-002 HAR-004\nrule lowCooling: when temperatureC <= coolingOffThreshold then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-004 HAR-004",
+      "body": "rule recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-008 HAR-006\nrule faultLatch: when invalidDebounced == true then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 SYS-006 HAR-004\nrule holdLatchedFault: when state == FAULT_LATCHED then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 HAR-004\nrule sensorInvalid: when temperatureValid == false then state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-006 HAR-004\nrule derating: when temperatureC >= deratingEntryThreshold then state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false trace SYS-005 SYS-002 HAR-004\nrule highCooling: when temperatureC >= coolingOnThreshold then state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-003 SYS-002 HAR-004\nrule lowCooling: when temperatureC <= coolingOffThreshold then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-004 HAR-004",
       "language": "mbd-control"
     },
     {
@@ -574,7 +529,7 @@
       "target": "FAULT_LATCHED"
     },
     {
-      "condition": "recoveryRequest == true",
+      "condition": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "source": "FAULT_LATCHED",
       "target": "IDLE"
     }

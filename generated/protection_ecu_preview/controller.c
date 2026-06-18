@@ -33,7 +33,7 @@ void toy_thermal_protection_controller_step(ToyThermalProtectionController *cont
     recoveryRequest = hal_spi_read_recovery_request();
 
     if (controller->state == TOY_PROTECTION_STATE_FAULT_LATCHED &&
-        temperatureValid && recoveryRequest) {
+        temperatureValid && !invalidDebounced && recoveryRequest) {
         controller->state = TOY_PROTECTION_STATE_IDLE;
         controller->fanDuty = 0.0f;
         controller->deratingCommand = 0.0f;

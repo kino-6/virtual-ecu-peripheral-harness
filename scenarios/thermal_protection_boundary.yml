@@ -1,0 +1,22 @@
+name: thermal_protection_boundary
+model: ToyThermalProtectionController
+steps:
+  - atMs: 0
+    setInput:
+      name: temperatureValid
+      value: true
+  - atMs: 20
+    setInput:
+      name: temperatureC
+      value: 82
+  - atMs: 80
+    setInput:
+      name: temperatureC
+      value: 66
+expect:
+  finalState: IDLE
+  outputs:
+    fanDuty: 0
+    deratingCommand: 0
+    diagnosticFault: false
+    safeCommandActive: false

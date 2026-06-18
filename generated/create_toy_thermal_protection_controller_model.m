@@ -11,31 +11,35 @@ add_block('simulink/Commonly Used Blocks/Subsystem', [model '/HAL_SPI_read_tempe
 set_param([model '/HAL_SPI_read_temperature'], 'Position', [520 80 670 140]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ScenarioReport_observedBehavior']);
 set_param([model '/ScenarioReport_observedBehavior'], 'Position', [80 200 230 260]);
+add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ScenarioReport_passFailResult']);
+set_param([model '/ScenarioReport_passFailResult'], 'Position', [300 200 450 260]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyFanDriverIC_dutyCommand']);
-set_param([model '/ToyFanDriverIC_dutyCommand'], 'Position', [300 200 450 260]);
+set_param([model '/ToyFanDriverIC_dutyCommand'], 'Position', [520 200 670 260]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyLoadLimiterIC_limitCommand']);
-set_param([model '/ToyLoadLimiterIC_limitCommand'], 'Position', [520 200 670 260]);
+set_param([model '/ToyLoadLimiterIC_limitCommand'], 'Position', [80 320 230 380]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyTempSensorIC_invalidDebounced']);
-set_param([model '/ToyTempSensorIC_invalidDebounced'], 'Position', [80 320 230 380]);
+set_param([model '/ToyTempSensorIC_invalidDebounced'], 'Position', [300 320 450 380]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyTempSensorIC_temperatureC']);
-set_param([model '/ToyTempSensorIC_temperatureC'], 'Position', [300 320 450 380]);
+set_param([model '/ToyTempSensorIC_temperatureC'], 'Position', [520 320 670 380]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyTempSensorIC_temperatureValid']);
-set_param([model '/ToyTempSensorIC_temperatureValid'], 'Position', [520 320 670 380]);
+set_param([model '/ToyTempSensorIC_temperatureValid'], 'Position', [80 440 230 500]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_deratingCommand']);
-set_param([model '/ToyThermalProtectionController_deratingCommand'], 'Position', [80 440 230 500]);
+set_param([model '/ToyThermalProtectionController_deratingCommand'], 'Position', [300 440 450 500]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_diagnosticFault']);
-set_param([model '/ToyThermalProtectionController_diagnosticFault'], 'Position', [300 440 450 500]);
+set_param([model '/ToyThermalProtectionController_diagnosticFault'], 'Position', [520 440 670 500]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_fanDuty']);
-set_param([model '/ToyThermalProtectionController_fanDuty'], 'Position', [520 440 670 500]);
+set_param([model '/ToyThermalProtectionController_fanDuty'], 'Position', [80 560 230 620]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_invalidDebounced']);
-set_param([model '/ToyThermalProtectionController_invalidDebounced'], 'Position', [80 560 230 620]);
+set_param([model '/ToyThermalProtectionController_invalidDebounced'], 'Position', [300 560 450 620]);
+add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_safeCommandActive']);
+set_param([model '/ToyThermalProtectionController_safeCommandActive'], 'Position', [520 560 670 620]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyThermalProtectionController_temperatureC']);
-set_param([model '/ToyThermalProtectionController_temperatureC'], 'Position', [300 560 450 620]);
+set_param([model '/ToyThermalProtectionController_temperatureC'], 'Position', [80 680 230 740]);
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_recoverFromLatch_Compare']);
 set_param([model '/Rule_recoverFromLatch_Compare'], 'Position', [80 420 230 480]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_recoverFromLatch_Switch']);
 set_param([model '/Rule_recoverFromLatch_Switch'], 'Position', [300 420 430 480]);
-% recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
+% recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true then {'state': 'IDLE', 'fanDuty': '0', 'deratingCommand': '0', 'diagnosticFault': 'false', 'safeCommandActive': 'false'}
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_faultLatch_Compare']);
 set_param([model '/Rule_faultLatch_Compare'], 'Position', [80 520 230 580]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_faultLatch_Switch']);
@@ -75,6 +79,7 @@ add_line(model, 'ToyThermalProtectionController_deratingCommand/1', 'HAL_LIMITER
 add_line(model, 'HAL_PWM_set_fan_duty/1', 'ToyFanDriverIC_dutyCommand/1', 'autorouting', 'on');
 add_line(model, 'HAL_LIMITER_set_derating/1', 'ToyLoadLimiterIC_limitCommand/1', 'autorouting', 'on');
 add_line(model, 'ToyThermalProtectionController_diagnosticFault/1', 'ScenarioReport_observedBehavior/1', 'autorouting', 'on');
+add_line(model, 'ToyThermalProtectionController_safeCommandActive/1', 'ScenarioReport_passFailResult/1', 'autorouting', 'on');
 % State transition summary:
 % RESET -> IDLE when temperatureValid == true
 % IDLE -> COOLING when temperatureC >= coolingOnThreshold
@@ -85,5 +90,5 @@ add_line(model, 'ToyThermalProtectionController_diagnosticFault/1', 'ScenarioRep
 % COOLING -> SENSOR_FAULT when temperatureValid == false
 % DERATING -> SENSOR_FAULT when temperatureValid == false
 % SENSOR_FAULT -> FAULT_LATCHED when invalidDebounced == true
-% FAULT_LATCHED -> IDLE when recoveryRequest == true
+% FAULT_LATCHED -> IDLE when temperatureValid == true and invalidDebounced == false and recoveryRequest == true
 save_system(model);

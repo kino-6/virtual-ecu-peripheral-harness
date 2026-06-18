@@ -20,35 +20,17 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 
 ## Requirements Trace
 
-- `CGEN-001`
-- `CGEN-002`
 - `CGEN-003`
-- `CGEN-004`
-- `CGEN-005`
-- `ENG-001`
 - `ENG-002`
-- `ENG-003`
-- `ENG-004`
-- `ENG-005`
-- `ENG-006`
 - `HAR-001`
 - `HAR-002`
 - `HAR-003`
 - `HAR-004`
 - `HAR-006`
-- `HAR-007`
-- `STK-001`
-- `STK-002`
-- `STK-003`
-- `STK-004`
-- `STK-005`
-- `STK-006`
-- `STK-007`
 - `SWE-001`
 - `SWE-002`
 - `SWE-003`
 - `SWE-004`
-- `SWE-005`
 - `SYS-001`
 - `SYS-002`
 - `SYS-003`
@@ -122,7 +104,7 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - `COOLING` -> `SENSOR_FAULT` when `temperatureValid == false`
 - `DERATING` -> `SENSOR_FAULT` when `temperatureValid == false`
 - `SENSOR_FAULT` -> `FAULT_LATCHED` when `invalidDebounced == true`
-- `FAULT_LATCHED` -> `IDLE` when `recoveryRequest == true`
+- `FAULT_LATCHED` -> `IDLE` when `temperatureValid == true and invalidDebounced == false and recoveryRequest == true`
 
 ## Flow Preview
 
@@ -135,12 +117,13 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - `HAL_PWM.set_fan_duty` -> `ToyFanDriverIC.dutyCommand` (virtual actuator command) trace `SYS-002, HAR-001`
 - `HAL_LIMITER.set_derating` -> `ToyLoadLimiterIC.limitCommand` (virtual load limiter command) trace `SYS-005, HAR-006`
 - `ToyThermalProtectionController.diagnosticFault` -> `ScenarioReport.observedBehavior` (diagnostic observation) trace `SYS-006, SYS-007, HAR-004`
+- `ToyThermalProtectionController.safeCommandActive` -> `ScenarioReport.passFailResult` (scenario pass/fail evidence) trace `SYS-009, HAR-004`
 
 ## Control Rules
 
-- `recoverFromLatch`: when `state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true` then `state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false` trace `SYS-008, HAR-006`
+- `recoverFromLatch`: when `state == FAULT_LATCHED and temperatureValid == true and invalidDebounced == false and recoveryRequest == true` then `state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false` trace `SYS-008, HAR-006`
 - `faultLatch`: when `invalidDebounced == true` then `state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true` trace `SYS-007, SYS-006, HAR-004`
-- `holdLatchedFault`: when `state == FAULT_LATCHED` then `state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true` trace `SYS-007, SYS-008, HAR-004`
+- `holdLatchedFault`: when `state == FAULT_LATCHED` then `state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true` trace `SYS-007, HAR-004`
 - `sensorInvalid`: when `temperatureValid == false` then `state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true` trace `SYS-006, HAR-004`
 - `derating`: when `temperatureC >= deratingEntryThreshold` then `state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false` trace `SYS-005, SYS-002, HAR-004`
 - `highCooling`: when `temperatureC >= coolingOnThreshold` then `state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false` trace `SYS-003, SYS-002, HAR-004`

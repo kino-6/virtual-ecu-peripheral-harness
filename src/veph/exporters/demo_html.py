@@ -89,10 +89,9 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             f"        <div><strong>{len(model.requirement_refs())}</strong><span>requirement refs</span></div>",
             "      </div>",
             "    </section>",
-            _ir_review_pipeline_svg(model),
+            _ir_spec_compliance_review(model),
             _ir_data_flow_svg(model),
             _ir_state_machine_svg(model),
-            _ir_control_rule_svg(model),
             _ir_harness_boundary_svg(model),
             '    <section class="panel">',
             "      <h2>Requirements Trace Matrix</h2>",
@@ -172,6 +171,58 @@ def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
         if ref in device.trace:
             elements.append(f"harness:{device.name}")
     return elements
+
+
+def _ir_spec_compliance_review(model: MbdModelIR) -> str:
+    rows = "\n".join(_ir_spec_row(model, req_id) for req_id in [f"SYS-{index:03d}" for index in range(1, 10)])
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>Spec-To-MBD Compliance Review</h2>",
+            "      <p>This is the first review gate: each system requirement must point to concrete MBD elements and scenario evidence. Broad component-level trace is intentionally not used as proof.</p>",
+            "      <table>",
+            "        <thead><tr><th>Requirement</th><th>Expected behavior</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>",
+            "        <tbody>",
+            rows,
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_spec_row(model: MbdModelIR, req_id: str) -> str:
+    expected = {
+        "SYS-001": "Read fictional temperature and validity through HAL.",
+        "SYS-002": "Command fan duty through the virtual fan driver.",
+        "SYS-003": "Enter COOLING and command 70 percent fan duty at 78 degC or above.",
+        "SYS-004": "Return to IDLE only at 68 degC or below.",
+        "SYS-005": "Enter DERATING and command fan/limiter protection outputs at 94 degC or above.",
+        "SYS-006": "Enter sensor fault behavior and safe command when temperature validity is false.",
+        "SYS-007": "Latch a fault when invalidDebounced is true.",
+        "SYS-008": "Recover only when valid, invalidDebounced is false, and recoveryRequest is true.",
+        "SYS-009": "Generate scenario reports for normal, derating, fault latch, and recovery.",
+    }[req_id]
+    scenario = {
+        "SYS-001": "thermal_protection_normal",
+        "SYS-002": "thermal_protection_normal, thermal_protection_derating",
+        "SYS-003": "thermal_protection_normal",
+        "SYS-004": "thermal_protection_boundary",
+        "SYS-005": "thermal_protection_derating",
+        "SYS-006": "thermal_protection_fault_latch",
+        "SYS-007": "thermal_protection_fault_latch",
+        "SYS-008": "thermal_protection_recovery",
+        "SYS-009": "thermal_protection_*.md reports",
+    }[req_id]
+    evidence = ", ".join(_ir_elements_for_ref(model, req_id)) or "Missing concrete MBD trace"
+    return (
+        "          <tr>"
+        f"<td><code>{escape(req_id)}</code></td>"
+        f"<td>{escape(expected)}</td>"
+        f"<td>{escape(evidence)}</td>"
+        f"<td>{escape(scenario)}</td>"
+        "</tr>"
+    )
 
 
 def _ir_review_pipeline_svg(model: MbdModelIR) -> str:

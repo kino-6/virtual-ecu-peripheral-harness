@@ -60,6 +60,7 @@ def test_export_code_preview_supports_thermal_protection_controller(tmp_path):
     assert "hal_pwm_set_fan_duty" in controller
     assert "hal_load_limiter_set_derating" in controller
     assert "invalidDebounced" in controller
+    assert "temperatureValid && !invalidDebounced && recoveryRequest" in controller
     assert "preview-only" in readme
     assert "SYS-008" in readme
 
