@@ -1,0 +1,4 @@
+interface:
+  display_name: "MBD Review Quality Gate"
+  short_description: "Review MBD artifacts before human handoff"
+  default_prompt: "Use $mbd-review-quality-gate to run a parallel MBD review before presenting the demo as complete."

@@ -184,3 +184,16 @@ Verification:
 - [x] Regenerated demo HTML includes the checklist.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
+
+## Phase 9: MBD Review Skill
+
+- [x] Add `mbd-review-quality-gate` project skill.
+- [x] Define five parallel review lanes: spec, traceability, readability,
+      scenario evidence, and generated artifact boundary.
+- [x] Register the skill in `AGENTS.md`.
+
+Verification:
+
+- [x] Skill metadata and `agents/openai.yaml` exist.
+- [x] `AGENTS.md` remains near the 200-line target.
+- [x] `git diff --check` passes.

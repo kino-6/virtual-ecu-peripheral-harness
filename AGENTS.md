@@ -97,21 +97,9 @@ boundaries rather than Python internals.
 
 ## Target Validation Story
 
-The next major validation should demonstrate a complete fictional control system:
-
-```text
-fictional IC spec
-  -> Mermaid-like markup spec
-  -> internal IR
-  -> MBD handoff artifacts
-  -> virtual IC harness preview
-  -> preview ECU C code generation
-  -> scenario smoke verification
-```
-
-Preferred example: thermal fan control with `ToyTempSensorIC`,
-`ToyFanDriverIC`, a virtual ECU controller, normal/fault scenarios,
-Simulink/Modelica/FMI handoff artifacts, and preview-only C scaffold.
+Validation examples should show a complete fictional flow: requirements,
+specification, Mermaid-like MBD source, IR, handoff artifacts, virtual IC
+harness preview, preview C, and scenario/report evidence.
 
 ## Code Generation Boundary
 
@@ -143,8 +131,9 @@ Project-local skills live under `.agents/skills/`:
 - `preview-harness-codegen`: use for preview runtime, `run-preview`,
   `export-code-preview`, scenarios, and preview-only generated C scaffolds.
 - `quality-gate-expectation-control`: use before substantial or ambiguous work
-  when user-visible artifact quality, review evidence, or acceptance gates are
-  unclear.
+  when artifact quality or acceptance gates are unclear.
+- `mbd-review-quality-gate`: use before presenting MBD demos, visualizations,
+  trace reports, generated handoff artifacts, preview C, or harness evidence.
 
 Keep skills concise; move details into one-level `references/` files when needed.
 
