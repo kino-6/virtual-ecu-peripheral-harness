@@ -1,0 +1,4 @@
+interface:
+  display_name: "MBD Control Semantics"
+  short_description: "Unify state and control behavior for review"
+  default_prompt: "Use $mbd-control-semantics to make MBD state, control rules, generated code, and reports share one reviewable control semantics."

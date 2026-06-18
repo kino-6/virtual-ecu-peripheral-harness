@@ -30,7 +30,9 @@ Review in independent lanes before merging the result:
 
 3. **Model readability lane**
    - Review ports, parameters, states, guard conditions, actions, and data flow.
+   - Use `mbd-control-semantics` when states and control rules can compete.
    - Reject visuals that are more complex than the behavior being reviewed.
+   - Reject behavior that depends on hidden rule ordering.
 
 4. **Scenario evidence lane**
    - Confirm reports separate model inputs, scenario steps, observed behavior,

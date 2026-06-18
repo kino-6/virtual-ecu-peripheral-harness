@@ -11,23 +11,27 @@ Archived task history:
 
 ## Current Goal
 
-Improve the agent workflow so MBD artifacts can be reviewed in Japanese with a
-clear, low-noise technical review style.
+Capture the MBD control-semantics lesson so future work integrates competing
+state/control views before claiming review readiness.
 
 ## Quality Gates
 
-- [x] Keep `Tasks.md` below 200 lines by archiving completed phases.
-- [x] Add a project-local Japanese technical review skill.
+- [x] Add a project-local control-semantics skill.
 - [x] Register the skill in `AGENTS.md`.
-- [x] The skill must support MBD review comments that state finding, evidence,
-      impact, and required correction without vague praise or LLM filler.
+- [x] Existing MBD authoring/review skills route state/control conflicts to the
+      new skill.
+- [x] The skill encodes the best-practice lesson: one behavior owner, explicit
+      priority/exclusivity, concrete trace, scenario evidence, and generated
+      artifact boundaries.
 
-## Phase 10: Japanese Technical Review Skill
+## Phase 11: MBD Control Semantics Skill
 
-- [x] Add `japanese-technical-review` project skill.
-- [x] Include rules for concise Japanese review comments, paragraph structure,
-      evidence-first findings, and strict uncertainty handling.
-- [x] Link the skill to MBD review use cases without copying the external gist.
+- [x] Add `mbd-control-semantics` project skill.
+- [x] Define `mbd-control` as the semantic owner when executable behavior and
+      state topology overlap.
+- [x] Require priority, state scope, guard, actions, trace, and scenario evidence
+      for reviewable control rows.
+- [x] Require generated views to be derived from the public `.mbd.md` source.
 - [x] Add `agents/openai.yaml`.
 
 Verification:

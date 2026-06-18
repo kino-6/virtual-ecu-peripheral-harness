@@ -17,6 +17,8 @@ Use this skill when changing `Requirements.md`, `specs/*.md`,
 - Keep the syntax compact and Mermaid-like.
 - Use only fictional components, registers, buses, and project names.
 - Treat IR JSON as an internal snapshot, not a user-facing standard.
+- When `mbd-state` and `mbd-control` overlap, use
+  `mbd-control-semantics` before changing syntax or examples.
 
 ## Workflow
 
@@ -43,5 +45,7 @@ pytest tests/test_markup_parser.py tests/test_markup_exports.py
 - New syntax should be readable without tool-specific knowledge.
 - Parser errors should name the malformed section or line.
 - Generated artifacts must remain reproducible from the `.mbd.md` source.
+- State diagrams and control rules must not define competing executable
+  behavior. Prefer one reviewable control semantics and derive views from it.
 - If a feature starts requiring deep semantics, prefer a handoff artifact over a
   Python runtime interpretation.
