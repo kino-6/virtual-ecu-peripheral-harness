@@ -7,6 +7,7 @@ from veph.scenario_types import ScenarioResult
 
 def render_report(result: ScenarioResult) -> str:
     status = "PASS" if result.passed else "FAIL"
+    model_inputs = _without_keys(result.model_inputs, {"traceabilityMatrix", "harnessBoundary"})
     lines = [
         "# Scenario Report",
         "",
@@ -17,10 +18,19 @@ def render_report(result: ScenarioResult) -> str:
         "",
         "## Model Inputs",
         "",
-        _as_yaml(result.model_inputs),
+        _as_yaml(model_inputs),
+        "## Traceability Matrix",
+        "",
+        _as_yaml(result.model_inputs.get("traceabilityMatrix", [])),
         "## Scenario Steps",
         "",
         _as_yaml(result.scenario_steps),
+        "## Harness Boundary Evidence",
+        "",
+        _as_yaml(result.model_inputs.get("harnessBoundary", [])),
+        "## Per-Step Preview Execution",
+        "",
+        _as_yaml(result.observed_behavior.get("stepEvidence", [])),
         "## Observed Behavior",
         "",
         _as_yaml(result.observed_behavior),
@@ -50,3 +60,7 @@ def render_report(result: ScenarioResult) -> str:
 
 def _as_yaml(value: object) -> str:
     return "```yaml\n" + yaml.safe_dump(value, sort_keys=False).strip() + "\n```\n"
+
+
+def _without_keys(value: dict[str, object], keys: set[str]) -> dict[str, object]:
+    return {key: item for key, item in value.items() if key not in keys}

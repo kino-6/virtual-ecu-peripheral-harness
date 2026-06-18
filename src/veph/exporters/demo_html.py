@@ -38,8 +38,20 @@ def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
 
 
 def _export_ir_demo_html(model: MbdModelIR) -> str:
+    req_rows = "\n".join(
+        f"          <tr><td>{escape(ref)}</td><td>{escape(', '.join(_ir_elements_for_ref(model, ref)))}</td></tr>"
+        for ref in sorted(model.requirement_refs())
+    )
+    control_rows = "\n".join(
+        f"          <tr><td>{escape(control.name)}</td><td>{escape(control.condition)}</td><td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td><td>{escape(', '.join(control.trace))}</td></tr>"
+        for control in model.controls
+    )
+    harness_rows = "\n".join(
+        f"          <tr><td>{escape(device.name)}</td><td>{escape(device.role)}</td><td>{escape(device.boundary)}</td><td>{escape(', '.join(device.trace))}</td></tr>"
+        for device in model.harness_devices
+    )
     flow_rows = "\n".join(
-        f"          <tr><td>{escape(flow.source)}</td><td>{escape(flow.target)}</td><td>{escape(flow.label)}</td></tr>"
+        f"          <tr><td>{escape(flow.source)}</td><td>{escape(flow.target)}</td><td>{escape(flow.label)}</td><td>{escape(', '.join(flow.trace))}</td></tr>"
         for flow in model.flows
     )
     state_rows = "\n".join(
@@ -72,10 +84,17 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "      </div>",
             '      <div class="hero-facts" aria-label="model facts">',
             f"        <div><strong>{len(model.ports)}</strong><span>ports</span></div>",
-            f"        <div><strong>{len(model.registers)}</strong><span>registers</span></div>",
-            f"        <div><strong>{len(model.transitions)}</strong><span>state transitions</span></div>",
-            f"        <div><strong>{len(model.flows)}</strong><span>flow edges</span></div>",
+            f"        <div><strong>{len(model.controls)}</strong><span>control rules</span></div>",
+            f"        <div><strong>{len(model.harness_devices)}</strong><span>harness boundaries</span></div>",
+            f"        <div><strong>{len(model.requirement_refs())}</strong><span>requirement refs</span></div>",
             "      </div>",
+            "    </section>",
+            '    <section class="panel">',
+            "      <h2>Requirements Trace Matrix</h2>",
+            "      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>",
+            "      <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>",
+            flow_or_empty(req_rows, colspan=2),
+            "      </tbody></table>",
             "    </section>",
             '    <section class="panel">',
             "      <h2>Markup Sections</h2>",
@@ -98,9 +117,23 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "        </tbody></table>",
             "      </section>",
             "    </section>",
+            '    <section class="grid">',
+            '      <section class="panel">',
+            "        <h2>Control Rules</h2>",
+            "        <table><thead><tr><th>Rule</th><th>Condition</th><th>Actions</th><th>Trace</th></tr></thead><tbody>",
+            flow_or_empty(control_rows),
+            "        </tbody></table>",
+            "      </section>",
+            '      <section class="panel">',
+            "        <h2>Harness Boundary</h2>",
+            "        <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>",
+            flow_or_empty(harness_rows),
+            "        </tbody></table>",
+            "      </section>",
+            "    </section>",
             '    <section class="panel">',
             "      <h2>Flow Handoff</h2>",
-            "      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th></tr></thead><tbody>",
+            "      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>",
             flow_or_empty(flow_rows),
             "      </tbody></table>",
             "    </section>",
@@ -116,8 +149,24 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
     )
 
 
-def flow_or_empty(rows: str) -> str:
-    return rows if rows else '          <tr><td colspan="4">None</td></tr>'
+def flow_or_empty(rows: str, colspan: int = 4) -> str:
+    return rows if rows else f'          <tr><td colspan="{colspan}">None</td></tr>'
+
+
+def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
+    elements: list[str] = []
+    if ref in model.component.trace:
+        elements.append(f"component:{model.component.name}")
+    for flow in model.flows:
+        if ref in flow.trace:
+            elements.append(f"flow:{flow.source}->{flow.target}")
+    for control in model.controls:
+        if ref in control.trace:
+            elements.append(f"control:{control.name}")
+    for device in model.harness_devices:
+        if ref in device.trace:
+            elements.append(f"harness:{device.name}")
+    return elements
 
 
 def _hero(model: PeripheralModel) -> str:

@@ -209,10 +209,29 @@
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>4</strong><span>ports</span></div>
-        <div><strong>3</strong><span>registers</span></div>
-        <div><strong>6</strong><span>state transitions</span></div>
-        <div><strong>5</strong><span>flow edges</span></div>
+        <div><strong>3</strong><span>control rules</span></div>
+        <div><strong>3</strong><span>harness boundaries</span></div>
+        <div><strong>13</strong><span>requirement refs</span></div>
       </div>
+    </section>
+    <section class="panel">
+      <h2>Requirements Trace Matrix</h2>
+      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
+      <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
+          <tr><td>HAR-001</td><td>flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyTempSensorIC, harness:ToyFanDriverIC</td></tr>
+          <tr><td>HAR-002</td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalFanController.temperatureC, harness:ToyThermalFanController</td></tr>
+          <tr><td>HAR-004</td><td>flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:sensorFault</td></tr>
+          <tr><td>HAR-005</td><td>component:ToyThermalFanController</td></tr>
+          <tr><td>STK-001</td><td>component:ToyThermalFanController</td></tr>
+          <tr><td>SWE-001</td><td>component:ToyThermalFanController</td></tr>
+          <tr><td>SWE-004</td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalFanController.temperatureC, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, harness:ToyThermalFanController</td></tr>
+          <tr><td>SYS-001</td><td>component:ToyThermalFanController, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td></tr>
+          <tr><td>SYS-002</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyFanDriverIC</td></tr>
+          <tr><td>SYS-003</td><td>component:ToyThermalFanController, control:highTemperature</td></tr>
+          <tr><td>SYS-004</td><td>component:ToyThermalFanController, control:lowTemperature</td></tr>
+          <tr><td>SYS-005</td><td>component:ToyThermalFanController, control:sensorFault</td></tr>
+          <tr><td>SYS-006</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:highTemperature, control:lowTemperature</td></tr>
+      </tbody></table>
     </section>
     <section class="panel">
       <h2>Markup Sections</h2>
@@ -248,14 +267,32 @@
         </tbody></table>
       </section>
     </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Control Rules</h2>
+        <table><thead><tr><th>Rule</th><th>Condition</th><th>Actions</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>sensorFault</td><td>temperatureValid == false</td><td>state=FAULT, fanDuty=safeDuty, fault=true</td><td>SYS-005, HAR-004</td></tr>
+          <tr><td>highTemperature</td><td>temperatureC &gt;= fanOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, fault=false</td><td>SYS-003, SYS-006</td></tr>
+          <tr><td>lowTemperature</td><td>temperatureC &lt;= fanOffThreshold</td><td>state=IDLE, fanDuty=0, fault=false</td><td>SYS-004, SYS-006</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>Harness Boundary</h2>
+        <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyTempSensorIC</td><td>sensor</td><td>virtual_ic</td><td>HAR-001, SYS-001</td></tr>
+          <tr><td>ToyFanDriverIC</td><td>actuator</td><td>virtual_ic</td><td>HAR-001, SYS-002</td></tr>
+          <tr><td>ToyThermalFanController</td><td>controller</td><td>hal</td><td>HAR-002, SWE-004</td></tr>
+        </tbody></table>
+      </section>
+    </section>
     <section class="panel">
       <h2>Flow Handoff</h2>
-      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th></tr></thead><tbody>
-          <tr><td>ToyTempSensorIC.temperatureC</td><td>HAL_SPI.read_temperature</td><td>virtual sensor sample</td></tr>
-          <tr><td>HAL_SPI.read_temperature</td><td>ToyThermalFanController.temperatureC</td><td>HAL input</td></tr>
-          <tr><td>ToyThermalFanController.fanDuty</td><td>HAL_PWM.set_fan_duty</td><td>generated ECU command</td></tr>
-          <tr><td>HAL_PWM.set_fan_duty</td><td>ToyFanDriverIC.dutyCommand</td><td>virtual actuator command</td></tr>
-          <tr><td>ToyThermalFanController.fault</td><td>ScenarioReport.observedBehavior</td><td>fault observation</td></tr>
+      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyTempSensorIC.temperatureC</td><td>HAL_SPI.read_temperature</td><td>virtual sensor sample</td><td>SYS-001, HAR-001</td></tr>
+          <tr><td>HAL_SPI.read_temperature</td><td>ToyThermalFanController.temperatureC</td><td>HAL input</td><td>SWE-004, HAR-002</td></tr>
+          <tr><td>ToyThermalFanController.fanDuty</td><td>HAL_PWM.set_fan_duty</td><td>generated ECU command</td><td>SYS-002, SWE-004</td></tr>
+          <tr><td>HAL_PWM.set_fan_duty</td><td>ToyFanDriverIC.dutyCommand</td><td>virtual actuator command</td><td>SYS-002, HAR-001</td></tr>
+          <tr><td>ToyThermalFanController.fault</td><td>ScenarioReport.observedBehavior</td><td>fault observation</td><td>SYS-006, HAR-004</td></tr>
       </tbody></table>
     </section>
     <section class="panel policy">

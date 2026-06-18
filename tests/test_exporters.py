@@ -104,6 +104,20 @@ def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():
     assert "STATUS.ready" in html
 
 
+def test_thermal_demo_html_visualizes_trace_control_and_harness():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+
+    html = export_demo_html(model)
+
+    assert "Requirements Trace Matrix" in html
+    assert "Control Rules" in html
+    assert "Harness Boundary" in html
+    assert "ToyTempSensorIC" in html
+    assert "sensorFault" in html
+    assert "SYS-005" in html
+    assert "generated Simulink, Modelica, SCXML" in html
+
+
 def test_markdown_documents_mbd_blocks_and_connections():
     model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
 

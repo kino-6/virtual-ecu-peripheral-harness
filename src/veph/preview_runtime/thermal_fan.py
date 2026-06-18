@@ -48,21 +48,38 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
     parameters = {name: _coerce_value(parameter.default) for name, parameter in model.component.parameters.items()}
     trace: list[str] = ["preview-only runtime started"]
     applied_rules: list[str] = []
+    step_evidence: list[dict[str, Any]] = []
 
     scenario_steps = sorted(scenario.get("steps", []), key=lambda item: item.get("atMs", 0))
-    for step in scenario_steps:
+    for index, step in enumerate(scenario_steps):
         if "setInput" not in step:
             raise PreviewScenarioError(f"unsupported preview scenario step: {step}")
         signal = step["setInput"]
         name = str(signal["name"])
         if name not in inputs:
             raise PreviewScenarioError(f"unknown input: {name}")
+        before = _state_snapshot(state, inputs, outputs)
         inputs[name] = _coerce_value(signal["value"])
         trace.append(f"input {name}={inputs[name]}")
-        state, applied = _evaluate_controls(model.controls, state, inputs, outputs, parameters)
+        state, applied, evaluations = _evaluate_controls(model.controls, state, inputs, outputs, parameters)
         if applied is not None:
             applied_rules.append(applied.name)
             trace.append(f"rule {applied.name} applied")
+        after = _state_snapshot(state, inputs, outputs)
+        step_evidence.append(
+            {
+                "stepIndex": index,
+                "atMs": step.get("atMs", 0),
+                "scenarioInput": dict(signal),
+                "before": before,
+                "virtualIcObservation": _virtual_ic_observation(inputs),
+                "controlRuleEvaluations": evaluations,
+                "appliedRule": applied.name if applied else None,
+                "generatedEcuCommandOutputs": _generated_outputs(outputs),
+                "after": after,
+                "requirementRefs": sorted(_step_requirement_refs(applied)),
+            }
+        )
 
     expected_behavior = dict(scenario.get("expect", {}))
     observed_behavior = {
@@ -74,15 +91,9 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
             {"name": device.name, "role": device.role, "boundary": device.boundary}
             for device in model.harness_devices
         ],
+        "stepEvidence": step_evidence,
     }
-    generated_outputs = {
-        "fanDuty": outputs.get("fanDuty"),
-        "fault": outputs.get("fault"),
-        "halCalls": [
-            "hal_spi_read_temperature_c",
-            "hal_pwm_set_fan_duty",
-        ],
-    }
+    generated_outputs = _generated_outputs(outputs)
     checks = _evaluate_expectations(state, outputs, expected_behavior)
     passed = all(check.startswith("PASS") for check in checks)
     return ScenarioResult(
@@ -106,20 +117,34 @@ def _evaluate_controls(
     inputs: dict[str, Any],
     outputs: dict[str, Any],
     parameters: dict[str, Any],
-) -> tuple[str, ControlRuleIR | None]:
+) -> tuple[str, ControlRuleIR | None, list[dict[str, Any]]]:
     context = {**parameters, **inputs, **outputs, "state": state}
+    evaluations: list[dict[str, Any]] = []
+    selected: ControlRuleIR | None = None
     for control in controls:
-        if _condition_is_true(control.condition, context):
-            for key, value in control.actions.items():
-                resolved = _resolve_value(value, context)
-                if key == "state":
-                    state = str(resolved)
-                    context["state"] = state
-                else:
-                    outputs[key] = resolved
-                    context[key] = resolved
-            return state, control
-    return state, None
+        matched = _condition_is_true(control.condition, context)
+        evaluations.append(
+            {
+                "rule": control.name,
+                "condition": control.condition,
+                "matched": matched,
+                "actionsIfMatched": dict(control.actions),
+                "trace": list(control.trace),
+            }
+        )
+        if matched and selected is None:
+            selected = control
+    if selected is None:
+        return state, None, evaluations
+    for key, value in selected.actions.items():
+        resolved = _resolve_value(value, context)
+        if key == "state":
+            state = str(resolved)
+            context["state"] = state
+        else:
+            outputs[key] = resolved
+            context[key] = resolved
+    return state, selected, evaluations
 
 
 def _condition_is_true(expression: str, context: dict[str, Any]) -> bool:
@@ -166,8 +191,61 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
             name: {"direction": port.direction, "type": port.type, "default": port.default}
             for name, port in model.ports.items()
         },
+        "controlRules": [
+            {
+                "name": control.name,
+                "condition": control.condition,
+                "actions": dict(control.actions),
+                "trace": list(control.trace),
+            }
+            for control in model.controls
+        ],
+        "harnessBoundary": [
+            {
+                "name": device.name,
+                "role": device.role,
+                "boundary": device.boundary,
+                "trace": list(device.trace),
+            }
+            for device in model.harness_devices
+        ],
+        "traceabilityMatrix": _traceability_matrix(model),
         "requirementRefs": sorted(model.requirement_refs()),
     }
+
+
+def _traceability_matrix(model: MbdModelIR) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for ref in sorted(model.requirement_refs()):
+        rows.append(
+            {
+                "requirement": ref,
+                "modelElements": _elements_for_ref(model, ref),
+                "evidence": [
+                    "examples/toy_thermal_fan_control.mbd.md",
+                    "generated/toy_thermal_fan_control.mmd",
+                    "generated/ecu_preview/controller.c",
+                    "reports/thermal_fan_normal.md or reports/thermal_fan_fault.md",
+                ],
+            }
+        )
+    return rows
+
+
+def _elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
+    elements: list[str] = []
+    if ref in model.component.trace:
+        elements.append(f"component:{model.component.name}")
+    for flow in model.flows:
+        if ref in flow.trace:
+            elements.append(f"flow:{flow.source}->{flow.target}")
+    for control in model.controls:
+        if ref in control.trace:
+            elements.append(f"control:{control.name}")
+    for device in model.harness_devices:
+        if ref in device.trace:
+            elements.append(f"harness:{device.name}")
+    return elements
 
 
 def _initial_state(model: MbdModelIR) -> str:
@@ -194,6 +272,49 @@ def _resolve_value(token: str, context: dict[str, Any]) -> Any:
     if token in context:
         return context[token]
     return _coerce_value(token)
+
+
+def _state_snapshot(state: str, inputs: dict[str, Any], outputs: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "state": state,
+        "inputs": dict(inputs),
+        "outputs": dict(outputs),
+    }
+
+
+def _virtual_ic_observation(inputs: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ToyTempSensorIC.temperatureC": inputs.get("temperatureC"),
+        "ToyTempSensorIC.temperatureValid": inputs.get("temperatureValid"),
+    }
+
+
+def _generated_outputs(outputs: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "fanDuty": outputs.get("fanDuty"),
+        "fault": outputs.get("fault"),
+        "halCalls": [
+            {
+                "api": "hal_spi_read_temperature_c",
+                "direction": "virtual IC to controller",
+                "source": "ToyTempSensorIC",
+            },
+            {
+                "api": "hal_pwm_set_fan_duty",
+                "direction": "controller to virtual IC",
+                "target": "ToyFanDriverIC",
+                "value": outputs.get("fanDuty"),
+            },
+        ],
+        "controllerSource": "generated/ecu_preview/controller.c",
+    }
+
+
+def _step_requirement_refs(applied: ControlRuleIR | None) -> set[str]:
+    refs = {"HAR-001", "HAR-002", "HAR-004"}
+    if applied is not None:
+        refs.update(applied.trace)
+    return refs
 
 
 def _coerce_value(value: Any) -> Any:
