@@ -44,3 +44,34 @@ def test_generated_preview_c_is_syntax_checkable_when_cc_exists(tmp_path):
         cwd=tmp_path,
         check=True,
     )
+
+
+def test_export_code_preview_supports_thermal_protection_controller(tmp_path):
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    export_code_preview(model, tmp_path)
+
+    controller = (tmp_path / "controller.c").read_text(encoding="utf-8")
+    header = (tmp_path / "controller.h").read_text(encoding="utf-8")
+    readme = (tmp_path / "README.md").read_text(encoding="utf-8")
+
+    assert "ToyThermalProtectionController" in header
+    assert "TOY_PROTECTION_STATE_FAULT_LATCHED" in header
+    assert "hal_spi_read_temperature_c" in controller
+    assert "hal_pwm_set_fan_duty" in controller
+    assert "hal_load_limiter_set_derating" in controller
+    assert "invalidDebounced" in controller
+    assert "preview-only" in readme
+    assert "SYS-008" in readme
+
+
+def test_generated_thermal_protection_preview_c_is_syntax_checkable_when_cc_exists(tmp_path):
+    if shutil.which("cc") is None:
+        return
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    export_code_preview(model, tmp_path)
+
+    subprocess.run(
+        ["cc", "-fsyntax-only", "controller.c"],
+        cwd=tmp_path,
+        check=True,
+    )

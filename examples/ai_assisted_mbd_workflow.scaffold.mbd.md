@@ -3,6 +3,13 @@
 > Generated scaffold from requirements. Do not treat this scaffold as approved behavior
 > until open questions are reviewed.
 
+## Review Status
+
+- Behavior approval: **PENDING**
+- Coverage meaning: traces identify intended coverage, not accepted model semantics.
+- TODO values are explicit placeholders, not accepted demo answers.
+- External MBD/product-test infrastructure is still required for production-grade verification.
+
 ## Requirement Coverage Intent
 
 - `SYS-001`: scaffold coverage required; refine into concrete model element before approval.

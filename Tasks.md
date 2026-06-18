@@ -10,9 +10,9 @@ Archived task history:
 
 ## Current Goal
 
-Introduce requirements-to-spec and requirements-to-MBD support so AI can propose
-reviewable scaffolds without inventing behavior that is not present in approved
-requirements or specification text.
+Revise the requirements-to-spec and requirements-to-MBD demo scaffolds so the
+business-process demo is reviewable without pretending unresolved behavior has
+been approved.
 
 ## Quality Gates
 
@@ -23,6 +23,12 @@ requirements or specification text.
       silent behavior invention.
 - [x] Acceptance check: high-class requirements shall require explicit spec,
       MBD, harness, scenario, and expected-behavior coverage.
+- [x] Acceptance check: generated spec clearly separates machine extraction,
+      demo assumptions, unresolved decisions, and behavior outline.
+- [x] Acceptance check: trace report must not present scaffold coverage as
+      approved behavior when open questions remain.
+- [x] Acceptance check: generated MBD scaffold must keep TODO/open-question
+      placeholders visible instead of convenient threshold/timing answers.
 
 ## Phase 0: Requirements Update
 
@@ -71,3 +77,45 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 - [x] Commit the Req-to-Spec/MBD support update.
+
+## Phase 3: Demo Quality Correction
+
+- [x] Update scaffold tests to require review-status and approval-pending
+      wording.
+- [x] Update spec scaffold generation for human review order.
+- [x] Update traceability report wording to distinguish scaffold coverage from
+      approved behavior.
+- [x] Regenerate affected artifacts.
+
+Verification:
+
+- [x] Unit tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
+## Phase 4: Complete Business-Process Demo Slice
+
+- [x] Add approved demo assumptions for a fictional `Toy Thermal Protection
+      Controller` without claiming product or safety approval.
+- [x] Add a human-readable specification that links requirements, Mermaid
+      diagrams, MBD source, harness boundary, generated C, and reports.
+- [x] Add Mermaid-like MBD source as the public source for the demo.
+- [x] Add preview scenarios for normal cooling, derating, fault latch, and
+      recovery.
+- [x] Extend preview runtime evidence so reports show model inputs, scenario
+      steps, observed behavior, expected behavior, and pass/fail for the
+      protection demo.
+- [x] Extend preview C generation to produce HAL-style product-like synthetic
+      controller code for the protection demo.
+- [x] Regenerate IR, Markdown, Mermaid, PlantUML, SCXML, Modelica, Simulink
+      `.m`, FMI metadata, demo HTML, preview C, and reports from the MBD source.
+- [x] Add tests proving deterministic regeneration and scenario pass/fail
+      evidence for the protection demo.
+
+Verification:
+
+- [x] Protection demo reports pass and separate required report sections.
+- [x] Generated artifacts are deterministic from the `.mbd.md` source.
+- [x] Preview C syntax-checks when `cc` is available.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.

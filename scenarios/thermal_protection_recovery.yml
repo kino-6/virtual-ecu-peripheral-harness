@@ -1,0 +1,35 @@
+name: thermal_protection_recovery
+model: ToyThermalProtectionController
+steps:
+  - atMs: 0
+    setInput:
+      name: temperatureC
+      value: 96
+  - atMs: 10
+    setInput:
+      name: temperatureValid
+      value: false
+  - atMs: 30
+    setInput:
+      name: invalidDebounced
+      value: true
+  - atMs: 60
+    setInput:
+      name: invalidDebounced
+      value: false
+  - atMs: 70
+    setInput:
+      name: temperatureValid
+      value: true
+  - atMs: 90
+    setInput:
+      name: recoveryRequest
+      value: true
+expect:
+  finalState: IDLE
+  outputs:
+    fanDuty: 0
+    deratingCommand: 0
+    diagnosticFault: false
+    safeCommandActive: false
+

@@ -1,0 +1,304 @@
+{
+  "component": "ToyThermalProtectionController",
+  "controlRules": [
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "0",
+        "safeCommandActive": "false",
+        "state": "IDLE"
+      },
+      "condition": "state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true",
+      "name": "recoverFromLatch",
+      "trace": [
+        "SYS-008",
+        "HAR-006"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "FAULT_LATCHED"
+      },
+      "condition": "invalidDebounced == true",
+      "name": "faultLatch",
+      "trace": [
+        "SYS-007",
+        "SYS-006",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "FAULT_LATCHED"
+      },
+      "condition": "state == FAULT_LATCHED",
+      "name": "holdLatchedFault",
+      "trace": [
+        "SYS-007",
+        "SYS-008",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "SENSOR_FAULT"
+      },
+      "condition": "temperatureValid == false",
+      "name": "sensorInvalid",
+      "trace": [
+        "SYS-006",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "deratingLimit",
+        "diagnosticFault": "false",
+        "fanDuty": "deratingFanDuty",
+        "safeCommandActive": "false",
+        "state": "DERATING"
+      },
+      "condition": "temperatureC >= deratingEntryThreshold",
+      "name": "derating",
+      "trace": [
+        "SYS-005",
+        "SYS-002",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "coolingDuty",
+        "safeCommandActive": "false",
+        "state": "COOLING"
+      },
+      "condition": "temperatureC >= coolingOnThreshold",
+      "name": "highCooling",
+      "trace": [
+        "SYS-003",
+        "SYS-002",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "0",
+        "safeCommandActive": "false",
+        "state": "IDLE"
+      },
+      "condition": "temperatureC <= coolingOffThreshold",
+      "name": "lowCooling",
+      "trace": [
+        "SYS-004",
+        "HAR-004"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyTempSensorIC",
+      "role": "sensor",
+      "trace": [
+        "HAR-001",
+        "SYS-001",
+        "SYS-006",
+        "SYS-007"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyFanDriverIC",
+      "role": "actuator",
+      "trace": [
+        "HAR-001",
+        "SYS-002"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyLoadLimiterIC",
+      "role": "actuator",
+      "trace": [
+        "HAR-006",
+        "SYS-005"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyThermalProtectionController",
+      "role": "controller",
+      "trace": [
+        "HAR-002",
+        "SWE-004",
+        "CGEN-003"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "25",
+      "name": "temperatureC",
+      "type": "degC"
+    },
+    {
+      "default": "true",
+      "name": "temperatureValid",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "invalidDebounced",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "recoveryRequest",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "0",
+      "name": "fanDuty",
+      "type": "percent"
+    },
+    {
+      "default": "0",
+      "name": "deratingCommand",
+      "type": "percent"
+    },
+    {
+      "default": "false",
+      "name": "diagnosticFault",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "safeCommandActive",
+      "type": "bool"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "78",
+      "name": "coolingOnThreshold",
+      "type": "degC"
+    },
+    {
+      "default": "68",
+      "name": "coolingOffThreshold",
+      "type": "degC"
+    },
+    {
+      "default": "94",
+      "name": "deratingEntryThreshold",
+      "type": "degC"
+    },
+    {
+      "default": "70",
+      "name": "coolingDuty",
+      "type": "percent"
+    },
+    {
+      "default": "95",
+      "name": "deratingFanDuty",
+      "type": "percent"
+    },
+    {
+      "default": "45",
+      "name": "deratingLimit",
+      "type": "percent"
+    },
+    {
+      "default": "30",
+      "name": "safeDuty",
+      "type": "percent"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x10",
+      "name": "TP_TEMP_STATUS"
+    },
+    {
+      "access": "ro",
+      "address": "0x20",
+      "name": "TP_CONTROL_STATUS"
+    },
+    {
+      "access": "rw",
+      "address": "0x30",
+      "name": "TP_COMMAND"
+    }
+  ],
+  "requirementRefs": [
+    "CGEN-001",
+    "CGEN-002",
+    "CGEN-003",
+    "CGEN-004",
+    "CGEN-005",
+    "ENG-001",
+    "ENG-002",
+    "ENG-003",
+    "ENG-004",
+    "ENG-005",
+    "ENG-006",
+    "HAR-001",
+    "HAR-002",
+    "HAR-003",
+    "HAR-004",
+    "HAR-006",
+    "HAR-007",
+    "STK-001",
+    "STK-002",
+    "STK-003",
+    "STK-004",
+    "STK-005",
+    "STK-006",
+    "STK-007",
+    "SWE-001",
+    "SWE-002",
+    "SWE-003",
+    "SWE-004",
+    "SWE-005",
+    "SYS-001",
+    "SYS-002",
+    "SYS-003",
+    "SYS-004",
+    "SYS-005",
+    "SYS-006",
+    "SYS-007",
+    "SYS-008",
+    "SYS-009"
+  ],
+  "source": "examples/toy_thermal_protection_controller.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "RESET",
+    "IDLE",
+    "COOLING",
+    "DERATING",
+    "SENSOR_FAULT",
+    "FAULT_LATCHED"
+  ]
+}

@@ -72,10 +72,12 @@ The sample component is `ToyPowerMonitorIC`, a fictional SPI peripheral used to
 exercise the pipeline. It does not describe a real IC, real datasheet, real ECU
 specification, real register map, or production-derived project.
 
-The requirements-traceable validation example is `ToyThermalFanController`,
-with fictional `ToyTempSensorIC` and `ToyFanDriverIC` harness boundaries. It
-demonstrates readable requirements, a human-readable specification, MBD markup,
-generated handoff artifacts, preview-only generated C, and scenario reports.
+The complete business-process demo is `ToyThermalProtectionController`, with
+fictional `ToyTempSensorIC`, `ToyFanDriverIC`, and `ToyLoadLimiterIC` harness
+boundaries. It demonstrates readable requirements, a human-readable
+specification, Mermaid-like MBD markup, generated handoff artifacts,
+preview-only generated C, and scenario reports. Demo threshold values are
+explicit assumptions, not real product answers.
 
 The sample C files under `ecu_app/` are product-like but synthetic. They use
 HAL-style boundaries and are not production-derived.
@@ -105,6 +107,18 @@ python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --sce
 pytest
 ```
 
+Thermal protection process-demo commands:
+
+```bash
+python -m veph parse examples/toy_thermal_protection_controller.mbd.md --out generated/toy_thermal_protection_controller.ir.json
+python -m veph export-demo examples/toy_thermal_protection_controller.mbd.md --out generated/toy_thermal_protection_controller_demo.html
+python -m veph export-code-preview examples/toy_thermal_protection_controller.mbd.md --out generated/protection_ecu_preview/
+python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_derating.yml --report reports/thermal_protection_derating.md
+python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_fault_latch.yml --report reports/thermal_protection_fault_latch.md
+python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_recovery.yml --report reports/thermal_protection_recovery.md
+pytest
+```
+
 Legacy YAML preview commands may still exist while the project transitions, but
 new examples and public documentation should use `examples/*.mbd.md`.
 
@@ -121,6 +135,11 @@ new examples and public documentation should use `examples/*.mbd.md`.
 - `generated/ecu_preview/`: preview-only synthetic ECU C scaffold
 - `reports/thermal_fan_normal.md`: preview report with separated inputs, steps,
   observed behavior, generated ECU command outputs, expected behavior, and result
+- `specs/toy_thermal_protection_controller.md`: human-readable process-demo specification
+- `generated/toy_thermal_protection_controller_demo.html`: MBD visualization and trace preview
+- `generated/protection_ecu_preview/`: preview-only synthetic ECU C scaffold for the process demo
+- `reports/thermal_protection_*.md`: scenario reports for normal, derating,
+  fault-latch, and recovery behavior
 
 These files are generated from the Markdown markup source. If an artifact is
 wrong, update the markup or exporter and regenerate.

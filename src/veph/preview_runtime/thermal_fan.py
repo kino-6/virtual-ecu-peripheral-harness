@@ -75,7 +75,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
                 "virtualIcObservation": _virtual_ic_observation(inputs),
                 "controlRuleEvaluations": evaluations,
                 "appliedRule": applied.name if applied else None,
-                "generatedEcuCommandOutputs": _generated_outputs(outputs),
+                "generatedEcuCommandOutputs": _generated_outputs(model, outputs),
                 "after": after,
                 "requirementRefs": sorted(_step_requirement_refs(applied)),
             }
@@ -93,7 +93,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
         ],
         "stepEvidence": step_evidence,
     }
-    generated_outputs = _generated_outputs(outputs)
+    generated_outputs = _generated_outputs(model, outputs)
     checks = _evaluate_expectations(state, outputs, expected_behavior)
     passed = all(check.startswith("PASS") for check in checks)
     return ScenarioResult(
@@ -211,6 +211,12 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
         ],
         "traceabilityMatrix": _traceability_matrix(model),
         "requirementRefs": sorted(model.requirement_refs()),
+        "previewSubsetAssumption": (
+            "Preview subset assumption: discrete scenario steps represent the "
+            "Simulink-compatible subset. Timing behavior such as sensor invalid "
+            "debounce is represented by explicit scenario inputs and must be "
+            "verified by external MBD/product-test infrastructure."
+        ),
     }
 
 
@@ -221,15 +227,29 @@ def _traceability_matrix(model: MbdModelIR) -> list[dict[str, object]]:
             {
                 "requirement": ref,
                 "modelElements": _elements_for_ref(model, ref),
-                "evidence": [
-                    "examples/toy_thermal_fan_control.mbd.md",
-                    "generated/toy_thermal_fan_control.mmd",
-                    "generated/ecu_preview/controller.c",
-                    "reports/thermal_fan_normal.md or reports/thermal_fan_fault.md",
-                ],
+                "evidence": _artifact_evidence(model),
             }
         )
     return rows
+
+
+def _artifact_evidence(model: MbdModelIR) -> list[str]:
+    if model.component.name == "ToyThermalProtectionController":
+        return [
+            "examples/toy_thermal_protection_controller.mbd.md",
+            "generated/toy_thermal_protection_controller.mmd",
+            "generated/protection_ecu_preview/controller.c",
+            "reports/thermal_protection_normal.md",
+            "reports/thermal_protection_derating.md",
+            "reports/thermal_protection_fault_latch.md",
+            "reports/thermal_protection_recovery.md",
+        ]
+    return [
+        "examples/toy_thermal_fan_control.mbd.md",
+        "generated/toy_thermal_fan_control.mmd",
+        "generated/ecu_preview/controller.c",
+        "reports/thermal_fan_normal.md or reports/thermal_fan_fault.md",
+    ]
 
 
 def _elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
@@ -289,7 +309,31 @@ def _virtual_ic_observation(inputs: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _generated_outputs(outputs: dict[str, Any]) -> dict[str, Any]:
+def _generated_outputs(model: MbdModelIR, outputs: dict[str, Any]) -> dict[str, Any]:
+    if model.component.name == "ToyThermalProtectionController":
+        return {
+            **dict(outputs),
+            "halCalls": [
+                {
+                    "api": "hal_spi_read_temperature_c",
+                    "direction": "virtual IC to controller",
+                    "source": "ToyTempSensorIC",
+                },
+                {
+                    "api": "hal_pwm_set_fan_duty",
+                    "direction": "controller to virtual IC",
+                    "target": "ToyFanDriverIC",
+                    "value": outputs.get("fanDuty"),
+                },
+                {
+                    "api": "hal_load_limiter_set_derating",
+                    "direction": "controller to virtual IC",
+                    "target": "ToyLoadLimiterIC",
+                    "value": outputs.get("deratingCommand"),
+                },
+            ],
+            "controllerSource": "generated/protection_ecu_preview/controller.c",
+        }
     return {
         "fanDuty": outputs.get("fanDuty"),
         "fault": outputs.get("fault"),

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="RESET">
+  <!-- Generated state-machine handoff from examples/toy_thermal_protection_controller.mbd.md. -->
+  <!-- Requirement refs: CGEN-001, CGEN-002, CGEN-003, CGEN-004, CGEN-005, ENG-001, ENG-002, ENG-003, ENG-004, ENG-005, ENG-006, HAR-001, HAR-002, HAR-003, HAR-004, HAR-006, HAR-007, STK-001, STK-002, STK-003, STK-004, STK-005, STK-006, STK-007, SWE-001, SWE-002, SWE-003, SWE-004, SWE-005, SYS-001, SYS-002, SYS-003, SYS-004, SYS-005, SYS-006, SYS-007, SYS-008, SYS-009 -->
+  <state id="RESET">
+    <transition event="temperatureValid == true" target="IDLE" />
+  </state>
+  <state id="IDLE">
+    <transition event="temperatureC &gt;= coolingOnThreshold" target="COOLING" />
+    <transition event="temperatureValid == false" target="SENSOR_FAULT" />
+  </state>
+  <state id="COOLING">
+    <transition event="temperatureC &lt;= coolingOffThreshold" target="IDLE" />
+    <transition event="temperatureC &gt;= deratingEntryThreshold" target="DERATING" />
+    <transition event="temperatureValid == false" target="SENSOR_FAULT" />
+  </state>
+  <state id="DERATING">
+    <transition event="temperatureC &lt; deratingEntryThreshold" target="COOLING" />
+    <transition event="temperatureValid == false" target="SENSOR_FAULT" />
+  </state>
+  <state id="SENSOR_FAULT">
+    <transition event="invalidDebounced == true" target="FAULT_LATCHED" />
+  </state>
+  <state id="FAULT_LATCHED">
+    <transition event="recoveryRequest == true" target="IDLE" />
+  </state>
+</scxml>

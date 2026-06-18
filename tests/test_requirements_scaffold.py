@@ -32,6 +32,10 @@ def test_generate_spec_scaffold_preserves_trace_and_open_questions():
 
     assert "# Specification Scaffold" in scaffold
     assert "Source requirements: `Requirements.md`" in scaffold
+    assert "## Review Status" in scaffold
+    assert "Behavior approval: **PENDING**" in scaffold
+    assert "This scaffold is not an approved specification." in scaffold
+    assert "## Requirement Trace Appendix" in scaffold
     assert "| `SYS-006` | `DSC-C` | System Requirements |" in scaffold
     assert "## Open Questions" in scaffold
     assert "`SYS-007`" in scaffold
@@ -46,6 +50,8 @@ def test_generate_mbd_scaffold_preserves_trace_and_refuses_to_invent_behavior():
     assert "component ToyThermalProtectionController" in scaffold
     assert "trace SYS-001 SYS-002" in scaffold
     assert "```mbd-control" in scaffold
+    assert "Behavior approval: **PENDING**" in scaffold
+    assert "TODO values are explicit placeholders, not accepted demo answers." in scaffold
     assert "open-question SYS-007" in scaffold
     assert "Do not treat this scaffold as approved behavior" in scaffold
 
@@ -63,9 +69,10 @@ def test_validate_traceability_reports_missing_and_untraced_behavior():
     assert "## Missing Spec Coverage" in rendered
     assert "## Missing MBD Coverage" in rendered
     assert "## Untraced MBD Behavior" in rendered
+    assert "Behavior approval" in rendered
 
 
-def test_validate_traceability_passes_for_generated_scaffolds():
+def test_validate_traceability_passes_coverage_but_keeps_behavior_pending():
     extracted = extract_requirements(ROOT / "Requirements.md")
     report = validate_traceability(
         extracted,
@@ -74,4 +81,7 @@ def test_validate_traceability_passes_for_generated_scaffolds():
     )
 
     assert report.passed is True
-    assert "PASS" in report.to_markdown()
+    rendered = report.to_markdown()
+    assert "Coverage result: **PASS**" in rendered
+    assert "Behavior approval: **PENDING**" in rendered
+    assert "open question" in rendered

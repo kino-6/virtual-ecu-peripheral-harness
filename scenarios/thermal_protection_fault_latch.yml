@@ -1,0 +1,23 @@
+name: thermal_protection_fault_latch
+model: ToyThermalProtectionController
+steps:
+  - atMs: 0
+    setInput:
+      name: temperatureC
+      value: 96
+  - atMs: 10
+    setInput:
+      name: temperatureValid
+      value: false
+  - atMs: 30
+    setInput:
+      name: invalidDebounced
+      value: true
+expect:
+  finalState: FAULT_LATCHED
+  outputs:
+    fanDuty: 30
+    deratingCommand: 0
+    diagnosticFault: true
+    safeCommandActive: true
+

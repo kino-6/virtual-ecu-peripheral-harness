@@ -1,0 +1,19 @@
+name: thermal_protection_normal
+model: ToyThermalProtectionController
+steps:
+  - atMs: 0
+    setInput:
+      name: temperatureValid
+      value: true
+  - atMs: 20
+    setInput:
+      name: temperatureC
+      value: 82
+expect:
+  finalState: COOLING
+  outputs:
+    fanDuty: 70
+    deratingCommand: 0
+    diagnosticFault: false
+    safeCommandActive: false
+

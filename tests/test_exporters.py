@@ -84,6 +84,23 @@ def test_thermal_generated_artifacts_are_deterministic_from_markup_source():
         assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
 
 
+def test_thermal_protection_generated_artifacts_are_deterministic_from_markup_source():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    expected_outputs = {
+        "generated/toy_thermal_protection_controller.md": export_markdown(model),
+        "generated/toy_thermal_protection_controller.mmd": export_mermaid(model),
+        "generated/toy_thermal_protection_controller.puml": export_plantuml(model),
+        "generated/toy_thermal_protection_controller.scxml": export_scxml(model),
+        "generated/ToyThermalProtectionController.mo": export_modelica(model),
+        "generated/create_toy_thermal_protection_controller_model.m": export_simulink_m(model),
+        "generated/toy_thermal_protection_controller.fmi.json": export_fmi_metadata(model),
+    }
+
+    for relative_path, regenerated in expected_outputs.items():
+        assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+
+
 def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():
     model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
 
@@ -116,6 +133,19 @@ def test_thermal_demo_html_visualizes_trace_control_and_harness():
     assert "sensorFault" in html
     assert "SYS-005" in html
     assert "generated Simulink, Modelica, SCXML" in html
+
+
+def test_thermal_protection_demo_html_visualizes_complete_process_slice():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    html = export_demo_html(model)
+
+    assert "ToyThermalProtectionController" in html
+    assert "Requirements Trace Matrix" in html
+    assert "faultLatch" in html
+    assert "recoverFromLatch" in html
+    assert "ToyLoadLimiterIC" in html
+    assert "SYS-008" in html
 
 
 def test_markdown_documents_mbd_blocks_and_connections():

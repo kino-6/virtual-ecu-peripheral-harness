@@ -1,0 +1,140 @@
+flowchart LR
+  %% Generated preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  ToyTempSensorIC_temperatureC["ToyTempSensorIC.temperatureC"]
+  HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
+  %% Trace: SYS-001, HAR-001
+  %% ToyTempSensorIC_temperatureC --> HAL_SPI_read_temperature
+  ToyTempSensorIC_temperatureC -->|"virtual sensor sample"| HAL_SPI_read_temperature
+  ToyTempSensorIC_temperatureValid["ToyTempSensorIC.temperatureValid"]
+  HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
+  %% Trace: SYS-001, SYS-006, HAR-001
+  %% ToyTempSensorIC_temperatureValid --> HAL_SPI_read_temperature
+  ToyTempSensorIC_temperatureValid -->|"virtual validity sample"| HAL_SPI_read_temperature
+  ToyTempSensorIC_invalidDebounced["ToyTempSensorIC.invalidDebounced"]
+  ToyThermalProtectionController_invalidDebounced["ToyThermalProtectionController.invalidDebounced"]
+  %% Trace: SYS-007, ENG-002, HAR-003
+  %% ToyTempSensorIC_invalidDebounced --> ToyThermalProtectionController_invalidDebounced
+  ToyTempSensorIC_invalidDebounced -->|"preview debounce input"| ToyThermalProtectionController_invalidDebounced
+  HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
+  ToyThermalProtectionController_temperatureC["ToyThermalProtectionController.temperatureC"]
+  %% Trace: SWE-004, HAR-002
+  %% HAL_SPI_read_temperature --> ToyThermalProtectionController_temperatureC
+  HAL_SPI_read_temperature -->|"HAL temperature input"| ToyThermalProtectionController_temperatureC
+  ToyThermalProtectionController_fanDuty["ToyThermalProtectionController.fanDuty"]
+  HAL_PWM_set_fan_duty["HAL_PWM.set_fan_duty"]
+  %% Trace: SYS-002, SWE-004, CGEN-003
+  %% ToyThermalProtectionController_fanDuty --> HAL_PWM_set_fan_duty
+  ToyThermalProtectionController_fanDuty -->|"generated ECU fan command"| HAL_PWM_set_fan_duty
+  ToyThermalProtectionController_deratingCommand["ToyThermalProtectionController.deratingCommand"]
+  HAL_LIMITER_set_derating["HAL_LIMITER.set_derating"]
+  %% Trace: SYS-005, SWE-004, CGEN-003
+  %% ToyThermalProtectionController_deratingCommand --> HAL_LIMITER_set_derating
+  ToyThermalProtectionController_deratingCommand -->|"generated ECU derating command"| HAL_LIMITER_set_derating
+  HAL_PWM_set_fan_duty["HAL_PWM.set_fan_duty"]
+  ToyFanDriverIC_dutyCommand["ToyFanDriverIC.dutyCommand"]
+  %% Trace: SYS-002, HAR-001
+  %% HAL_PWM_set_fan_duty --> ToyFanDriverIC_dutyCommand
+  HAL_PWM_set_fan_duty -->|"virtual actuator command"| ToyFanDriverIC_dutyCommand
+  HAL_LIMITER_set_derating["HAL_LIMITER.set_derating"]
+  ToyLoadLimiterIC_limitCommand["ToyLoadLimiterIC.limitCommand"]
+  %% Trace: SYS-005, HAR-006
+  %% HAL_LIMITER_set_derating --> ToyLoadLimiterIC_limitCommand
+  HAL_LIMITER_set_derating -->|"virtual load limiter command"| ToyLoadLimiterIC_limitCommand
+  ToyThermalProtectionController_diagnosticFault["ToyThermalProtectionController.diagnosticFault"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SYS-006, SYS-007, HAR-004
+  %% ToyThermalProtectionController_diagnosticFault --> ScenarioReport_observedBehavior
+  ToyThermalProtectionController_diagnosticFault -->|"diagnostic observation"| ScenarioReport_observedBehavior
+  rule_recoverFromLatch{"rule recoverFromLatch"}
+  %% Trace: SYS-008, HAR-006
+  state["state"]
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| state
+  fanDuty["fanDuty"]
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_recoverFromLatch -->|"state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true"| safeCommandActive
+  rule_faultLatch{"rule faultLatch"}
+  %% Trace: SYS-007, SYS-006, HAR-004
+  state["state"]
+  rule_faultLatch -->|"invalidDebounced == true"| state
+  fanDuty["fanDuty"]
+  rule_faultLatch -->|"invalidDebounced == true"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_faultLatch -->|"invalidDebounced == true"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_faultLatch -->|"invalidDebounced == true"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_faultLatch -->|"invalidDebounced == true"| safeCommandActive
+  rule_holdLatchedFault{"rule holdLatchedFault"}
+  %% Trace: SYS-007, SYS-008, HAR-004
+  state["state"]
+  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| state
+  fanDuty["fanDuty"]
+  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_holdLatchedFault -->|"state == FAULT_LATCHED"| safeCommandActive
+  rule_sensorInvalid{"rule sensorInvalid"}
+  %% Trace: SYS-006, HAR-004
+  state["state"]
+  rule_sensorInvalid -->|"temperatureValid == false"| state
+  fanDuty["fanDuty"]
+  rule_sensorInvalid -->|"temperatureValid == false"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_sensorInvalid -->|"temperatureValid == false"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_sensorInvalid -->|"temperatureValid == false"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_sensorInvalid -->|"temperatureValid == false"| safeCommandActive
+  rule_derating{"rule derating"}
+  %% Trace: SYS-005, SYS-002, HAR-004
+  state["state"]
+  rule_derating -->|"temperatureC >= deratingEntryThreshold"| state
+  fanDuty["fanDuty"]
+  rule_derating -->|"temperatureC >= deratingEntryThreshold"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_derating -->|"temperatureC >= deratingEntryThreshold"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_derating -->|"temperatureC >= deratingEntryThreshold"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_derating -->|"temperatureC >= deratingEntryThreshold"| safeCommandActive
+  rule_highCooling{"rule highCooling"}
+  %% Trace: SYS-003, SYS-002, HAR-004
+  state["state"]
+  rule_highCooling -->|"temperatureC >= coolingOnThreshold"| state
+  fanDuty["fanDuty"]
+  rule_highCooling -->|"temperatureC >= coolingOnThreshold"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_highCooling -->|"temperatureC >= coolingOnThreshold"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_highCooling -->|"temperatureC >= coolingOnThreshold"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_highCooling -->|"temperatureC >= coolingOnThreshold"| safeCommandActive
+  rule_lowCooling{"rule lowCooling"}
+  %% Trace: SYS-004, HAR-004
+  state["state"]
+  rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| state
+  fanDuty["fanDuty"]
+  rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| fanDuty
+  deratingCommand["deratingCommand"]
+  rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| deratingCommand
+  diagnosticFault["diagnosticFault"]
+  rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| diagnosticFault
+  safeCommandActive["safeCommandActive"]
+  rule_lowCooling -->|"temperatureC <= coolingOffThreshold"| safeCommandActive
+  ToyTempSensorIC["ToyTempSensorIC<br/>virtual_ic"]
+  %% Trace: HAR-001, SYS-001, SYS-006, SYS-007
+  ToyFanDriverIC["ToyFanDriverIC<br/>virtual_ic"]
+  %% Trace: HAR-001, SYS-002
+  ToyLoadLimiterIC["ToyLoadLimiterIC<br/>virtual_ic"]
+  %% Trace: HAR-006, SYS-005
+  ToyThermalProtectionController["ToyThermalProtectionController<br/>hal"]
+  %% Trace: HAR-002, SWE-004, CGEN-003

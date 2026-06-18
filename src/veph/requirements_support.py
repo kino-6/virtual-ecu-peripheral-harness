@@ -35,14 +35,18 @@ class TraceabilityReport:
     missing_spec_coverage: list[str]
     missing_mbd_coverage: list[str]
     untraced_mbd_behavior: list[str]
+    approval_pending: list[str]
     findings: list[str]
 
     def to_markdown(self) -> str:
-        status = "PASS" if self.passed else "FAIL"
+        coverage_status = "PASS" if self.passed else "FAIL"
+        approval_status = "PENDING" if self.approval_pending else "READY FOR REVIEW"
         lines = [
             "# Requirements Traceability Report",
             "",
-            f"- Result: **{status}**",
+            f"- Coverage result: **{coverage_status}**",
+            f"- Behavior approval: **{approval_status}**",
+            "- Scope: scaffold trace coverage only; not a safety case, tool qualification, or production approval.",
             "",
             "## Findings",
             "",
@@ -54,6 +58,8 @@ class TraceabilityReport:
         lines.extend(_list_or_none(self.missing_mbd_coverage))
         lines.extend(["", "## Untraced MBD Behavior", ""])
         lines.extend(_list_or_none(self.untraced_mbd_behavior))
+        lines.extend(["", "## Approval Pending Items", ""])
+        lines.extend(_plain_list_or_none(self.approval_pending))
         lines.append("")
         return "\n".join(lines)
 
@@ -102,27 +108,41 @@ def render_requirements_json(extracted: ExtractedRequirements) -> str:
 
 
 def generate_spec_scaffold(extracted: ExtractedRequirements) -> str:
-    rows = [
-        "| Requirement | Class | Source section | Statement | Planned evidence |",
-        "| --- | --- | --- | --- | --- |",
-    ]
-    for req in extracted.requirements:
-        rows.append(
-            f"| `{req.id}` | `{req.classification or ''}` | {req.section} | "
-            f"{req.statement} | {req.planned_evidence or 'TBD'} |"
-        )
-
     lines = [
         "# Specification Scaffold",
         "",
         f"Source requirements: `{_source_name(extracted.source_path)}`",
         "",
-        "> Generated scaffold. Review and resolve open questions before using it",
-        "> as approved MBD input.",
+        "> Generated scaffold. This scaffold is not an approved specification.",
+        "> Resolve open questions before using it as approved MBD input.",
         "",
-        "## Requirement Summary",
+        "## Review Status",
         "",
-        *rows,
+        "- Behavior approval: **PENDING**",
+        "- Coverage meaning: requirement IDs are preserved for review; behavior is not approved by trace presence alone.",
+        "- Demo role: business-process demo for requirements, MBD handoff, harness preview, generated C preview, and reports.",
+        "- Tool boundary: repo-local execution is preview-only; existing MBD/product-test infrastructure remains the verification backend.",
+        "",
+        "## Demo Assumption Policy",
+        "",
+        "- The demo may use fictional component names and fictional requirement classes already stated in `Requirements.md`.",
+        "- The demo may generate scaffolds, TODO placeholders, trace tables, and review questions from the requirements.",
+        "- The demo must not invent accepted threshold values, timings, recovery conditions, fault semantics, or pass criteria.",
+        "- Missing behavior must remain visible as `TODO` or `open-question` until reviewed.",
+        "",
+        "## Review Path",
+        "",
+        "1. Review `Requirements.md` for stakeholder and system intent.",
+        "2. Review this scaffold for grouped behavior and unresolved decisions.",
+        "3. Approve or revise the missing behavior before accepting generated MBD source.",
+        "4. Regenerate MBD IR, handoff artifacts, preview C, scenarios, and reports from the approved source.",
+        "5. Use external MBD/product-test infrastructure for production-grade verification.",
+        "",
+        "## Open Questions",
+        "",
+        "Do not invent missing thresholds, timings, recovery rules, or fault semantics.",
+        "",
+        *_open_questions(extracted),
         "",
         "## Item Behavior",
         "",
@@ -153,11 +173,9 @@ def generate_spec_scaffold(extracted: ExtractedRequirements) -> str:
         "",
         *_bullets_for_sections(extracted, {"AI Development Efficiency Requirements", "RAG And Context Requirements"}),
         "",
-        "## Open Questions",
+        "## Requirement Trace Appendix",
         "",
-        "Do not invent missing thresholds, timings, recovery rules, or fault semantics.",
-        "",
-        *_open_questions(extracted),
+        *_requirement_table_rows(extracted),
         "",
     ]
     return "\n".join(lines)
@@ -172,6 +190,13 @@ def generate_mbd_scaffold(extracted: ExtractedRequirements) -> str:
         "",
         "> Generated scaffold from requirements. Do not treat this scaffold as approved behavior",
         "> until open questions are reviewed.",
+        "",
+        "## Review Status",
+        "",
+        "- Behavior approval: **PENDING**",
+        "- Coverage meaning: traces identify intended coverage, not accepted model semantics.",
+        "- TODO values are explicit placeholders, not accepted demo answers.",
+        "- External MBD/product-test infrastructure is still required for production-grade verification.",
         "",
         "## Requirement Coverage Intent",
         "",
@@ -248,12 +273,18 @@ def validate_traceability(
     if untraced:
         findings.append(f"FAIL untraced MBD behavior found: {len(untraced)} line(s)")
     if not findings:
-        findings.append("PASS all extracted requirements have required scaffold coverage")
+        findings.append("PASS scaffold trace coverage exists for extracted requirements")
+    approval_pending = _find_approval_pending(spec_text, mbd_text)
+    if approval_pending:
+        findings.append(
+            f"PENDING behavior approval: {len(approval_pending)} open question or TODO item(s) remain"
+        )
     return TraceabilityReport(
         passed=not missing_spec and not missing_mbd and not untraced,
         missing_spec_coverage=missing_spec,
         missing_mbd_coverage=missing_mbd,
         untraced_mbd_behavior=untraced,
+        approval_pending=approval_pending,
         findings=findings,
     )
 
@@ -296,6 +327,19 @@ def _bullets_for_sections(extracted: ExtractedRequirements, sections: set[str]) 
         if req.section in sections
     ]
     return items or ["- No requirements extracted for this section."]
+
+
+def _requirement_table_rows(extracted: ExtractedRequirements) -> list[str]:
+    rows = [
+        "| Requirement | Class | Source section | Statement | Planned evidence |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for req in extracted.requirements:
+        rows.append(
+            f"| `{req.id}` | `{req.classification or ''}` | {req.section} | "
+            f"{req.statement} | {req.planned_evidence or 'TBD'} |"
+        )
+    return rows
 
 
 def _open_questions(extracted: ExtractedRequirements) -> list[str]:
@@ -347,5 +391,30 @@ def _find_untraced_mbd_behavior(mbd_text: str) -> list[str]:
     return untraced
 
 
+def _find_approval_pending(spec_text: str, mbd_text: str) -> list[str]:
+    pending: list[str] = []
+    for raw_line in (spec_text + "\n" + mbd_text).splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        is_spec_open_question = (
+            line.startswith("- `SYS-")
+            and "confirm threshold/timing/recovery/fault semantics" in line
+        )
+        is_mbd_open_question = line.startswith("- open-question") or (
+            "--> " in line and "open-question" in line
+        )
+        is_mbd_todo = line.startswith("parameter TODO") or line.startswith("rule TODO")
+        has_pending_marker = is_spec_open_question or is_mbd_open_question or is_mbd_todo
+        display_line = line.removeprefix("- ").strip()
+        if has_pending_marker and display_line not in pending:
+            pending.append(display_line)
+    return pending
+
+
 def _list_or_none(items: list[str]) -> list[str]:
     return [f"- `{item}`" for item in items] if items else ["- None"]
+
+
+def _plain_list_or_none(items: list[str]) -> list[str]:
+    return [f"- {item}" for item in items] if items else ["- None"]

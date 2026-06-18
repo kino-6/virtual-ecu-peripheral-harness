@@ -1,0 +1,582 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "16"
+    },
+    "name": "ToyThermalProtectionController",
+    "parameters": {
+      "coolingDuty": {
+        "default": "70",
+        "name": "coolingDuty",
+        "type": "percent"
+      },
+      "coolingOffThreshold": {
+        "default": "68",
+        "name": "coolingOffThreshold",
+        "type": "degC"
+      },
+      "coolingOnThreshold": {
+        "default": "78",
+        "name": "coolingOnThreshold",
+        "type": "degC"
+      },
+      "deratingEntryThreshold": {
+        "default": "94",
+        "name": "deratingEntryThreshold",
+        "type": "degC"
+      },
+      "deratingFanDuty": {
+        "default": "95",
+        "name": "deratingFanDuty",
+        "type": "percent"
+      },
+      "deratingLimit": {
+        "default": "45",
+        "name": "deratingLimit",
+        "type": "percent"
+      },
+      "safeDuty": {
+        "default": "30",
+        "name": "safeDuty",
+        "type": "percent"
+      }
+    },
+    "trace": [
+      "STK-001",
+      "STK-002",
+      "STK-003",
+      "STK-004",
+      "STK-005",
+      "STK-006",
+      "STK-007",
+      "SYS-001",
+      "SYS-002",
+      "SYS-003",
+      "SYS-004",
+      "SYS-005",
+      "SYS-006",
+      "SYS-007",
+      "SYS-008",
+      "SYS-009",
+      "SWE-001",
+      "SWE-002",
+      "SWE-003",
+      "SWE-004",
+      "SWE-005",
+      "ENG-001",
+      "ENG-002",
+      "ENG-003",
+      "ENG-004",
+      "ENG-005",
+      "ENG-006",
+      "HAR-001",
+      "HAR-002",
+      "HAR-003",
+      "HAR-004",
+      "HAR-006",
+      "HAR-007",
+      "CGEN-001",
+      "CGEN-002",
+      "CGEN-003",
+      "CGEN-004",
+      "CGEN-005"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "0",
+        "safeCommandActive": "false",
+        "state": "IDLE"
+      },
+      "condition": "state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true",
+      "name": "recoverFromLatch",
+      "trace": [
+        "SYS-008",
+        "HAR-006"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "FAULT_LATCHED"
+      },
+      "condition": "invalidDebounced == true",
+      "name": "faultLatch",
+      "trace": [
+        "SYS-007",
+        "SYS-006",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "FAULT_LATCHED"
+      },
+      "condition": "state == FAULT_LATCHED",
+      "name": "holdLatchedFault",
+      "trace": [
+        "SYS-007",
+        "SYS-008",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "true",
+        "fanDuty": "safeDuty",
+        "safeCommandActive": "true",
+        "state": "SENSOR_FAULT"
+      },
+      "condition": "temperatureValid == false",
+      "name": "sensorInvalid",
+      "trace": [
+        "SYS-006",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "deratingLimit",
+        "diagnosticFault": "false",
+        "fanDuty": "deratingFanDuty",
+        "safeCommandActive": "false",
+        "state": "DERATING"
+      },
+      "condition": "temperatureC >= deratingEntryThreshold",
+      "name": "derating",
+      "trace": [
+        "SYS-005",
+        "SYS-002",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "coolingDuty",
+        "safeCommandActive": "false",
+        "state": "COOLING"
+      },
+      "condition": "temperatureC >= coolingOnThreshold",
+      "name": "highCooling",
+      "trace": [
+        "SYS-003",
+        "SYS-002",
+        "HAR-004"
+      ]
+    },
+    {
+      "actions": {
+        "deratingCommand": "0",
+        "diagnosticFault": "false",
+        "fanDuty": "0",
+        "safeCommandActive": "false",
+        "state": "IDLE"
+      },
+      "condition": "temperatureC <= coolingOffThreshold",
+      "name": "lowCooling",
+      "trace": [
+        "SYS-004",
+        "HAR-004"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "virtual sensor sample",
+      "source": "ToyTempSensorIC.temperatureC",
+      "target": "HAL_SPI.read_temperature",
+      "trace": [
+        "SYS-001",
+        "HAR-001"
+      ]
+    },
+    {
+      "label": "virtual validity sample",
+      "source": "ToyTempSensorIC.temperatureValid",
+      "target": "HAL_SPI.read_temperature",
+      "trace": [
+        "SYS-001",
+        "SYS-006",
+        "HAR-001"
+      ]
+    },
+    {
+      "label": "preview debounce input",
+      "source": "ToyTempSensorIC.invalidDebounced",
+      "target": "ToyThermalProtectionController.invalidDebounced",
+      "trace": [
+        "SYS-007",
+        "ENG-002",
+        "HAR-003"
+      ]
+    },
+    {
+      "label": "HAL temperature input",
+      "source": "HAL_SPI.read_temperature",
+      "target": "ToyThermalProtectionController.temperatureC",
+      "trace": [
+        "SWE-004",
+        "HAR-002"
+      ]
+    },
+    {
+      "label": "generated ECU fan command",
+      "source": "ToyThermalProtectionController.fanDuty",
+      "target": "HAL_PWM.set_fan_duty",
+      "trace": [
+        "SYS-002",
+        "SWE-004",
+        "CGEN-003"
+      ]
+    },
+    {
+      "label": "generated ECU derating command",
+      "source": "ToyThermalProtectionController.deratingCommand",
+      "target": "HAL_LIMITER.set_derating",
+      "trace": [
+        "SYS-005",
+        "SWE-004",
+        "CGEN-003"
+      ]
+    },
+    {
+      "label": "virtual actuator command",
+      "source": "HAL_PWM.set_fan_duty",
+      "target": "ToyFanDriverIC.dutyCommand",
+      "trace": [
+        "SYS-002",
+        "HAR-001"
+      ]
+    },
+    {
+      "label": "virtual load limiter command",
+      "source": "HAL_LIMITER.set_derating",
+      "target": "ToyLoadLimiterIC.limitCommand",
+      "trace": [
+        "SYS-005",
+        "HAR-006"
+      ]
+    },
+    {
+      "label": "diagnostic observation",
+      "source": "ToyThermalProtectionController.diagnosticFault",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "SYS-006",
+        "SYS-007",
+        "HAR-004"
+      ]
+    }
+  ],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyTempSensorIC",
+      "role": "sensor",
+      "trace": [
+        "HAR-001",
+        "SYS-001",
+        "SYS-006",
+        "SYS-007"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyFanDriverIC",
+      "role": "actuator",
+      "trace": [
+        "HAR-001",
+        "SYS-002"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyLoadLimiterIC",
+      "role": "actuator",
+      "trace": [
+        "HAR-006",
+        "SYS-005"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyThermalProtectionController",
+      "role": "controller",
+      "trace": [
+        "HAR-002",
+        "SWE-004",
+        "CGEN-003"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "CGEN-001",
+      "CGEN-002",
+      "CGEN-003",
+      "CGEN-004",
+      "CGEN-005",
+      "ENG-001",
+      "ENG-002",
+      "ENG-003",
+      "ENG-004",
+      "ENG-005",
+      "ENG-006",
+      "HAR-001",
+      "HAR-002",
+      "HAR-003",
+      "HAR-004",
+      "HAR-006",
+      "HAR-007",
+      "STK-001",
+      "STK-002",
+      "STK-003",
+      "STK-004",
+      "STK-005",
+      "STK-006",
+      "STK-007",
+      "SWE-001",
+      "SWE-002",
+      "SWE-003",
+      "SWE-004",
+      "SWE-005",
+      "SYS-001",
+      "SYS-002",
+      "SYS-003",
+      "SYS-004",
+      "SYS-005",
+      "SYS-006",
+      "SYS-007",
+      "SYS-008",
+      "SYS-009"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "examples/toy_thermal_protection_controller.mbd.md"
+  },
+  "ports": {
+    "deratingCommand": {
+      "default": "0",
+      "direction": "out",
+      "name": "deratingCommand",
+      "type": "percent"
+    },
+    "diagnosticFault": {
+      "default": "false",
+      "direction": "out",
+      "name": "diagnosticFault",
+      "type": "bool"
+    },
+    "fanDuty": {
+      "default": "0",
+      "direction": "out",
+      "name": "fanDuty",
+      "type": "percent"
+    },
+    "invalidDebounced": {
+      "default": "false",
+      "direction": "in",
+      "name": "invalidDebounced",
+      "type": "bool"
+    },
+    "recoveryRequest": {
+      "default": "false",
+      "direction": "in",
+      "name": "recoveryRequest",
+      "type": "bool"
+    },
+    "safeCommandActive": {
+      "default": "false",
+      "direction": "out",
+      "name": "safeCommandActive",
+      "type": "bool"
+    },
+    "temperatureC": {
+      "default": "25",
+      "direction": "in",
+      "name": "temperatureC",
+      "type": "degC"
+    },
+    "temperatureValid": {
+      "default": "true",
+      "direction": "in",
+      "name": "temperatureValid",
+      "type": "bool"
+    }
+  },
+  "registers": {
+    "TP_COMMAND": {
+      "access": "rw",
+      "address": "0x30",
+      "fields": {
+        "commandValid": {
+          "bit": 15,
+          "bits": "15",
+          "name": "commandValid",
+          "reset": "0"
+        },
+        "deratingCommand": {
+          "bit": 14,
+          "bits": "14..8",
+          "name": "deratingCommand",
+          "reset": "0"
+        },
+        "fanDutyCommand": {
+          "bit": 7,
+          "bits": "7..0",
+          "name": "fanDutyCommand",
+          "reset": "0"
+        }
+      },
+      "name": "TP_COMMAND",
+      "width": 16
+    },
+    "TP_CONTROL_STATUS": {
+      "access": "ro",
+      "address": "0x20",
+      "fields": {
+        "deratingActive": {
+          "bit": 8,
+          "bits": "8",
+          "name": "deratingActive",
+          "reset": "0"
+        },
+        "diagnosticFault": {
+          "bit": 10,
+          "bits": "10",
+          "name": "diagnosticFault",
+          "reset": "0"
+        },
+        "fanDutyMirror": {
+          "bit": 7,
+          "bits": "7..0",
+          "name": "fanDutyMirror",
+          "reset": "0"
+        },
+        "safeCommandActive": {
+          "bit": 9,
+          "bits": "9",
+          "name": "safeCommandActive",
+          "reset": "0"
+        }
+      },
+      "name": "TP_CONTROL_STATUS",
+      "width": 16
+    },
+    "TP_TEMP_STATUS": {
+      "access": "ro",
+      "address": "0x10",
+      "fields": {
+        "temperatureCode": {
+          "bit": 14,
+          "bits": "14..0",
+          "name": "temperatureCode",
+          "reset": "25"
+        },
+        "valid": {
+          "bit": 15,
+          "bits": "15",
+          "name": "valid",
+          "reset": "1"
+        }
+      },
+      "name": "TP_TEMP_STATUS",
+      "width": 16
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyThermalProtectionController\ntrace STK-001 STK-002 STK-003 STK-004 STK-005 STK-006 STK-007 SYS-001 SYS-002 SYS-003 SYS-004 SYS-005 SYS-006 SYS-007 SYS-008 SYS-009 SWE-001 SWE-002 SWE-003 SWE-004 SWE-005 ENG-001 ENG-002 ENG-003 ENG-004 ENG-005 ENG-006 HAR-001 HAR-002 HAR-003 HAR-004 HAR-006 HAR-007 CGEN-001 CGEN-002 CGEN-003 CGEN-004 CGEN-005\nbus virtual mode=preview wordBits=16\nparameter coolingOnThreshold: degC = 78\nparameter coolingOffThreshold: degC = 68\nparameter deratingEntryThreshold: degC = 94\nparameter coolingDuty: percent = 70\nparameter deratingFanDuty: percent = 95\nparameter deratingLimit: percent = 45\nparameter safeDuty: percent = 30\n\nport in temperatureC: degC = 25\nport in temperatureValid: bool = true\nport in invalidDebounced: bool = false\nport in recoveryRequest: bool = false\nport out fanDuty: percent = 0\nport out deratingCommand: percent = 0\nport out diagnosticFault: bool = false\nport out safeCommandActive: bool = false",
+      "language": "mbd-component"
+    },
+    {
+      "body": "TP_TEMP_STATUS 0x10 ro 16\n  bit 15 valid reset=1\n  bits 14..0 temperatureCode reset=25\n\nTP_CONTROL_STATUS 0x20 ro 16\n  bits 7..0 fanDutyMirror reset=0\n  bit 8 deratingActive reset=0\n  bit 9 safeCommandActive reset=0\n  bit 10 diagnosticFault reset=0\n\nTP_COMMAND 0x30 rw 16\n  bits 7..0 fanDutyCommand reset=0\n  bits 14..8 deratingCommand reset=0\n  bit 15 commandValid reset=0",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "RESET --> IDLE: temperatureValid == true\nIDLE --> COOLING: temperatureC >= coolingOnThreshold\nCOOLING --> IDLE: temperatureC <= coolingOffThreshold\nCOOLING --> DERATING: temperatureC >= deratingEntryThreshold\nDERATING --> COOLING: temperatureC < deratingEntryThreshold\nIDLE --> SENSOR_FAULT: temperatureValid == false\nCOOLING --> SENSOR_FAULT: temperatureValid == false\nDERATING --> SENSOR_FAULT: temperatureValid == false\nSENSOR_FAULT --> FAULT_LATCHED: invalidDebounced == true\nFAULT_LATCHED --> IDLE: recoveryRequest == true",
+      "language": "mbd-state"
+    },
+    {
+      "body": "ToyTempSensorIC.temperatureC -> HAL_SPI.read_temperature: virtual sensor sample trace SYS-001 HAR-001\nToyTempSensorIC.temperatureValid -> HAL_SPI.read_temperature: virtual validity sample trace SYS-001 SYS-006 HAR-001\nToyTempSensorIC.invalidDebounced -> ToyThermalProtectionController.invalidDebounced: preview debounce input trace SYS-007 ENG-002 HAR-003\nHAL_SPI.read_temperature -> ToyThermalProtectionController.temperatureC: HAL temperature input trace SWE-004 HAR-002\nToyThermalProtectionController.fanDuty -> HAL_PWM.set_fan_duty: generated ECU fan command trace SYS-002 SWE-004 CGEN-003\nToyThermalProtectionController.deratingCommand -> HAL_LIMITER.set_derating: generated ECU derating command trace SYS-005 SWE-004 CGEN-003\nHAL_PWM.set_fan_duty -> ToyFanDriverIC.dutyCommand: virtual actuator command trace SYS-002 HAR-001\nHAL_LIMITER.set_derating -> ToyLoadLimiterIC.limitCommand: virtual load limiter command trace SYS-005 HAR-006\nToyThermalProtectionController.diagnosticFault -> ScenarioReport.observedBehavior: diagnostic observation trace SYS-006 SYS-007 HAR-004",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "rule recoverFromLatch: when state == FAULT_LATCHED and temperatureValid == true and recoveryRequest == true then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-008 HAR-006\nrule faultLatch: when invalidDebounced == true then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 SYS-006 HAR-004\nrule holdLatchedFault: when state == FAULT_LATCHED then state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-007 SYS-008 HAR-004\nrule sensorInvalid: when temperatureValid == false then state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true trace SYS-006 HAR-004\nrule derating: when temperatureC >= deratingEntryThreshold then state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false trace SYS-005 SYS-002 HAR-004\nrule highCooling: when temperatureC >= coolingOnThreshold then state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-003 SYS-002 HAR-004\nrule lowCooling: when temperatureC <= coolingOffThreshold then state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false trace SYS-004 HAR-004",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToyTempSensorIC role=sensor boundary=virtual_ic trace HAR-001 SYS-001 SYS-006 SYS-007\ndevice ToyFanDriverIC role=actuator boundary=virtual_ic trace HAR-001 SYS-002\ndevice ToyLoadLimiterIC role=actuator boundary=virtual_ic trace HAR-006 SYS-005\necu ToyThermalProtectionController role=controller boundary=hal trace HAR-002 SWE-004 CGEN-003",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "examples/toy_thermal_protection_controller.mbd.md",
+  "title": "Toy Thermal Protection Controller",
+  "transitions": [
+    {
+      "condition": "temperatureValid == true",
+      "source": "RESET",
+      "target": "IDLE"
+    },
+    {
+      "condition": "temperatureC >= coolingOnThreshold",
+      "source": "IDLE",
+      "target": "COOLING"
+    },
+    {
+      "condition": "temperatureC <= coolingOffThreshold",
+      "source": "COOLING",
+      "target": "IDLE"
+    },
+    {
+      "condition": "temperatureC >= deratingEntryThreshold",
+      "source": "COOLING",
+      "target": "DERATING"
+    },
+    {
+      "condition": "temperatureC < deratingEntryThreshold",
+      "source": "DERATING",
+      "target": "COOLING"
+    },
+    {
+      "condition": "temperatureValid == false",
+      "source": "IDLE",
+      "target": "SENSOR_FAULT"
+    },
+    {
+      "condition": "temperatureValid == false",
+      "source": "COOLING",
+      "target": "SENSOR_FAULT"
+    },
+    {
+      "condition": "temperatureValid == false",
+      "source": "DERATING",
+      "target": "SENSOR_FAULT"
+    },
+    {
+      "condition": "invalidDebounced == true",
+      "source": "SENSOR_FAULT",
+      "target": "FAULT_LATCHED"
+    },
+    {
+      "condition": "recoveryRequest == true",
+      "source": "FAULT_LATCHED",
+      "target": "IDLE"
+    }
+  ]
+}
