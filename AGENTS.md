@@ -60,6 +60,16 @@ Recent direction decisions:
   demo. Favor traceability, review gates, and reproducible evidence.
 - Run the loop as PDCA/TDD: requirements, specification, failing checks, markup
   and exporters, harness preview, reports, then task/status updates.
+- If expected artifact quality is unclear, ask the user before implementation.
+  Do not silently downgrade a validation goal into a smoke-test demo.
+
+## Quality Gate And Expectation Control
+
+Before substantial or ambiguous validation work, state the expected human-facing
+artifact quality and add acceptance gates to `Tasks.md`. Ask back when words
+like "MBD", "validation", "product-like", "ASPICE-aware", "demo", or "report"
+could imply different rigor levels. Tests passing is necessary evidence, not a
+complete definition of done.
 
 ## Verification Policy
 
@@ -123,6 +133,9 @@ Project-local skills live under `.agents/skills/`:
   source-to-artifact determinism.
 - `preview-harness-codegen`: use for preview runtime, `run-preview`,
   `export-code-preview`, scenarios, and preview-only generated C scaffolds.
+- `quality-gate-expectation-control`: use before substantial or ambiguous work
+  when user-visible artifact quality, review evidence, or acceptance gates are
+  unclear.
 
 Keep skills concise; move details into one-level `references/` files when needed.
 

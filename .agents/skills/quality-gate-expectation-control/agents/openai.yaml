@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quality Gate Expectation Control"
+  short_description: "Clarify expectations before high-risk work"
+  default_prompt: "Use $quality-gate-expectation-control to clarify expected quality gates before implementing a substantial validation feature."
