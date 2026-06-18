@@ -233,10 +233,111 @@
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>8</strong><span>ports</span></div>
+        <div><strong>7</strong><span>functions</span></div>
         <div><strong>7</strong><span>control rules</span></div>
         <div><strong>4</strong><span>harness boundaries</span></div>
-        <div><strong>20</strong><span>requirement refs</span></div>
       </div>
+    </section>
+    <section class="panel">
+      <h2>Functional Architecture</h2>
+      <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>
+      <svg class="diagram" viewBox="0 0 1180 660" role="img" aria-label="Functional decomposition generated from mbd-decomposition">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="44" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="66" class="node-title small">SensorInterface</text>
+        <text x="58" y="87" class="node-note">owns temperatureC, temperatureValid</text>
+        <line x1="342" y1="73" x2="396" y2="73" class="ir-arrow"></line>
+        <rect x="396" y="44" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="68" class="node-note">in ToyTempSensorIC.temperatureC, ToyTemp...</text>
+        <text x="412" y="88" class="node-note">out temperatureC, temperatureValid</text>
+        <line x1="712" y1="73" x2="766" y2="73" class="ir-arrow"></line>
+        <rect x="766" y="44" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="68" class="node-note">trace SYS-001, HAR-001, HAR-002</text>
+        <text x="782" y="88" class="edge-note">Acquire fictional temperature and validity through th...</text>
+        <rect x="42" y="126" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="148" class="node-title small">ValidityDebounceManager</text>
+        <text x="58" y="169" class="node-note">owns invalidDebounced</text>
+        <line x1="342" y1="155" x2="396" y2="155" class="ir-arrow"></line>
+        <rect x="396" y="126" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="150" class="node-note">in temperatureValid, ToyTempSensorIC.inv...</text>
+        <text x="412" y="170" class="node-note">out invalidDebounced</text>
+        <line x1="712" y1="155" x2="766" y2="155" class="ir-arrow"></line>
+        <rect x="766" y="126" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="150" class="node-note">trace SYS-006, SYS-007, ENG-002, HAR-003</text>
+        <text x="782" y="170" class="edge-note">Represent invalid sensor input and preview debounce s...</text>
+        <rect x="42" y="208" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="230" class="node-title small">ThermalStateManager</text>
+        <text x="58" y="251" class="node-note">owns IDLE, COOLING, DERATING</text>
+        <line x1="342" y1="237" x2="396" y2="237" class="ir-arrow"></line>
+        <rect x="396" y="208" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="232" class="node-note">in temperatureC, temperatureValid</text>
+        <text x="412" y="252" class="node-note">out state</text>
+        <line x1="712" y1="237" x2="766" y2="237" class="ir-arrow"></line>
+        <rect x="766" y="208" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="232" class="node-note">trace SYS-003, SYS-004, SYS-005</text>
+        <text x="782" y="252" class="edge-note">Own IDLE COOLING and DERATING state decisions for val...</text>
+        <rect x="42" y="290" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="312" class="node-title small">CoolingCommandManager</text>
+        <text x="58" y="333" class="node-note">owns fanDuty</text>
+        <line x1="342" y1="319" x2="396" y2="319" class="ir-arrow"></line>
+        <rect x="396" y="290" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="314" class="node-note">in state, temperatureC</text>
+        <text x="412" y="334" class="node-note">out fanDuty</text>
+        <line x1="712" y1="319" x2="766" y2="319" class="ir-arrow"></line>
+        <rect x="766" y="290" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="314" class="node-note">trace SYS-002, SYS-003, SYS-004</text>
+        <text x="782" y="334" class="edge-note">Calculate nominal fan command for cooling and hystere...</text>
+        <rect x="42" y="372" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="394" class="node-title small">DeratingCommandManager</text>
+        <text x="58" y="415" class="node-note">owns deratingCommand</text>
+        <line x1="342" y1="401" x2="396" y2="401" class="ir-arrow"></line>
+        <rect x="396" y="372" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="396" class="node-note">in state, temperatureC</text>
+        <text x="412" y="416" class="node-note">out fanDuty, deratingCommand</text>
+        <line x1="712" y1="401" x2="766" y2="401" class="ir-arrow"></line>
+        <rect x="766" y="372" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="396" class="node-note">trace SYS-005</text>
+        <text x="782" y="416" class="edge-note">Calculate high-temperature fan and fictional load-lim...</text>
+        <rect x="42" y="454" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="476" class="node-title small">FaultLatchRecoveryManager</text>
+        <text x="58" y="497" class="node-note">owns SENSOR_FAULT, FAULT_LATCHED, recove...</text>
+        <line x1="342" y1="483" x2="396" y2="483" class="ir-arrow"></line>
+        <rect x="396" y="454" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="478" class="node-note">in temperatureValid, invalidDebounced, r...</text>
+        <text x="412" y="498" class="node-note">out state, safeCommandActive, diagnosticF...</text>
+        <line x1="712" y1="483" x2="766" y2="483" class="ir-arrow"></line>
+        <rect x="766" y="454" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="478" class="node-note">trace SYS-006, SYS-007, SYS-008</text>
+        <text x="782" y="498" class="edge-note">Own sensor fault latch hold and explicit recovery beh...</text>
+        <rect x="42" y="536" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="558" class="node-title small">OutputMappingDiagnostics</text>
+        <text x="58" y="579" class="node-note">owns safeCommandActive, diagnosticFault</text>
+        <line x1="342" y1="565" x2="396" y2="565" class="ir-arrow"></line>
+        <rect x="396" y="536" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="560" class="node-note">in fanDuty, deratingCommand, state</text>
+        <text x="412" y="580" class="node-note">out HAL_PWM.set_fan_duty, HAL_LIMITER.set...</text>
+        <line x1="712" y1="565" x2="766" y2="565" class="ir-arrow"></line>
+        <rect x="766" y="536" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="560" class="node-note">trace SYS-002, SYS-006, SYS-009, CGEN-0...</text>
+        <text x="782" y="580" class="edge-note">Map selected commands to HAL outputs and report-obser...</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Functional Decomposition</h2>
+      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
+      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>SensorInterface</td><td>Acquire fictional temperature and validity through the HAL boundary</td><td>temperatureC, temperatureValid</td><td>ToyTempSensorIC.temperatureC, ToyTempSensorIC.temperatureValid</td><td>temperatureC, temperatureValid</td><td>SYS-001, HAR-001, HAR-002</td><td>thermal_protection_normal, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>ValidityDebounceManager</td><td>Represent invalid sensor input and preview debounce status without timing physics</td><td>invalidDebounced</td><td>temperatureValid, ToyTempSensorIC.invalidDebounced</td><td>invalidDebounced</td><td>SYS-006, SYS-007, ENG-002, HAR-003</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>ThermalStateManager</td><td>Own IDLE COOLING and DERATING state decisions for valid temperature inputs</td><td>IDLE, COOLING, DERATING</td><td>temperatureC, temperatureValid</td><td>state</td><td>SYS-003, SYS-004, SYS-005</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating</td></tr>
+          <tr><td>CoolingCommandManager</td><td>Calculate nominal fan command for cooling and hysteresis behavior</td><td>fanDuty</td><td>state, temperatureC</td><td>fanDuty</td><td>SYS-002, SYS-003, SYS-004</td><td>thermal_protection_normal, thermal_protection_boundary</td></tr>
+          <tr><td>DeratingCommandManager</td><td>Calculate high-temperature fan and fictional load-limit commands</td><td>deratingCommand</td><td>state, temperatureC</td><td>fanDuty, deratingCommand</td><td>SYS-005</td><td>thermal_protection_derating</td></tr>
+          <tr><td>FaultLatchRecoveryManager</td><td>Own sensor fault latch hold and explicit recovery behavior</td><td>SENSOR_FAULT, FAULT_LATCHED, recoveryRequest</td><td>temperatureValid, invalidDebounced, recoveryRequest</td><td>state, safeCommandActive, diagnosticFault</td><td>SYS-006, SYS-007, SYS-008</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>OutputMappingDiagnostics</td><td>Map selected commands to HAL outputs and report-observable diagnostics</td><td>safeCommandActive, diagnosticFault</td><td>fanDuty, deratingCommand, state</td><td>HAL_PWM.set_fan_duty, HAL_LIMITER.set_derating, ScenarioReport.observedBehavior, ScenarioReport.passFailResult</td><td>SYS-002, SYS-006, SYS-009, CGEN-003, HAR-004</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+      </tbody></table>
     </section>
     <section class="panel">
       <h2>Spec-To-MBD Compliance Review</h2>
@@ -244,15 +345,15 @@
       <table>
         <thead><tr><th>Requirement</th><th>Expected behavior</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
         <tbody>
-          <tr><td><code>SYS-001</code></td><td>Read fictional temperature and validity through HAL.</td><td>flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td><td>thermal_protection_normal</td></tr>
-          <tr><td><code>SYS-002</code></td><td>Command fan duty through the virtual fan driver.</td><td>flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, control:derating, control:highCooling, harness:ToyFanDriverIC</td><td>thermal_protection_normal, thermal_protection_derating</td></tr>
-          <tr><td><code>SYS-003</code></td><td>Enter COOLING and command 70 percent fan duty at 78 degC or above.</td><td>control:highCooling</td><td>thermal_protection_normal</td></tr>
-          <tr><td><code>SYS-004</code></td><td>Return to IDLE only at 68 degC or below.</td><td>control:lowCooling</td><td>thermal_protection_boundary</td></tr>
-          <tr><td><code>SYS-005</code></td><td>Enter DERATING and command fan/limiter protection outputs at 94 degC or above.</td><td>flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, flow:HAL_LIMITER.set_derating-&gt;ToyLoadLimiterIC.limitCommand, control:derating, harness:ToyLoadLimiterIC</td><td>thermal_protection_derating</td></tr>
-          <tr><td><code>SYS-006</code></td><td>Enter sensor fault behavior and safe command when temperature validity is false.</td><td>flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:sensorInvalid, harness:ToyTempSensorIC</td><td>thermal_protection_fault_latch</td></tr>
-          <tr><td><code>SYS-007</code></td><td>Latch a fault when invalidDebounced is true.</td><td>flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:holdLatchedFault, harness:ToyTempSensorIC</td><td>thermal_protection_fault_latch</td></tr>
-          <tr><td><code>SYS-008</code></td><td>Recover only when valid, invalidDebounced is false, and recoveryRequest is true.</td><td>control:recoverFromLatch</td><td>thermal_protection_recovery</td></tr>
-          <tr><td><code>SYS-009</code></td><td>Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.</td><td>flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports</td></tr>
+          <tr><td><code>SYS-001</code></td><td>Read fictional temperature and validity through HAL.</td><td>function:SensorInterface, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td><td>thermal_protection_normal</td></tr>
+          <tr><td><code>SYS-002</code></td><td>Command fan duty through the virtual fan driver.</td><td>function:CoolingCommandManager, function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, control:derating, control:highCooling, harness:ToyFanDriverIC</td><td>thermal_protection_normal, thermal_protection_derating</td></tr>
+          <tr><td><code>SYS-003</code></td><td>Enter COOLING and command 70 percent fan duty at 78 degC or above.</td><td>function:ThermalStateManager, function:CoolingCommandManager, control:highCooling</td><td>thermal_protection_normal</td></tr>
+          <tr><td><code>SYS-004</code></td><td>Return to IDLE only at 68 degC or below.</td><td>function:ThermalStateManager, function:CoolingCommandManager, control:lowCooling</td><td>thermal_protection_boundary</td></tr>
+          <tr><td><code>SYS-005</code></td><td>Enter DERATING and command fan/limiter protection outputs at 94 degC or above.</td><td>function:ThermalStateManager, function:DeratingCommandManager, flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, flow:HAL_LIMITER.set_derating-&gt;ToyLoadLimiterIC.limitCommand, control:derating, harness:ToyLoadLimiterIC</td><td>thermal_protection_derating</td></tr>
+          <tr><td><code>SYS-006</code></td><td>Enter sensor fault behavior and safe command when temperature validity is false.</td><td>function:ValidityDebounceManager, function:FaultLatchRecoveryManager, function:OutputMappingDiagnostics, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:sensorInvalid, harness:ToyTempSensorIC</td><td>thermal_protection_fault_latch</td></tr>
+          <tr><td><code>SYS-007</code></td><td>Latch a fault when invalidDebounced is true.</td><td>function:ValidityDebounceManager, function:FaultLatchRecoveryManager, flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:holdLatchedFault, harness:ToyTempSensorIC</td><td>thermal_protection_fault_latch</td></tr>
+          <tr><td><code>SYS-008</code></td><td>Recover only when valid, invalidDebounced is false, and recoveryRequest is true.</td><td>function:FaultLatchRecoveryManager, control:recoverFromLatch</td><td>thermal_protection_recovery</td></tr>
+          <tr><td><code>SYS-009</code></td><td>Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.</td><td>function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports</td></tr>
         </tbody>
       </table>
     </section>
@@ -436,26 +537,26 @@
       <h2>Requirements Trace Matrix</h2>
       <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
       <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
-          <tr><td>CGEN-003</td><td>flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, harness:ToyThermalProtectionController</td></tr>
-          <tr><td>ENG-002</td><td>flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced</td></tr>
-          <tr><td>HAR-001</td><td>flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyTempSensorIC, harness:ToyFanDriverIC</td></tr>
-          <tr><td>HAR-002</td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalProtectionController.temperatureC, harness:ToyThermalProtectionController</td></tr>
-          <tr><td>HAR-003</td><td>flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced</td></tr>
-          <tr><td>HAR-004</td><td>flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult, control:faultLatch, control:holdLatchedFault, control:sensorInvalid, control:derating, control:highCooling, control:lowCooling</td></tr>
+          <tr><td>CGEN-003</td><td>function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, harness:ToyThermalProtectionController</td></tr>
+          <tr><td>ENG-002</td><td>function:ValidityDebounceManager, flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced</td></tr>
+          <tr><td>HAR-001</td><td>function:SensorInterface, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyTempSensorIC, harness:ToyFanDriverIC</td></tr>
+          <tr><td>HAR-002</td><td>function:SensorInterface, flow:HAL_SPI.read_temperature-&gt;ToyThermalProtectionController.temperatureC, harness:ToyThermalProtectionController</td></tr>
+          <tr><td>HAR-003</td><td>function:ValidityDebounceManager, flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced</td></tr>
+          <tr><td>HAR-004</td><td>function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult, control:faultLatch, control:holdLatchedFault, control:sensorInvalid, control:derating, control:highCooling, control:lowCooling</td></tr>
           <tr><td>HAR-006</td><td>flow:HAL_LIMITER.set_derating-&gt;ToyLoadLimiterIC.limitCommand, control:recoverFromLatch, harness:ToyLoadLimiterIC</td></tr>
           <tr><td>SWE-001</td><td>component:ToyThermalProtectionController</td></tr>
           <tr><td>SWE-002</td><td>component:ToyThermalProtectionController</td></tr>
           <tr><td>SWE-003</td><td>component:ToyThermalProtectionController</td></tr>
           <tr><td>SWE-004</td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalProtectionController.temperatureC, flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, harness:ToyThermalProtectionController</td></tr>
-          <tr><td>SYS-001</td><td>flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td></tr>
-          <tr><td>SYS-002</td><td>flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, control:derating, control:highCooling, harness:ToyFanDriverIC</td></tr>
-          <tr><td>SYS-003</td><td>control:highCooling</td></tr>
-          <tr><td>SYS-004</td><td>control:lowCooling</td></tr>
-          <tr><td>SYS-005</td><td>flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, flow:HAL_LIMITER.set_derating-&gt;ToyLoadLimiterIC.limitCommand, control:derating, harness:ToyLoadLimiterIC</td></tr>
-          <tr><td>SYS-006</td><td>flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:sensorInvalid, harness:ToyTempSensorIC</td></tr>
-          <tr><td>SYS-007</td><td>flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:holdLatchedFault, harness:ToyTempSensorIC</td></tr>
-          <tr><td>SYS-008</td><td>control:recoverFromLatch</td></tr>
-          <tr><td>SYS-009</td><td>flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult</td></tr>
+          <tr><td>SYS-001</td><td>function:SensorInterface, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td></tr>
+          <tr><td>SYS-002</td><td>function:CoolingCommandManager, function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, control:derating, control:highCooling, harness:ToyFanDriverIC</td></tr>
+          <tr><td>SYS-003</td><td>function:ThermalStateManager, function:CoolingCommandManager, control:highCooling</td></tr>
+          <tr><td>SYS-004</td><td>function:ThermalStateManager, function:CoolingCommandManager, control:lowCooling</td></tr>
+          <tr><td>SYS-005</td><td>function:ThermalStateManager, function:DeratingCommandManager, flow:ToyThermalProtectionController.deratingCommand-&gt;HAL_LIMITER.set_derating, flow:HAL_LIMITER.set_derating-&gt;ToyLoadLimiterIC.limitCommand, control:derating, harness:ToyLoadLimiterIC</td></tr>
+          <tr><td>SYS-006</td><td>function:ValidityDebounceManager, function:FaultLatchRecoveryManager, function:OutputMappingDiagnostics, flow:ToyTempSensorIC.temperatureValid-&gt;HAL_SPI.read_temperature, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:sensorInvalid, harness:ToyTempSensorIC</td></tr>
+          <tr><td>SYS-007</td><td>function:ValidityDebounceManager, function:FaultLatchRecoveryManager, flow:ToyTempSensorIC.invalidDebounced-&gt;ToyThermalProtectionController.invalidDebounced, flow:ToyThermalProtectionController.diagnosticFault-&gt;ScenarioReport.observedBehavior, control:faultLatch, control:holdLatchedFault, harness:ToyTempSensorIC</td></tr>
+          <tr><td>SYS-008</td><td>function:FaultLatchRecoveryManager, control:recoverFromLatch</td></tr>
+          <tr><td>SYS-009</td><td>function:OutputMappingDiagnostics, flow:ToyThermalProtectionController.safeCommandActive-&gt;ScenarioReport.passFailResult</td></tr>
       </tbody></table>
     </section>
     <section class="panel">
@@ -463,6 +564,7 @@
       <p>The source is the Markdown authoring file. The IR and diagrams are generated artifacts.</p>
       <ul>
         <li><code>mbd-component</code></li>
+        <li><code>mbd-decomposition</code></li>
         <li><code>mbd-registers</code></li>
         <li><code>mbd-state</code></li>
         <li><code>mbd-flow</code></li>
@@ -505,14 +607,14 @@
       <section class="panel">
         <h2>Control Decision Table</h2>
         <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
-        <table><thead><tr><th>Priority</th><th>Rule</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td>10</td><td>recoverFromLatch</td><td>FAULT_LATCHED</td><td>temperatureValid == true and invalidDebounced == false and recoveryRequest == true</td><td>state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-008, HAR-006</td><td>thermal_protection_recovery</td></tr>
-          <tr><td>20</td><td>faultLatch</td><td>*</td><td>invalidDebounced == true</td><td>state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-007, SYS-006, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
-          <tr><td>30</td><td>holdLatchedFault</td><td>FAULT_LATCHED</td><td>always</td><td>state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-007, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
-          <tr><td>40</td><td>sensorInvalid</td><td>*</td><td>temperatureValid == false</td><td>state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-006, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
-          <tr><td>50</td><td>derating</td><td>*</td><td>temperatureC &gt;= deratingEntryThreshold</td><td>state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false</td><td>SYS-005, SYS-002, HAR-004</td><td>thermal_protection_derating, thermal_protection_recovery</td></tr>
-          <tr><td>60</td><td>highCooling</td><td>*</td><td>temperatureC &gt;= coolingOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-003, SYS-002, HAR-004</td><td>thermal_protection_normal</td></tr>
-          <tr><td>70</td><td>lowCooling</td><td>*</td><td>temperatureC &lt;= coolingOffThreshold</td><td>state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-004, HAR-004</td><td>thermal_protection_boundary</td></tr>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>10</td><td>recoverFromLatch</td><td>FaultLatchRecoveryManager</td><td>FAULT_LATCHED</td><td>temperatureValid == true and invalidDebounced == false and recoveryRequest == true</td><td>state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-008, HAR-006</td><td>thermal_protection_recovery</td></tr>
+          <tr><td>20</td><td>faultLatch</td><td>FaultLatchRecoveryManager</td><td>*</td><td>invalidDebounced == true</td><td>state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-007, SYS-006, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>30</td><td>holdLatchedFault</td><td>FaultLatchRecoveryManager</td><td>FAULT_LATCHED</td><td>always</td><td>state=FAULT_LATCHED, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-007, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>40</td><td>sensorInvalid</td><td>FaultLatchRecoveryManager</td><td>*</td><td>temperatureValid == false</td><td>state=SENSOR_FAULT, fanDuty=safeDuty, deratingCommand=0, diagnosticFault=true, safeCommandActive=true</td><td>SYS-006, HAR-004</td><td>thermal_protection_fault_latch, thermal_protection_recovery</td></tr>
+          <tr><td>50</td><td>derating</td><td>DeratingCommandManager</td><td>*</td><td>temperatureC &gt;= deratingEntryThreshold</td><td>state=DERATING, fanDuty=deratingFanDuty, deratingCommand=deratingLimit, diagnosticFault=false, safeCommandActive=false</td><td>SYS-005, SYS-002, HAR-004</td><td>thermal_protection_derating, thermal_protection_recovery</td></tr>
+          <tr><td>60</td><td>highCooling</td><td>CoolingCommandManager</td><td>*</td><td>temperatureC &gt;= coolingOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-003, SYS-002, HAR-004</td><td>thermal_protection_normal</td></tr>
+          <tr><td>70</td><td>lowCooling</td><td>CoolingCommandManager</td><td>*</td><td>temperatureC &lt;= coolingOffThreshold</td><td>state=IDLE, fanDuty=0, deratingCommand=0, diagnosticFault=false, safeCommandActive=false</td><td>SYS-004, HAR-004</td><td>thermal_protection_boundary</td></tr>
         </tbody></table>
       </section>
       <section class="panel">

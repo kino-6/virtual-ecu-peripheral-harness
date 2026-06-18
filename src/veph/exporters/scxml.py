@@ -21,10 +21,17 @@ def export_scxml(model: PeripheralModel | MbdModelIR) -> str:
         for control in sorted(model.controls, key=lambda item: (item.priority, item.name)):
             lines.append(
                 "  <!-- "
-                f"priority {control.priority} {escape(control.name)} from {escape(control.state_scope)} "
+                f"priority {control.priority} {escape(control.name)} owner {escape(control.owner or 'unallocated')} from {escape(control.state_scope)} "
                 f"when {escape(control.condition)} "
                 f"trace {escape(', '.join(control.trace))} "
                 f"scenarios {escape(', '.join(control.scenarios))}"
+                " -->"
+            )
+        for function in model.functions:
+            lines.append(
+                "  <!-- "
+                f"function {escape(function.name)} owns {escape(', '.join(function.owns))} "
+                f"trace {escape(', '.join(function.trace))}"
                 " -->"
             )
         for state in states:

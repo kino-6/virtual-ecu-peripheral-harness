@@ -9,6 +9,10 @@
       },
       "condition": "temperatureValid == false",
       "name": "sensorFault",
+      "owner": "",
+      "priority": 1000,
+      "scenarios": [],
+      "stateScope": "*",
       "trace": [
         "SYS-005",
         "HAR-004"
@@ -22,6 +26,10 @@
       },
       "condition": "temperatureC >= fanOnThreshold",
       "name": "highTemperature",
+      "owner": "",
+      "priority": 1001,
+      "scenarios": [],
+      "stateScope": "*",
       "trace": [
         "SYS-003",
         "SYS-006"
@@ -35,6 +43,10 @@
       },
       "condition": "temperatureC <= fanOffThreshold",
       "name": "lowTemperature",
+      "owner": "",
+      "priority": 1002,
+      "scenarios": [],
+      "stateScope": "*",
       "trace": [
         "SYS-004",
         "SYS-006"
@@ -42,6 +54,7 @@
     }
   ],
   "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [],
   "harnessDevices": [
     {
       "boundary": "virtual_ic",

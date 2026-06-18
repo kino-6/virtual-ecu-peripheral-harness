@@ -49,6 +49,19 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
     for key, value in model.component.bus.items():
         if key != "type":
             lines.append(f"- Bus {key}: `{value}`")
+    lines.extend(["", "## Functional Decomposition", ""])
+    if model.functions:
+        lines.append("| Function | Responsibility | Owns | Inputs | Outputs | Trace | Scenarios |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
+        for function in model.functions:
+            lines.append(
+                f"| `{function.name}` | {function.responsibility} | "
+                f"{_join_code(function.owns)} | {_join_code(function.inputs)} | "
+                f"{_join_code(function.outputs)} | {_join_code(function.trace)} | "
+                f"{_join_code(function.scenarios)} |"
+            )
+    else:
+        lines.append("- No functional decomposition declared.")
     lines.extend(["", "## Ports", "", "| Direction | Name | Type | Default |", "| --- | --- | --- | --- |"])
     for port in model.ports.values():
         lines.append(f"| {port.direction} | `{port.name}` | `{port.type}` | `{port.default or ''}` |")
@@ -79,8 +92,9 @@ def _export_ir_markdown(model: MbdModelIR) -> str:
             actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
             trace = f" trace `{', '.join(control.trace)}`" if control.trace else ""
             scenarios = f" scenarios `{', '.join(control.scenarios)}`" if control.scenarios else ""
+            owner = f" owner `{control.owner}`" if control.owner else ""
             lines.append(
-                f"- priority `{control.priority}` `{control.name}` from `{control.state_scope}`: "
+                f"- priority `{control.priority}` `{control.name}`{owner} from `{control.state_scope}`: "
                 f"when `{control.condition}` then `{actions}`{trace}{scenarios}"
             )
     else:
@@ -111,6 +125,10 @@ def _source_display(path: Path) -> str:
         return str(path.relative_to(Path.cwd()))
     except ValueError:
         return str(path)
+
+
+def _join_code(items: list[str]) -> str:
+    return ", ".join(f"`{item}`" for item in items) if items else ""
 
 
 def _export_legacy_markdown(model: PeripheralModel) -> str:

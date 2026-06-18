@@ -51,7 +51,49 @@ flowchart LR
   %% Trace: SYS-009, HAR-004
   %% ToyThermalProtectionController_safeCommandActive --> ScenarioReport_passFailResult
   ToyThermalProtectionController_safeCommandActive -->|"scenario pass/fail evidence"| ScenarioReport_passFailResult
-  rule_recoverFromLatch{"priority 10<br/>rule recoverFromLatch<br/>from FAULT_LATCHED"}
+  function_SensorInterface["SensorInterface<br/>Acquire fictional temperature and validity through the HAL boundary"]
+  %% Function Trace: SYS-001, HAR-001, HAR-002
+  temperatureC["temperatureC"]
+  function_SensorInterface -->|"owns"| temperatureC
+  temperatureValid["temperatureValid"]
+  function_SensorInterface -->|"owns"| temperatureValid
+  function_ValidityDebounceManager["ValidityDebounceManager<br/>Represent invalid sensor input and preview debounce status without timing physics"]
+  %% Function Trace: SYS-006, SYS-007, ENG-002, HAR-003
+  invalidDebounced["invalidDebounced"]
+  function_ValidityDebounceManager -->|"owns"| invalidDebounced
+  function_ThermalStateManager["ThermalStateManager<br/>Own IDLE COOLING and DERATING state decisions for valid temperature inputs"]
+  %% Function Trace: SYS-003, SYS-004, SYS-005
+  state["state"]
+  function_ThermalStateManager -->|"owns"| state
+  function_CoolingCommandManager["CoolingCommandManager<br/>Calculate nominal fan command for cooling and hysteresis behavior"]
+  %% Function Trace: SYS-002, SYS-003, SYS-004
+  fanDuty["fanDuty"]
+  function_CoolingCommandManager -->|"owns"| fanDuty
+  function_DeratingCommandManager["DeratingCommandManager<br/>Calculate high-temperature fan and fictional load-limit commands"]
+  %% Function Trace: SYS-005
+  fanDuty["fanDuty"]
+  function_DeratingCommandManager -->|"owns"| fanDuty
+  deratingCommand["deratingCommand"]
+  function_DeratingCommandManager -->|"owns"| deratingCommand
+  function_FaultLatchRecoveryManager["FaultLatchRecoveryManager<br/>Own sensor fault latch hold and explicit recovery behavior"]
+  %% Function Trace: SYS-006, SYS-007, SYS-008
+  state["state"]
+  function_FaultLatchRecoveryManager -->|"owns"| state
+  safeCommandActive["safeCommandActive"]
+  function_FaultLatchRecoveryManager -->|"owns"| safeCommandActive
+  diagnosticFault["diagnosticFault"]
+  function_FaultLatchRecoveryManager -->|"owns"| diagnosticFault
+  function_OutputMappingDiagnostics["OutputMappingDiagnostics<br/>Map selected commands to HAL outputs and report-observable diagnostics"]
+  %% Function Trace: SYS-002, SYS-006, SYS-009, CGEN-003, HAR-004
+  HAL_PWM_set_fan_duty["HAL_PWM.set_fan_duty"]
+  function_OutputMappingDiagnostics -->|"owns"| HAL_PWM_set_fan_duty
+  HAL_LIMITER_set_derating["HAL_LIMITER.set_derating"]
+  function_OutputMappingDiagnostics -->|"owns"| HAL_LIMITER_set_derating
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  function_OutputMappingDiagnostics -->|"owns"| ScenarioReport_observedBehavior
+  ScenarioReport_passFailResult["ScenarioReport.passFailResult"]
+  function_OutputMappingDiagnostics -->|"owns"| ScenarioReport_passFailResult
+  rule_recoverFromLatch{"priority 10<br/>rule recoverFromLatch<br/>owner FaultLatchRecoveryManager<br/>from FAULT_LATCHED"}
   %% Trace: SYS-008, HAR-006
   %% Scenarios: thermal_protection_recovery
   state["state"]
@@ -64,7 +106,7 @@ flowchart LR
   rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_recoverFromLatch -->|"temperatureValid == true and invalidDebounced == false and recoveryRequest == true"| safeCommandActive
-  rule_faultLatch{"priority 20<br/>rule faultLatch<br/>from *"}
+  rule_faultLatch{"priority 20<br/>rule faultLatch<br/>owner FaultLatchRecoveryManager<br/>from *"}
   %% Trace: SYS-007, SYS-006, HAR-004
   %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
@@ -77,7 +119,7 @@ flowchart LR
   rule_faultLatch -->|"invalidDebounced == true"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_faultLatch -->|"invalidDebounced == true"| safeCommandActive
-  rule_holdLatchedFault{"priority 30<br/>rule holdLatchedFault<br/>from FAULT_LATCHED"}
+  rule_holdLatchedFault{"priority 30<br/>rule holdLatchedFault<br/>owner FaultLatchRecoveryManager<br/>from FAULT_LATCHED"}
   %% Trace: SYS-007, HAR-004
   %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
@@ -90,7 +132,7 @@ flowchart LR
   rule_holdLatchedFault -->|"always"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_holdLatchedFault -->|"always"| safeCommandActive
-  rule_sensorInvalid{"priority 40<br/>rule sensorInvalid<br/>from *"}
+  rule_sensorInvalid{"priority 40<br/>rule sensorInvalid<br/>owner FaultLatchRecoveryManager<br/>from *"}
   %% Trace: SYS-006, HAR-004
   %% Scenarios: thermal_protection_fault_latch, thermal_protection_recovery
   state["state"]
@@ -103,7 +145,7 @@ flowchart LR
   rule_sensorInvalid -->|"temperatureValid == false"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_sensorInvalid -->|"temperatureValid == false"| safeCommandActive
-  rule_derating{"priority 50<br/>rule derating<br/>from *"}
+  rule_derating{"priority 50<br/>rule derating<br/>owner DeratingCommandManager<br/>from *"}
   %% Trace: SYS-005, SYS-002, HAR-004
   %% Scenarios: thermal_protection_derating, thermal_protection_recovery
   state["state"]
@@ -116,7 +158,7 @@ flowchart LR
   rule_derating -->|"temperatureC >= deratingEntryThreshold"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_derating -->|"temperatureC >= deratingEntryThreshold"| safeCommandActive
-  rule_highCooling{"priority 60<br/>rule highCooling<br/>from *"}
+  rule_highCooling{"priority 60<br/>rule highCooling<br/>owner CoolingCommandManager<br/>from *"}
   %% Trace: SYS-003, SYS-002, HAR-004
   %% Scenarios: thermal_protection_normal
   state["state"]
@@ -129,7 +171,7 @@ flowchart LR
   rule_highCooling -->|"temperatureC >= coolingOnThreshold"| diagnosticFault
   safeCommandActive["safeCommandActive"]
   rule_highCooling -->|"temperatureC >= coolingOnThreshold"| safeCommandActive
-  rule_lowCooling{"priority 70<br/>rule lowCooling<br/>from *"}
+  rule_lowCooling{"priority 70<br/>rule lowCooling<br/>owner CoolingCommandManager<br/>from *"}
   %% Trace: SYS-004, HAR-004
   %% Scenarios: thermal_protection_boundary
   state["state"]

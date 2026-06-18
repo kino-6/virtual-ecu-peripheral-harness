@@ -11,6 +11,12 @@
       },
       "condition": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
       "name": "recoverFromLatch",
+      "owner": "FaultLatchRecoveryManager",
+      "priority": 10,
+      "scenarios": [
+        "thermal_protection_recovery"
+      ],
+      "stateScope": "FAULT_LATCHED",
       "trace": [
         "SYS-008",
         "HAR-006"
@@ -26,6 +32,13 @@
       },
       "condition": "invalidDebounced == true",
       "name": "faultLatch",
+      "owner": "FaultLatchRecoveryManager",
+      "priority": 20,
+      "scenarios": [
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "stateScope": "*",
       "trace": [
         "SYS-007",
         "SYS-006",
@@ -42,6 +55,13 @@
       },
       "condition": "always",
       "name": "holdLatchedFault",
+      "owner": "FaultLatchRecoveryManager",
+      "priority": 30,
+      "scenarios": [
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "stateScope": "FAULT_LATCHED",
       "trace": [
         "SYS-007",
         "HAR-004"
@@ -57,6 +77,13 @@
       },
       "condition": "temperatureValid == false",
       "name": "sensorInvalid",
+      "owner": "FaultLatchRecoveryManager",
+      "priority": 40,
+      "scenarios": [
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "stateScope": "*",
       "trace": [
         "SYS-006",
         "HAR-004"
@@ -72,6 +99,13 @@
       },
       "condition": "temperatureC >= deratingEntryThreshold",
       "name": "derating",
+      "owner": "DeratingCommandManager",
+      "priority": 50,
+      "scenarios": [
+        "thermal_protection_derating",
+        "thermal_protection_recovery"
+      ],
+      "stateScope": "*",
       "trace": [
         "SYS-005",
         "SYS-002",
@@ -88,6 +122,12 @@
       },
       "condition": "temperatureC >= coolingOnThreshold",
       "name": "highCooling",
+      "owner": "CoolingCommandManager",
+      "priority": 60,
+      "scenarios": [
+        "thermal_protection_normal"
+      ],
+      "stateScope": "*",
       "trace": [
         "SYS-003",
         "SYS-002",
@@ -104,6 +144,12 @@
       },
       "condition": "temperatureC <= coolingOffThreshold",
       "name": "lowCooling",
+      "owner": "CoolingCommandManager",
+      "priority": 70,
+      "scenarios": [
+        "thermal_protection_boundary"
+      ],
+      "stateScope": "*",
       "trace": [
         "SYS-004",
         "HAR-004"
@@ -111,6 +157,190 @@
     }
   ],
   "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "ToyTempSensorIC.temperatureC",
+        "ToyTempSensorIC.temperatureValid"
+      ],
+      "name": "SensorInterface",
+      "outputs": [
+        "temperatureC",
+        "temperatureValid"
+      ],
+      "owns": [
+        "temperatureC",
+        "temperatureValid"
+      ],
+      "responsibility": "Acquire fictional temperature and validity through the HAL boundary",
+      "scenarios": [
+        "thermal_protection_normal",
+        "thermal_protection_derating",
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "trace": [
+        "SYS-001",
+        "HAR-001",
+        "HAR-002"
+      ]
+    },
+    {
+      "inputs": [
+        "temperatureValid",
+        "ToyTempSensorIC.invalidDebounced"
+      ],
+      "name": "ValidityDebounceManager",
+      "outputs": [
+        "invalidDebounced"
+      ],
+      "owns": [
+        "invalidDebounced"
+      ],
+      "responsibility": "Represent invalid sensor input and preview debounce status without timing physics",
+      "scenarios": [
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "trace": [
+        "SYS-006",
+        "SYS-007",
+        "ENG-002",
+        "HAR-003"
+      ]
+    },
+    {
+      "inputs": [
+        "temperatureC",
+        "temperatureValid"
+      ],
+      "name": "ThermalStateManager",
+      "outputs": [
+        "state"
+      ],
+      "owns": [
+        "IDLE",
+        "COOLING",
+        "DERATING"
+      ],
+      "responsibility": "Own IDLE COOLING and DERATING state decisions for valid temperature inputs",
+      "scenarios": [
+        "thermal_protection_normal",
+        "thermal_protection_boundary",
+        "thermal_protection_derating"
+      ],
+      "trace": [
+        "SYS-003",
+        "SYS-004",
+        "SYS-005"
+      ]
+    },
+    {
+      "inputs": [
+        "state",
+        "temperatureC"
+      ],
+      "name": "CoolingCommandManager",
+      "outputs": [
+        "fanDuty"
+      ],
+      "owns": [
+        "fanDuty"
+      ],
+      "responsibility": "Calculate nominal fan command for cooling and hysteresis behavior",
+      "scenarios": [
+        "thermal_protection_normal",
+        "thermal_protection_boundary"
+      ],
+      "trace": [
+        "SYS-002",
+        "SYS-003",
+        "SYS-004"
+      ]
+    },
+    {
+      "inputs": [
+        "state",
+        "temperatureC"
+      ],
+      "name": "DeratingCommandManager",
+      "outputs": [
+        "fanDuty",
+        "deratingCommand"
+      ],
+      "owns": [
+        "deratingCommand"
+      ],
+      "responsibility": "Calculate high-temperature fan and fictional load-limit commands",
+      "scenarios": [
+        "thermal_protection_derating"
+      ],
+      "trace": [
+        "SYS-005"
+      ]
+    },
+    {
+      "inputs": [
+        "temperatureValid",
+        "invalidDebounced",
+        "recoveryRequest"
+      ],
+      "name": "FaultLatchRecoveryManager",
+      "outputs": [
+        "state",
+        "safeCommandActive",
+        "diagnosticFault"
+      ],
+      "owns": [
+        "SENSOR_FAULT",
+        "FAULT_LATCHED",
+        "recoveryRequest"
+      ],
+      "responsibility": "Own sensor fault latch hold and explicit recovery behavior",
+      "scenarios": [
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "trace": [
+        "SYS-006",
+        "SYS-007",
+        "SYS-008"
+      ]
+    },
+    {
+      "inputs": [
+        "fanDuty",
+        "deratingCommand",
+        "state"
+      ],
+      "name": "OutputMappingDiagnostics",
+      "outputs": [
+        "HAL_PWM.set_fan_duty",
+        "HAL_LIMITER.set_derating",
+        "ScenarioReport.observedBehavior",
+        "ScenarioReport.passFailResult"
+      ],
+      "owns": [
+        "safeCommandActive",
+        "diagnosticFault"
+      ],
+      "responsibility": "Map selected commands to HAL outputs and report-observable diagnostics",
+      "scenarios": [
+        "thermal_protection_normal",
+        "thermal_protection_boundary",
+        "thermal_protection_derating",
+        "thermal_protection_fault_latch",
+        "thermal_protection_recovery"
+      ],
+      "trace": [
+        "SYS-002",
+        "SYS-006",
+        "SYS-009",
+        "CGEN-003",
+        "HAR-004"
+      ]
+    }
+  ],
   "harnessDevices": [
     {
       "boundary": "virtual_ic",

@@ -140,9 +140,16 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
 
     html = export_demo_html(model)
+    mermaid = export_mermaid(model)
+    fmi = export_fmi_metadata(model)
 
     assert "<svg" in html
     assert "ToyThermalProtectionController" in html
+    assert "Functional Architecture" in html
+    assert "Functional Decomposition" in html
+    assert "SensorInterface" in html
+    assert "FaultLatchRecoveryManager" in html
+    assert "function:FaultLatchRecoveryManager" in html
     assert "Spec-To-MBD Compliance Review" in html
     assert "MBD Review Checklist" in html
     assert "Requirements traceability" in html
@@ -153,6 +160,7 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     assert "Control Decision Table" in html
     assert "Selection policy" in html
     assert "Priority" in html
+    assert "Owner" in html
     assert "State scope" in html
     assert "recoverFromLatch" in html
     assert "thermal_protection_recovery" in html
@@ -164,6 +172,10 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     assert "HAL_LIMITER.set_derating" in html
     assert "faultLatch" in html
     assert "ToyLoadLimiterIC" in html
+    assert "SensorInterface<br/>Acquire fictional temperature" in mermaid
+    assert "owner FaultLatchRecoveryManager" in mermaid
+    assert '"functionalDecomposition"' in fmi
+    assert '"owner": "FaultLatchRecoveryManager"' in fmi
 
 
 def test_markdown_documents_mbd_blocks_and_connections():

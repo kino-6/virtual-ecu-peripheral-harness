@@ -28,8 +28,13 @@ def export_simulink_m(model: PeripheralModel | MbdModelIR) -> str:
             lines.append(f"add_block('simulink/Signal Routing/Switch', [model '/{safe}_Switch']);")
             lines.append(f"set_param([model '/{safe}_Switch'], 'Position', [300 {y} 430 {y + 60}]);")
             lines.append(
-                f"% priority {control.priority} {control.name}: from {control.state_scope} "
+                f"% priority {control.priority} {control.name}: owner {control.owner or 'unallocated'} from {control.state_scope} "
                 f"when {control.condition} then {control.actions} scenarios {control.scenarios}"
+            )
+        lines.append("% Functional decomposition summary:")
+        for function in model.functions:
+            lines.append(
+                f"% function {function.name}: owns {function.owns}; inputs {function.inputs}; outputs {function.outputs}"
             )
         for flow in model.flows:
             lines.append(

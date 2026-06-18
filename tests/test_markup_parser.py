@@ -53,13 +53,20 @@ def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
     model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
 
     recover_rule = next(control for control in model.controls if control.name == "recoverFromLatch")
+    fault_function = next(function for function in model.functions if function.name == "FaultLatchRecoveryManager")
     recover_transition = next(
         transition
         for transition in model.transitions
         if transition.source == "FAULT_LATCHED" and transition.target == "IDLE"
     )
 
+    assert len(model.functions) == 7
+    assert fault_function.responsibility == "Own sensor fault latch hold and explicit recovery behavior"
+    assert "SENSOR_FAULT" in fault_function.owns
+    assert "SYS-008" in fault_function.trace
+    assert "thermal_protection_recovery" in fault_function.scenarios
     assert recover_rule.priority == 10
+    assert recover_rule.owner == "FaultLatchRecoveryManager"
     assert recover_rule.state_scope == "FAULT_LATCHED"
     assert "invalidDebounced == false" in recover_rule.condition
     assert "invalidDebounced == false" in recover_transition.condition
@@ -68,4 +75,6 @@ def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
     assert next(control for control in model.controls if control.name == "holdLatchedFault").condition == "always"
     assert [control.priority for control in model.controls] == sorted(control.priority for control in model.controls)
     assert all(control.scenarios for control in model.controls)
+    assert all(control.owner for control in model.controls)
+    assert {control.owner for control in model.controls} <= {function.name for function in model.functions}
     assert all(not ref.startswith("SYS-") for ref in model.component.trace)

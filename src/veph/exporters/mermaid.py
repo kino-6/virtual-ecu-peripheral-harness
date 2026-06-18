@@ -21,9 +21,19 @@ def export_mermaid(model: MbdModelIR) -> str:
             lines.append(f'  {source} -->|"{flow.label}"| {target}')
         else:
             lines.append(f"  {source} --> {target}")
+    for function in model.functions:
+        function_id = _node_id(f"function_{function.name}")
+        lines.append(f'  {function_id}["{function.name}<br/>{function.responsibility}"]')
+        if function.trace:
+            lines.append(f"  %% Function Trace: {', '.join(function.trace)}")
+        for output in function.outputs:
+            output_id = _node_id(output)
+            lines.append(f'  {output_id}["{output}"]')
+            lines.append(f'  {function_id} -->|"owns"| {output_id}')
     for control in model.controls:
         control_id = _node_id(f"rule_{control.name}")
-        lines.append(f'  {control_id}{{"priority {control.priority}<br/>rule {control.name}<br/>from {control.state_scope}"}}')
+        owner = f"<br/>owner {control.owner}" if control.owner else ""
+        lines.append(f'  {control_id}{{"priority {control.priority}<br/>rule {control.name}{owner}<br/>from {control.state_scope}"}}')
         if control.trace:
             lines.append(f"  %% Trace: {', '.join(control.trace)}")
         if control.scenarios:

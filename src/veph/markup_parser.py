@@ -7,6 +7,7 @@ from veph.ir import (
     ComponentIR,
     ControlRuleIR,
     FlowIR,
+    FunctionIR,
     HarnessDeviceIR,
     MarkupSectionIR,
     MbdModelIR,
@@ -47,6 +48,7 @@ def parse_markup(text: str, source_path: Path) -> MbdModelIR:
     registers = _parse_registers(by_language["mbd-registers"])
     transitions = _parse_state(by_language["mbd-state"])
     flows = _parse_flow(by_language["mbd-flow"])
+    functions = _parse_decomposition(by_language.get("mbd-decomposition", ""))
     controls = _parse_control(by_language.get("mbd-control", ""))
     harness_devices = _parse_harness(by_language.get("mbd-harness", ""))
     return MbdModelIR(
@@ -58,6 +60,7 @@ def parse_markup(text: str, source_path: Path) -> MbdModelIR:
         flows=flows,
         sections=sections,
         source_path=source_path,
+        functions=functions,
         controls=controls,
         harness_devices=harness_devices,
     )
@@ -195,6 +198,32 @@ def _parse_flow(body: str) -> list[FlowIR]:
     return flows
 
 
+def _parse_decomposition(body: str) -> list[FunctionIR]:
+    functions: list[FunctionIR] = []
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("system ") or line.startswith("note:"):
+            continue
+        name_part, separator, attr_part = line.partition(":")
+        if separator != ":" or not name_part.startswith("function "):
+            raise MarkupParseError(f"invalid decomposition line: {line}")
+        attrs = _parse_semicolon_attrs(attr_part)
+        functions.append(
+            FunctionIR(
+                name=name_part.removeprefix("function ").strip(),
+                responsibility=attrs.get("responsibility", ""),
+                owns=_split_csv(attrs.get("owns", "")),
+                inputs=_split_csv(attrs.get("inputs", "")),
+                outputs=_split_csv(attrs.get("outputs", "")),
+                trace=_split_csv(attrs.get("trace", "")),
+                scenarios=_split_csv(attrs.get("scenarios", "")),
+            )
+        )
+    return functions
+
+
 def _parse_control(body: str) -> list[ControlRuleIR]:
     controls: list[ControlRuleIR] = []
     for index, raw_line in enumerate(body.splitlines()):
@@ -207,6 +236,13 @@ def _parse_control(body: str) -> list[ControlRuleIR]:
         priority = int(match.group("priority")) if match.group("priority") else 1000 + index
         name = match.group("name").strip()
         rule_part = match.group("body").strip()
+        owner = ""
+        if rule_part.startswith("owner "):
+            owner_part, separator, rule_part = rule_part.removeprefix("owner ").partition(" from ")
+            if separator != " from ":
+                raise MarkupParseError(f"control rule missing from after owner: {line}")
+            owner = owner_part.strip()
+            rule_part = f"from {rule_part.strip()}"
         state_scope = "*"
         if rule_part.startswith("from "):
             state_scope_part, separator, rule_part = rule_part.removeprefix("from ").partition(" when ")
@@ -228,6 +264,7 @@ def _parse_control(body: str) -> list[ControlRuleIR]:
                 actions=actions,
                 priority=priority,
                 state_scope=state_scope,
+                owner=owner,
                 trace=trace,
                 scenarios=scenarios,
             )
@@ -282,6 +319,23 @@ def _parse_attrs(tokens: list[str]) -> dict[str, str]:
             raise MarkupParseError(f"invalid attribute token: {token}")
         attrs[key] = value
     return attrs
+
+
+def _parse_semicolon_attrs(text: str) -> dict[str, str]:
+    attrs: dict[str, str] = {}
+    for item in text.split(";"):
+        item = item.strip()
+        if not item:
+            continue
+        key, separator, value = item.partition("=")
+        if separator != "=" or not key.strip() or not value.strip():
+            raise MarkupParseError(f"invalid decomposition attribute: {item}")
+        attrs[key.strip()] = value.strip()
+    return attrs
+
+
+def _split_csv(text: str) -> list[str]:
+    return [item.strip() for item in text.split(",") if item.strip()]
 
 
 def _split_trace_tokens(tokens: list[str]) -> tuple[list[str], list[str]]:

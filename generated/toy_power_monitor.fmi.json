@@ -2,6 +2,7 @@
   "component": "ToyPowerMonitorIC",
   "controlRules": [],
   "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [],
   "harnessDevices": [],
   "inputs": [
     {

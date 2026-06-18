@@ -75,6 +75,7 @@ def test_thermal_protection_derating_scenario_passes_with_report_sections(tmp_pa
 
     report = report_path.read_text(encoding="utf-8")
     assert "## Model Inputs" in report
+    assert "## Functional Decomposition Evidence" in report
     assert "## Scenario Steps" in report
     assert "## Observed Behavior" in report
     assert "## Expected Behavior" in report
@@ -82,6 +83,7 @@ def test_thermal_protection_derating_scenario_passes_with_report_sections(tmp_pa
     assert "Preview subset assumption" in report
     assert "examples/toy_thermal_protection_controller.mbd.md" in report
     assert "generated/protection_ecu_preview/controller.c" in report
+    assert "DeratingCommandManager" in report
 
 
 def test_thermal_protection_boundary_scenario_proves_low_threshold_return(tmp_path):
@@ -127,7 +129,9 @@ def test_thermal_protection_fault_latch_and_recovery_scenarios_pass(tmp_path):
     assert recovery.generated_ecu_command_outputs["safeCommandActive"] is False
     final_step = recovery.observed_behavior["stepEvidence"][-1]
     assert final_step["appliedRule"] == "recoverFromLatch"
+    assert final_step["appliedOwner"] == "FaultLatchRecoveryManager"
     assert final_step["selectionPolicy"] == "lowest numeric priority wins after state scope and guard match"
     assert final_step["controlRuleEvaluations"][0]["priority"] == 10
+    assert final_step["controlRuleEvaluations"][0]["owner"] == "FaultLatchRecoveryManager"
     assert final_step["controlRuleEvaluations"][0]["stateScope"] == "FAULT_LATCHED"
     assert final_step["controlRuleEvaluations"][0]["scenarios"] == ["thermal_protection_recovery"]

@@ -76,6 +76,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
                 "controlRuleEvaluations": evaluations,
                 "selectionPolicy": "lowest numeric priority wins after state scope and guard match",
                 "appliedRule": applied.name if applied else None,
+                "appliedOwner": applied.owner if applied else None,
                 "generatedEcuCommandOutputs": _generated_outputs(model, outputs),
                 "after": after,
                 "requirementRefs": sorted(_step_requirement_refs(applied)),
@@ -128,6 +129,7 @@ def _evaluate_controls(
         evaluations.append(
             {
                 "rule": control.name,
+                "owner": control.owner,
                 "priority": control.priority,
                 "stateScope": control.state_scope,
                 "stateScopeMatched": state_scope_matched,
@@ -207,6 +209,7 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
         "controlRules": [
             {
                 "name": control.name,
+                "owner": control.owner,
                 "priority": control.priority,
                 "stateScope": control.state_scope,
                 "condition": control.condition,
@@ -215,6 +218,18 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
                 "scenarios": list(control.scenarios),
             }
             for control in model.controls
+        ],
+        "functionalDecomposition": [
+            {
+                "name": function.name,
+                "responsibility": function.responsibility,
+                "owns": list(function.owns),
+                "inputs": list(function.inputs),
+                "outputs": list(function.outputs),
+                "trace": list(function.trace),
+                "scenarios": list(function.scenarios),
+            }
+            for function in model.functions
         ],
         "controlSelectionPolicy": "lowest numeric priority wins after state scope and guard match",
         "harnessBoundary": [
@@ -274,6 +289,9 @@ def _elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
     elements: list[str] = []
     if ref in model.component.trace:
         elements.append(f"component:{model.component.name}")
+    for function in model.functions:
+        if ref in function.trace:
+            elements.append(f"function:{function.name}")
     for flow in model.flows:
         if ref in flow.trace:
             elements.append(f"flow:{flow.source}->{flow.target}")

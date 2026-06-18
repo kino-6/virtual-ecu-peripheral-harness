@@ -17,6 +17,7 @@ add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyPowerMonitorIC_
 set_param([model '/ToyPowerMonitorIC_fault'], 'Position', [520 200 670 260]);
 add_block('simulink/Commonly Used Blocks/Subsystem', [model '/ToyPowerMonitorIC_ready']);
 set_param([model '/ToyPowerMonitorIC_ready'], 'Position', [80 320 230 380]);
+% Functional decomposition summary:
 add_line(model, 'ECU_App_control_task/1', 'HAL_SPI/1', 'autorouting', 'on');
 add_line(model, 'HAL_SPI/1', 'ToyPowerMonitorIC_CONTROL/1', 'autorouting', 'on');
 add_line(model, 'ToyPowerMonitorIC_STATUS/1', 'HAL_SPI/1', 'autorouting', 'on');

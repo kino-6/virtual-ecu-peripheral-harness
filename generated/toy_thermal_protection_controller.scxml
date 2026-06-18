@@ -3,13 +3,20 @@
   <!-- Generated state-machine handoff from examples/toy_thermal_protection_controller.mbd.md. -->
   <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
   <!-- Requirement refs: CGEN-003, ENG-002, HAR-001, HAR-002, HAR-003, HAR-004, HAR-006, SWE-001, SWE-002, SWE-003, SWE-004, SYS-001, SYS-002, SYS-003, SYS-004, SYS-005, SYS-006, SYS-007, SYS-008, SYS-009 -->
-  <!-- priority 10 recoverFromLatch from FAULT_LATCHED when temperatureValid == true and invalidDebounced == false and recoveryRequest == true trace SYS-008, HAR-006 scenarios thermal_protection_recovery -->
-  <!-- priority 20 faultLatch from * when invalidDebounced == true trace SYS-007, SYS-006, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
-  <!-- priority 30 holdLatchedFault from FAULT_LATCHED when always trace SYS-007, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
-  <!-- priority 40 sensorInvalid from * when temperatureValid == false trace SYS-006, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
-  <!-- priority 50 derating from * when temperatureC &gt;= deratingEntryThreshold trace SYS-005, SYS-002, HAR-004 scenarios thermal_protection_derating, thermal_protection_recovery -->
-  <!-- priority 60 highCooling from * when temperatureC &gt;= coolingOnThreshold trace SYS-003, SYS-002, HAR-004 scenarios thermal_protection_normal -->
-  <!-- priority 70 lowCooling from * when temperatureC &lt;= coolingOffThreshold trace SYS-004, HAR-004 scenarios thermal_protection_boundary -->
+  <!-- priority 10 recoverFromLatch owner FaultLatchRecoveryManager from FAULT_LATCHED when temperatureValid == true and invalidDebounced == false and recoveryRequest == true trace SYS-008, HAR-006 scenarios thermal_protection_recovery -->
+  <!-- priority 20 faultLatch owner FaultLatchRecoveryManager from * when invalidDebounced == true trace SYS-007, SYS-006, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
+  <!-- priority 30 holdLatchedFault owner FaultLatchRecoveryManager from FAULT_LATCHED when always trace SYS-007, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
+  <!-- priority 40 sensorInvalid owner FaultLatchRecoveryManager from * when temperatureValid == false trace SYS-006, HAR-004 scenarios thermal_protection_fault_latch, thermal_protection_recovery -->
+  <!-- priority 50 derating owner DeratingCommandManager from * when temperatureC &gt;= deratingEntryThreshold trace SYS-005, SYS-002, HAR-004 scenarios thermal_protection_derating, thermal_protection_recovery -->
+  <!-- priority 60 highCooling owner CoolingCommandManager from * when temperatureC &gt;= coolingOnThreshold trace SYS-003, SYS-002, HAR-004 scenarios thermal_protection_normal -->
+  <!-- priority 70 lowCooling owner CoolingCommandManager from * when temperatureC &lt;= coolingOffThreshold trace SYS-004, HAR-004 scenarios thermal_protection_boundary -->
+  <!-- function SensorInterface owns temperatureC, temperatureValid trace SYS-001, HAR-001, HAR-002 -->
+  <!-- function ValidityDebounceManager owns invalidDebounced trace SYS-006, SYS-007, ENG-002, HAR-003 -->
+  <!-- function ThermalStateManager owns IDLE, COOLING, DERATING trace SYS-003, SYS-004, SYS-005 -->
+  <!-- function CoolingCommandManager owns fanDuty trace SYS-002, SYS-003, SYS-004 -->
+  <!-- function DeratingCommandManager owns deratingCommand trace SYS-005 -->
+  <!-- function FaultLatchRecoveryManager owns SENSOR_FAULT, FAULT_LATCHED, recoveryRequest trace SYS-006, SYS-007, SYS-008 -->
+  <!-- function OutputMappingDiagnostics owns safeCommandActive, diagnosticFault trace SYS-002, SYS-006, SYS-009, CGEN-003, HAR-004 -->
   <state id="RESET">
     <transition event="temperatureValid == true" target="IDLE" />
   </state>

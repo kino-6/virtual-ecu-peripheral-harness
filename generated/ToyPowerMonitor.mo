@@ -12,5 +12,6 @@ equation
   // 1: INIT
   // 2: NORMAL
   // 3: FAULT_LATCHED
+  // Functional decomposition handoff summary:
   // Control rule handoff summary:
 end ToyPowerMonitorIC;

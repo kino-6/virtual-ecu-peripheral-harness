@@ -54,6 +54,7 @@
       "trace": []
     }
   ],
+  "functions": [],
   "harness_devices": [],
   "metadata": {
     "irRole": "internal snapshot",

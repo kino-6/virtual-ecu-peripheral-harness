@@ -41,6 +41,10 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - Bus mode: `preview`
 - Bus wordBits: `16`
 
+## Functional Decomposition
+
+- No functional decomposition declared.
+
 ## Ports
 
 | Direction | Name | Type | Default |

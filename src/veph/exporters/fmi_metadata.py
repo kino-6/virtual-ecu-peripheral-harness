@@ -27,12 +27,28 @@ def export_fmi_metadata(model: MbdModelIR) -> str:
             for parameter in model.component.parameters.values()
         ],
         "states": _state_names(model),
+        "functionalDecomposition": [
+            {
+                "name": function.name,
+                "responsibility": function.responsibility,
+                "owns": function.owns,
+                "inputs": function.inputs,
+                "outputs": function.outputs,
+                "trace": function.trace,
+                "scenarios": function.scenarios,
+            }
+            for function in model.functions
+        ],
         "controlRules": [
             {
                 "name": control.name,
+                "owner": control.owner,
+                "priority": control.priority,
+                "stateScope": control.state_scope,
                 "condition": control.condition,
                 "actions": control.actions,
                 "trace": control.trace,
+                "scenarios": control.scenarios,
             }
             for control in model.controls
         ],

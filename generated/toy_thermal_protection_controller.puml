@@ -13,11 +13,25 @@ COOLING --> SENSOR_FAULT : temperatureValid == false
 DERATING --> SENSOR_FAULT : temperatureValid == false
 SENSOR_FAULT --> FAULT_LATCHED : invalidDebounced == true
 FAULT_LATCHED --> IDLE : temperatureValid == true and invalidDebounced == false and recoveryRequest == true
+' Function SensorInterface: owns temperatureC, temperatureValid trace SYS-001, HAR-001, HAR-002
+' Function ValidityDebounceManager: owns invalidDebounced trace SYS-006, SYS-007, ENG-002, HAR-003
+' Function ThermalStateManager: owns IDLE, COOLING, DERATING trace SYS-003, SYS-004, SYS-005
+' Function CoolingCommandManager: owns fanDuty trace SYS-002, SYS-003, SYS-004
+' Function DeratingCommandManager: owns deratingCommand trace SYS-005
+' Function FaultLatchRecoveryManager: owns SENSOR_FAULT, FAULT_LATCHED, recoveryRequest trace SYS-006, SYS-007, SYS-008
+' Function OutputMappingDiagnostics: owns safeCommandActive, diagnosticFault trace SYS-002, SYS-006, SYS-009, CGEN-003, HAR-004
+' Control recoverFromLatch: owner FaultLatchRecoveryManager priority 10 from FAULT_LATCHED
 ' Trace recoverFromLatch: SYS-008, HAR-006
+' Control faultLatch: owner FaultLatchRecoveryManager priority 20 from *
 ' Trace faultLatch: SYS-007, SYS-006, HAR-004
+' Control holdLatchedFault: owner FaultLatchRecoveryManager priority 30 from FAULT_LATCHED
 ' Trace holdLatchedFault: SYS-007, HAR-004
+' Control sensorInvalid: owner FaultLatchRecoveryManager priority 40 from *
 ' Trace sensorInvalid: SYS-006, HAR-004
+' Control derating: owner DeratingCommandManager priority 50 from *
 ' Trace derating: SYS-005, SYS-002, HAR-004
+' Control highCooling: owner CoolingCommandManager priority 60 from *
 ' Trace highCooling: SYS-003, SYS-002, HAR-004
+' Control lowCooling: owner CoolingCommandManager priority 70 from *
 ' Trace lowCooling: SYS-004, HAR-004
 @enduml

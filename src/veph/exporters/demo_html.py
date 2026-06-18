@@ -38,6 +38,18 @@ def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
 
 
 def _export_ir_demo_html(model: MbdModelIR) -> str:
+    function_rows = "\n".join(
+        "          <tr>"
+        f"<td>{escape(function.name)}</td>"
+        f"<td>{escape(function.responsibility)}</td>"
+        f"<td>{escape(', '.join(function.owns))}</td>"
+        f"<td>{escape(', '.join(function.inputs))}</td>"
+        f"<td>{escape(', '.join(function.outputs))}</td>"
+        f"<td>{escape(', '.join(function.trace))}</td>"
+        f"<td>{escape(', '.join(function.scenarios))}</td>"
+        "</tr>"
+        for function in model.functions
+    )
     req_rows = "\n".join(
         f"          <tr><td>{escape(ref)}</td><td>{escape(', '.join(_ir_elements_for_ref(model, ref)))}</td></tr>"
         for ref in sorted(model.requirement_refs())
@@ -46,6 +58,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
         "          <tr>"
         f"<td>{escape(str(control.priority))}</td>"
         f"<td>{escape(control.name)}</td>"
+        f"<td>{escape(control.owner or 'unallocated')}</td>"
         f"<td>{escape(control.state_scope)}</td>"
         f"<td>{escape(control.condition)}</td>"
         f"<td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td>"
@@ -92,10 +105,18 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "      </div>",
             '      <div class="hero-facts" aria-label="model facts">',
             f"        <div><strong>{len(model.ports)}</strong><span>ports</span></div>",
+            f"        <div><strong>{len(model.functions)}</strong><span>functions</span></div>",
             f"        <div><strong>{len(model.controls)}</strong><span>control rules</span></div>",
             f"        <div><strong>{len(model.harness_devices)}</strong><span>harness boundaries</span></div>",
-            f"        <div><strong>{len(model.requirement_refs())}</strong><span>requirement refs</span></div>",
             "      </div>",
+            "    </section>",
+            _ir_functional_decomposition_svg(model),
+            '    <section class="panel">',
+            "      <h2>Functional Decomposition</h2>",
+            "      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>",
+            "      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>",
+            flow_or_empty(function_rows, colspan=7),
+            "      </tbody></table>",
             "    </section>",
             _ir_spec_compliance_review(model),
             _ir_mbd_review_checklist(),
@@ -136,8 +157,8 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             '      <section class="panel">',
             "        <h2>Control Decision Table</h2>",
             "        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>",
-            "        <table><thead><tr><th>Priority</th><th>Rule</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>",
-            flow_or_empty(control_rows, colspan=7),
+            "        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>",
+            flow_or_empty(control_rows, colspan=8),
             "        </tbody></table>",
             "      </section>",
             '      <section class="panel">',
@@ -173,6 +194,9 @@ def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
     elements: list[str] = []
     if ref in model.component.trace:
         elements.append(f"component:{model.component.name}")
+    for function in model.functions:
+        if ref in function.trace:
+            elements.append(f"function:{function.name}")
     for flow in model.flows:
         if ref in flow.trace:
             elements.append(f"flow:{flow.source}->{flow.target}")
@@ -292,6 +316,50 @@ def _ir_mbd_review_checklist() -> str:
             "    </section>",
         ]
     )
+
+
+def _ir_functional_decomposition_svg(model: MbdModelIR) -> str:
+    if not model.functions:
+        return "\n".join(
+            [
+                '    <section class="panel">',
+                "      <h2>Functional Architecture</h2>",
+                "      <p>No functional decomposition is declared in the MBD source.</p>",
+                "    </section>",
+            ]
+        )
+    row_height = 82
+    height = 86 + row_height * len(model.functions)
+    parts = [
+        '    <section class="panel">',
+        "      <h2>Functional Architecture</h2>",
+        "      <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Functional decomposition generated from mbd-decomposition">',
+        *(_svg_defs("irFunctionArrow")),
+    ]
+    for index, function in enumerate(model.functions):
+        y = 44 + index * row_height
+        owns = _shorten(", ".join(function.owns), 36)
+        inputs = _shorten(", ".join(function.inputs), 38)
+        outputs = _shorten(", ".join(function.outputs), 38)
+        trace = _shorten(", ".join(function.trace), 34)
+        parts.extend(
+            [
+                f'        <rect x="42" y="{y}" width="300" height="58" rx="8" class="node"></rect>',
+                f'        <text x="58" y="{y + 22}" class="node-title small">{escape(function.name)}</text>',
+                f'        <text x="58" y="{y + 43}" class="node-note">owns {escape(owns)}</text>',
+                f'        <line x1="342" y1="{y + 29}" x2="396" y2="{y + 29}" class="ir-arrow"></line>',
+                f'        <rect x="396" y="{y}" width="316" height="58" rx="8" class="rule-condition"></rect>',
+                f'        <text x="412" y="{y + 24}" class="node-note">in {escape(inputs)}</text>',
+                f'        <text x="412" y="{y + 44}" class="node-note">out {escape(outputs)}</text>',
+                f'        <line x1="712" y1="{y + 29}" x2="766" y2="{y + 29}" class="ir-arrow"></line>',
+                f'        <rect x="766" y="{y}" width="350" height="58" rx="8" class="rule-action"></rect>',
+                f'        <text x="782" y="{y + 24}" class="node-note">trace {escape(trace)}</text>',
+                f'        <text x="782" y="{y + 44}" class="edge-note">{escape(_shorten(function.responsibility, 54))}</text>',
+            ]
+        )
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
 
 
 def _ir_control_semantics_summary() -> str:

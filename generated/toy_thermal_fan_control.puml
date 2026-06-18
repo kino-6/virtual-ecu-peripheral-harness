@@ -9,7 +9,10 @@ COOLING --> IDLE : temperatureC <= fanOffThreshold
 IDLE --> FAULT : temperatureValid == false
 COOLING --> FAULT : temperatureValid == false
 FAULT --> IDLE : temperatureValid == true
+' Control sensorFault: owner unallocated priority 1000 from *
 ' Trace sensorFault: SYS-005, HAR-004
+' Control highTemperature: owner unallocated priority 1001 from *
 ' Trace highTemperature: SYS-003, SYS-006
+' Control lowTemperature: owner unallocated priority 1002 from *
 ' Trace lowTemperature: SYS-004, SYS-006
 @enduml

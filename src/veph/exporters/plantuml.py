@@ -15,7 +15,15 @@ def export_plantuml(model: PeripheralModel | MbdModelIR) -> str:
         ]
         for transition in model.transitions:
             lines.append(f"{transition.source} --> {transition.target} : {transition.condition}")
+        for function in model.functions:
+            if function.trace:
+                lines.append(
+                    f"' Function {function.name}: owns {', '.join(function.owns)} trace {', '.join(function.trace)}"
+                )
         for control in model.controls:
+            lines.append(
+                f"' Control {control.name}: owner {control.owner or 'unallocated'} priority {control.priority} from {control.state_scope}"
+            )
             if control.trace:
                 lines.append(f"' Trace {control.name}: {', '.join(control.trace)}")
         lines.append("@enduml")

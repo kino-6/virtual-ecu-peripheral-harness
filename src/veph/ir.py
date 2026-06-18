@@ -61,12 +61,24 @@ class FlowIR:
 
 
 @dataclass(frozen=True)
+class FunctionIR:
+    name: str
+    responsibility: str
+    owns: list[str] = field(default_factory=list)
+    inputs: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
+    trace: list[str] = field(default_factory=list)
+    scenarios: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class ControlRuleIR:
     name: str
     condition: str
     actions: dict[str, str]
     priority: int = 1000
     state_scope: str = "*"
+    owner: str = ""
     trace: list[str] = field(default_factory=list)
     scenarios: list[str] = field(default_factory=list)
 
@@ -95,6 +107,7 @@ class MbdModelIR:
     flows: list[FlowIR]
     sections: list[MarkupSectionIR]
     source_path: Path
+    functions: list[FunctionIR] = field(default_factory=list)
     controls: list[ControlRuleIR] = field(default_factory=list)
     harness_devices: list[HarnessDeviceIR] = field(default_factory=list)
 
@@ -113,6 +126,8 @@ class MbdModelIR:
         refs = set(self.component.trace)
         for flow in self.flows:
             refs.update(flow.trace)
+        for function in self.functions:
+            refs.update(function.trace)
         for control in self.controls:
             refs.update(control.trace)
         for device in self.harness_devices:

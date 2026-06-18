@@ -23,13 +23,20 @@ def export_modelica(model: PeripheralModel | MbdModelIR) -> str:
         lines.append("  // State placeholders generated from markup:")
         for index, state in enumerate(_state_names(model)):
             lines.append(f"  // {index}: {state}")
+        lines.append("  // Functional decomposition handoff summary:")
+        for function in model.functions:
+            lines.append(
+                f"  // function {function.name}: owns {', '.join(function.owns)} "
+                f"trace {', '.join(function.trace)} scenarios {', '.join(function.scenarios)}"
+            )
         lines.append("  // Control rule handoff summary:")
         for control in sorted(model.controls, key=lambda item: (item.priority, item.name)):
             actions = ", ".join(f"{key}={value}" for key, value in control.actions.items())
             trace = ", ".join(control.trace)
             scenarios = f" scenarios {', '.join(control.scenarios)}" if control.scenarios else ""
+            owner = f" owner {control.owner}" if control.owner else ""
             lines.append(
-                f"  // priority {control.priority} {control.name}: from {control.state_scope} "
+                f"  // priority {control.priority} {control.name}:{owner} from {control.state_scope} "
                 f"when {control.condition} then {actions} trace {trace}{scenarios}"
             )
         lines.append(f"end {model.component.name};")

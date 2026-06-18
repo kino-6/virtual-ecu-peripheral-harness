@@ -23,17 +23,18 @@ add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule
 set_param([model '/Rule_sensorFault_Compare'], 'Position', [80 420 230 480]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_sensorFault_Switch']);
 set_param([model '/Rule_sensorFault_Switch'], 'Position', [300 420 430 480]);
-% priority 1000 sensorFault: from * when temperatureValid == false then {'state': 'FAULT', 'fanDuty': 'safeDuty', 'fault': 'true'} scenarios []
+% priority 1000 sensorFault: owner unallocated from * when temperatureValid == false then {'state': 'FAULT', 'fanDuty': 'safeDuty', 'fault': 'true'} scenarios []
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_highTemperature_Compare']);
 set_param([model '/Rule_highTemperature_Compare'], 'Position', [80 520 230 580]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_highTemperature_Switch']);
 set_param([model '/Rule_highTemperature_Switch'], 'Position', [300 520 430 580]);
-% priority 1001 highTemperature: from * when temperatureC >= fanOnThreshold then {'state': 'COOLING', 'fanDuty': 'coolingDuty', 'fault': 'false'} scenarios []
+% priority 1001 highTemperature: owner unallocated from * when temperatureC >= fanOnThreshold then {'state': 'COOLING', 'fanDuty': 'coolingDuty', 'fault': 'false'} scenarios []
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_lowTemperature_Compare']);
 set_param([model '/Rule_lowTemperature_Compare'], 'Position', [80 620 230 680]);
 add_block('simulink/Signal Routing/Switch', [model '/Rule_lowTemperature_Switch']);
 set_param([model '/Rule_lowTemperature_Switch'], 'Position', [300 620 430 680]);
-% priority 1002 lowTemperature: from * when temperatureC <= fanOffThreshold then {'state': 'IDLE', 'fanDuty': '0', 'fault': 'false'} scenarios []
+% priority 1002 lowTemperature: owner unallocated from * when temperatureC <= fanOffThreshold then {'state': 'IDLE', 'fanDuty': '0', 'fault': 'false'} scenarios []
+% Functional decomposition summary:
 add_line(model, 'ToyTempSensorIC_temperatureC/1', 'HAL_SPI_read_temperature/1', 'autorouting', 'on');
 add_line(model, 'HAL_SPI_read_temperature/1', 'ToyThermalFanController_temperatureC/1', 'autorouting', 'on');
 add_line(model, 'ToyThermalFanController_fanDuty/1', 'HAL_PWM_set_fan_duty/1', 'autorouting', 'on');

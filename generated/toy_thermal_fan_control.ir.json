@@ -49,6 +49,7 @@
       },
       "condition": "temperatureValid == false",
       "name": "sensorFault",
+      "owner": "",
       "priority": 1000,
       "scenarios": [],
       "state_scope": "*",
@@ -65,6 +66,7 @@
       },
       "condition": "temperatureC >= fanOnThreshold",
       "name": "highTemperature",
+      "owner": "",
       "priority": 1001,
       "scenarios": [],
       "state_scope": "*",
@@ -81,6 +83,7 @@
       },
       "condition": "temperatureC <= fanOffThreshold",
       "name": "lowTemperature",
+      "owner": "",
       "priority": 1002,
       "scenarios": [],
       "state_scope": "*",
@@ -137,6 +140,7 @@
       ]
     }
   ],
+  "functions": [],
   "harness_devices": [
     {
       "boundary": "virtual_ic",

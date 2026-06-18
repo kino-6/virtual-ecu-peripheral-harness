@@ -35,6 +35,7 @@ ports:
     default: 'false'
 controlRules:
 - name: sensorFault
+  owner: ''
   priority: 1000
   stateScope: '*'
   condition: temperatureValid == false
@@ -47,6 +48,7 @@ controlRules:
   - HAR-004
   scenarios: []
 - name: highTemperature
+  owner: ''
   priority: 1001
   stateScope: '*'
   condition: temperatureC >= fanOnThreshold
@@ -59,6 +61,7 @@ controlRules:
   - SYS-006
   scenarios: []
 - name: lowTemperature
+  owner: ''
   priority: 1002
   stateScope: '*'
   condition: temperatureC <= fanOffThreshold
@@ -89,6 +92,12 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   the Simulink-compatible subset. Timing behavior such as sensor invalid debounce
   is represented by explicit scenario inputs and must be verified by external MBD/product-test
   infrastructure.'
+```
+
+## Functional Decomposition Evidence
+
+```yaml
+[]
 ```
 
 ## Traceability Matrix
@@ -279,6 +288,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    owner: ''
     priority: 1000
     stateScope: '*'
     stateScopeMatched: true
@@ -294,6 +304,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - HAR-004
     scenarios: []
   - rule: highTemperature
+    owner: ''
     priority: 1001
     stateScope: '*'
     stateScopeMatched: true
@@ -309,6 +320,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-006
     scenarios: []
   - rule: lowTemperature
+    owner: ''
     priority: 1002
     stateScope: '*'
     stateScopeMatched: true
@@ -325,6 +337,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios: []
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
+  appliedOwner: ''
   generatedEcuCommandOutputs:
     fanDuty: 0
     fault: false
@@ -369,6 +382,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    owner: ''
     priority: 1000
     stateScope: '*'
     stateScopeMatched: true
@@ -384,6 +398,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - HAR-004
     scenarios: []
   - rule: highTemperature
+    owner: ''
     priority: 1001
     stateScope: '*'
     stateScopeMatched: true
@@ -399,6 +414,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-006
     scenarios: []
   - rule: lowTemperature
+    owner: ''
     priority: 1002
     stateScope: '*'
     stateScopeMatched: true
@@ -415,6 +431,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios: []
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowTemperature
+  appliedOwner: ''
   generatedEcuCommandOutputs:
     fanDuty: 0
     fault: false
@@ -459,6 +476,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
+    owner: ''
     priority: 1000
     stateScope: '*'
     stateScopeMatched: true
@@ -474,6 +492,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - HAR-004
     scenarios: []
   - rule: highTemperature
+    owner: ''
     priority: 1001
     stateScope: '*'
     stateScopeMatched: true
@@ -489,6 +508,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - SYS-006
     scenarios: []
   - rule: lowTemperature
+    owner: ''
     priority: 1002
     stateScope: '*'
     stateScopeMatched: true
@@ -505,6 +525,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios: []
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: highTemperature
+  appliedOwner: ''
   generatedEcuCommandOutputs:
     fanDuty: 80
     fault: false
@@ -557,277 +578,6 @@ harnessDevices:
 - name: ToyThermalFanController
   role: controller
   boundary: hal
-stepEvidence:
-- stepIndex: 0
-  atMs: 0
-  scenarioInput:
-    name: temperatureC
-    value: 25
-  before:
-    state: RESET
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-    outputs:
-      fanDuty: 0
-      fault: false
-  virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 25
-    ToyTempSensorIC.temperatureValid: true
-  controlRuleEvaluations:
-  - rule: sensorFault
-    priority: 1000
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureValid == false
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: FAULT
-      fanDuty: safeDuty
-      fault: 'true'
-    trace:
-    - SYS-005
-    - HAR-004
-    scenarios: []
-  - rule: highTemperature
-    priority: 1001
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= fanOnThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: COOLING
-      fanDuty: coolingDuty
-      fault: 'false'
-    trace:
-    - SYS-003
-    - SYS-006
-    scenarios: []
-  - rule: lowTemperature
-    priority: 1002
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC <= fanOffThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      fault: 'false'
-    trace:
-    - SYS-004
-    - SYS-006
-    scenarios: []
-  selectionPolicy: lowest numeric priority wins after state scope and guard match
-  appliedRule: lowTemperature
-  generatedEcuCommandOutputs:
-    fanDuty: 0
-    fault: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
-      value: 0
-    controllerSource: generated/ecu_preview/controller.c
-  after:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-    outputs:
-      fanDuty: 0
-      fault: false
-  requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
-  - SYS-004
-  - SYS-006
-- stepIndex: 1
-  atMs: 10
-  scenarioInput:
-    name: temperatureValid
-    value: true
-  before:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-    outputs:
-      fanDuty: 0
-      fault: false
-  virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 25
-    ToyTempSensorIC.temperatureValid: true
-  controlRuleEvaluations:
-  - rule: sensorFault
-    priority: 1000
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureValid == false
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: FAULT
-      fanDuty: safeDuty
-      fault: 'true'
-    trace:
-    - SYS-005
-    - HAR-004
-    scenarios: []
-  - rule: highTemperature
-    priority: 1001
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= fanOnThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: COOLING
-      fanDuty: coolingDuty
-      fault: 'false'
-    trace:
-    - SYS-003
-    - SYS-006
-    scenarios: []
-  - rule: lowTemperature
-    priority: 1002
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC <= fanOffThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      fault: 'false'
-    trace:
-    - SYS-004
-    - SYS-006
-    scenarios: []
-  selectionPolicy: lowest numeric priority wins after state scope and guard match
-  appliedRule: lowTemperature
-  generatedEcuCommandOutputs:
-    fanDuty: 0
-    fault: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
-      value: 0
-    controllerSource: generated/ecu_preview/controller.c
-  after:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-    outputs:
-      fanDuty: 0
-      fault: false
-  requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
-  - SYS-004
-  - SYS-006
-- stepIndex: 2
-  atMs: 100
-  scenarioInput:
-    name: temperatureC
-    value: 82
-  before:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-    outputs:
-      fanDuty: 0
-      fault: false
-  virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 82
-    ToyTempSensorIC.temperatureValid: true
-  controlRuleEvaluations:
-  - rule: sensorFault
-    priority: 1000
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureValid == false
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: FAULT
-      fanDuty: safeDuty
-      fault: 'true'
-    trace:
-    - SYS-005
-    - HAR-004
-    scenarios: []
-  - rule: highTemperature
-    priority: 1001
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= fanOnThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: COOLING
-      fanDuty: coolingDuty
-      fault: 'false'
-    trace:
-    - SYS-003
-    - SYS-006
-    scenarios: []
-  - rule: lowTemperature
-    priority: 1002
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC <= fanOffThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      fault: 'false'
-    trace:
-    - SYS-004
-    - SYS-006
-    scenarios: []
-  selectionPolicy: lowest numeric priority wins after state scope and guard match
-  appliedRule: highTemperature
-  generatedEcuCommandOutputs:
-    fanDuty: 80
-    fault: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
-      value: 80
-    controllerSource: generated/ecu_preview/controller.c
-  after:
-    state: COOLING
-    inputs:
-      temperatureC: 82
-      temperatureValid: true
-    outputs:
-      fanDuty: 80
-      fault: false
-  requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
-  - SYS-003
-  - SYS-006
 ```
 
 ## Generated ECU Command Outputs

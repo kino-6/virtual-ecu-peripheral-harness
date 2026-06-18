@@ -54,6 +54,7 @@ ports:
     default: 'false'
 controlRules:
 - name: recoverFromLatch
+  owner: FaultLatchRecoveryManager
   priority: 10
   stateScope: FAULT_LATCHED
   condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
@@ -70,6 +71,7 @@ controlRules:
   scenarios:
   - thermal_protection_recovery
 - name: faultLatch
+  owner: FaultLatchRecoveryManager
   priority: 20
   stateScope: '*'
   condition: invalidDebounced == true
@@ -87,6 +89,7 @@ controlRules:
   - thermal_protection_fault_latch
   - thermal_protection_recovery
 - name: holdLatchedFault
+  owner: FaultLatchRecoveryManager
   priority: 30
   stateScope: FAULT_LATCHED
   condition: always
@@ -103,6 +106,7 @@ controlRules:
   - thermal_protection_fault_latch
   - thermal_protection_recovery
 - name: sensorInvalid
+  owner: FaultLatchRecoveryManager
   priority: 40
   stateScope: '*'
   condition: temperatureValid == false
@@ -119,6 +123,7 @@ controlRules:
   - thermal_protection_fault_latch
   - thermal_protection_recovery
 - name: derating
+  owner: DeratingCommandManager
   priority: 50
   stateScope: '*'
   condition: temperatureC >= deratingEntryThreshold
@@ -136,6 +141,7 @@ controlRules:
   - thermal_protection_derating
   - thermal_protection_recovery
 - name: highCooling
+  owner: CoolingCommandManager
   priority: 60
   stateScope: '*'
   condition: temperatureC >= coolingOnThreshold
@@ -152,6 +158,7 @@ controlRules:
   scenarios:
   - thermal_protection_normal
 - name: lowCooling
+  owner: CoolingCommandManager
   priority: 70
   stateScope: '*'
   condition: temperatureC <= coolingOffThreshold
@@ -194,11 +201,152 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   infrastructure.'
 ```
 
+## Functional Decomposition Evidence
+
+```yaml
+- name: SensorInterface
+  responsibility: Acquire fictional temperature and validity through the HAL boundary
+  owns:
+  - temperatureC
+  - temperatureValid
+  inputs:
+  - ToyTempSensorIC.temperatureC
+  - ToyTempSensorIC.temperatureValid
+  outputs:
+  - temperatureC
+  - temperatureValid
+  trace:
+  - SYS-001
+  - HAR-001
+  - HAR-002
+  scenarios:
+  - thermal_protection_normal
+  - thermal_protection_derating
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
+- name: ValidityDebounceManager
+  responsibility: Represent invalid sensor input and preview debounce status without
+    timing physics
+  owns:
+  - invalidDebounced
+  inputs:
+  - temperatureValid
+  - ToyTempSensorIC.invalidDebounced
+  outputs:
+  - invalidDebounced
+  trace:
+  - SYS-006
+  - SYS-007
+  - ENG-002
+  - HAR-003
+  scenarios:
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
+- name: ThermalStateManager
+  responsibility: Own IDLE COOLING and DERATING state decisions for valid temperature
+    inputs
+  owns:
+  - IDLE
+  - COOLING
+  - DERATING
+  inputs:
+  - temperatureC
+  - temperatureValid
+  outputs:
+  - state
+  trace:
+  - SYS-003
+  - SYS-004
+  - SYS-005
+  scenarios:
+  - thermal_protection_normal
+  - thermal_protection_boundary
+  - thermal_protection_derating
+- name: CoolingCommandManager
+  responsibility: Calculate nominal fan command for cooling and hysteresis behavior
+  owns:
+  - fanDuty
+  inputs:
+  - state
+  - temperatureC
+  outputs:
+  - fanDuty
+  trace:
+  - SYS-002
+  - SYS-003
+  - SYS-004
+  scenarios:
+  - thermal_protection_normal
+  - thermal_protection_boundary
+- name: DeratingCommandManager
+  responsibility: Calculate high-temperature fan and fictional load-limit commands
+  owns:
+  - deratingCommand
+  inputs:
+  - state
+  - temperatureC
+  outputs:
+  - fanDuty
+  - deratingCommand
+  trace:
+  - SYS-005
+  scenarios:
+  - thermal_protection_derating
+- name: FaultLatchRecoveryManager
+  responsibility: Own sensor fault latch hold and explicit recovery behavior
+  owns:
+  - SENSOR_FAULT
+  - FAULT_LATCHED
+  - recoveryRequest
+  inputs:
+  - temperatureValid
+  - invalidDebounced
+  - recoveryRequest
+  outputs:
+  - state
+  - safeCommandActive
+  - diagnosticFault
+  trace:
+  - SYS-006
+  - SYS-007
+  - SYS-008
+  scenarios:
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
+- name: OutputMappingDiagnostics
+  responsibility: Map selected commands to HAL outputs and report-observable diagnostics
+  owns:
+  - safeCommandActive
+  - diagnosticFault
+  inputs:
+  - fanDuty
+  - deratingCommand
+  - state
+  outputs:
+  - HAL_PWM.set_fan_duty
+  - HAL_LIMITER.set_derating
+  - ScenarioReport.observedBehavior
+  - ScenarioReport.passFailResult
+  trace:
+  - SYS-002
+  - SYS-006
+  - SYS-009
+  - CGEN-003
+  - HAR-004
+  scenarios:
+  - thermal_protection_normal
+  - thermal_protection_boundary
+  - thermal_protection_derating
+  - thermal_protection_fault_latch
+  - thermal_protection_recovery
+```
+
 ## Traceability Matrix
 
 ```yaml
 - requirement: CGEN-003
   modelElements:
+  - function:OutputMappingDiagnostics
   - flow:ToyThermalProtectionController.fanDuty->HAL_PWM.set_fan_duty
   - flow:ToyThermalProtectionController.deratingCommand->HAL_LIMITER.set_derating
   - harness:ToyThermalProtectionController
@@ -213,6 +361,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: ENG-002
   modelElements:
+  - function:ValidityDebounceManager
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -225,6 +374,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: HAR-001
   modelElements:
+  - function:SensorInterface
   - flow:ToyTempSensorIC.temperatureC->HAL_SPI.read_temperature
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - flow:HAL_PWM.set_fan_duty->ToyFanDriverIC.dutyCommand
@@ -241,6 +391,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: HAR-002
   modelElements:
+  - function:SensorInterface
   - flow:HAL_SPI.read_temperature->ToyThermalProtectionController.temperatureC
   - harness:ToyThermalProtectionController
   evidence:
@@ -254,6 +405,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: HAR-003
   modelElements:
+  - function:ValidityDebounceManager
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -266,6 +418,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: HAR-004
   modelElements:
+  - function:OutputMappingDiagnostics
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
   - flow:ToyThermalProtectionController.safeCommandActive->ScenarioReport.passFailResult
   - control:faultLatch
@@ -350,6 +503,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-001
   modelElements:
+  - function:SensorInterface
   - flow:ToyTempSensorIC.temperatureC->HAL_SPI.read_temperature
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - harness:ToyTempSensorIC
@@ -364,6 +518,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-002
   modelElements:
+  - function:CoolingCommandManager
+  - function:OutputMappingDiagnostics
   - flow:ToyThermalProtectionController.fanDuty->HAL_PWM.set_fan_duty
   - flow:HAL_PWM.set_fan_duty->ToyFanDriverIC.dutyCommand
   - control:derating
@@ -380,6 +536,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-003
   modelElements:
+  - function:ThermalStateManager
+  - function:CoolingCommandManager
   - control:highCooling
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -392,6 +550,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-004
   modelElements:
+  - function:ThermalStateManager
+  - function:CoolingCommandManager
   - control:lowCooling
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -404,6 +564,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-005
   modelElements:
+  - function:ThermalStateManager
+  - function:DeratingCommandManager
   - flow:ToyThermalProtectionController.deratingCommand->HAL_LIMITER.set_derating
   - flow:HAL_LIMITER.set_derating->ToyLoadLimiterIC.limitCommand
   - control:derating
@@ -419,6 +581,9 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-006
   modelElements:
+  - function:ValidityDebounceManager
+  - function:FaultLatchRecoveryManager
+  - function:OutputMappingDiagnostics
   - flow:ToyTempSensorIC.temperatureValid->HAL_SPI.read_temperature
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
   - control:faultLatch
@@ -435,6 +600,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-007
   modelElements:
+  - function:ValidityDebounceManager
+  - function:FaultLatchRecoveryManager
   - flow:ToyTempSensorIC.invalidDebounced->ToyThermalProtectionController.invalidDebounced
   - flow:ToyThermalProtectionController.diagnosticFault->ScenarioReport.observedBehavior
   - control:faultLatch
@@ -451,6 +618,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-008
   modelElements:
+  - function:FaultLatchRecoveryManager
   - control:recoverFromLatch
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -463,6 +631,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   - reports/thermal_protection_recovery.md
 - requirement: SYS-009
   modelElements:
+  - function:OutputMappingDiagnostics
   - flow:ToyThermalProtectionController.safeCommandActive->ScenarioReport.passFailResult
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
@@ -545,6 +714,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
+    owner: FaultLatchRecoveryManager
     priority: 10
     stateScope: FAULT_LATCHED
     stateScopeMatched: false
@@ -564,6 +734,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios:
     - thermal_protection_recovery
   - rule: faultLatch
+    owner: FaultLatchRecoveryManager
     priority: 20
     stateScope: '*'
     stateScopeMatched: true
@@ -584,6 +755,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: holdLatchedFault
+    owner: FaultLatchRecoveryManager
     priority: 30
     stateScope: FAULT_LATCHED
     stateScopeMatched: false
@@ -603,6 +775,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: sensorInvalid
+    owner: FaultLatchRecoveryManager
     priority: 40
     stateScope: '*'
     stateScopeMatched: true
@@ -622,6 +795,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: derating
+    owner: DeratingCommandManager
     priority: 50
     stateScope: '*'
     stateScopeMatched: true
@@ -642,6 +816,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_derating
     - thermal_protection_recovery
   - rule: highCooling
+    owner: CoolingCommandManager
     priority: 60
     stateScope: '*'
     stateScopeMatched: true
@@ -661,6 +836,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios:
     - thermal_protection_normal
   - rule: lowCooling
+    owner: CoolingCommandManager
     priority: 70
     stateScope: '*'
     stateScopeMatched: true
@@ -680,6 +856,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_boundary
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: lowCooling
+  appliedOwner: CoolingCommandManager
   generatedEcuCommandOutputs:
     fanDuty: 0
     deratingCommand: 0
@@ -737,6 +914,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyTempSensorIC.temperatureValid: true
   controlRuleEvaluations:
   - rule: recoverFromLatch
+    owner: FaultLatchRecoveryManager
     priority: 10
     stateScope: FAULT_LATCHED
     stateScopeMatched: false
@@ -756,6 +934,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios:
     - thermal_protection_recovery
   - rule: faultLatch
+    owner: FaultLatchRecoveryManager
     priority: 20
     stateScope: '*'
     stateScopeMatched: true
@@ -776,6 +955,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: holdLatchedFault
+    owner: FaultLatchRecoveryManager
     priority: 30
     stateScope: FAULT_LATCHED
     stateScopeMatched: false
@@ -795,6 +975,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: sensorInvalid
+    owner: FaultLatchRecoveryManager
     priority: 40
     stateScope: '*'
     stateScopeMatched: true
@@ -814,6 +995,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_fault_latch
     - thermal_protection_recovery
   - rule: derating
+    owner: DeratingCommandManager
     priority: 50
     stateScope: '*'
     stateScopeMatched: true
@@ -834,6 +1016,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_derating
     - thermal_protection_recovery
   - rule: highCooling
+    owner: CoolingCommandManager
     priority: 60
     stateScope: '*'
     stateScopeMatched: true
@@ -853,6 +1036,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios:
     - thermal_protection_normal
   - rule: lowCooling
+    owner: CoolingCommandManager
     priority: 70
     stateScope: '*'
     stateScopeMatched: true
@@ -872,6 +1056,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     - thermal_protection_boundary
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: derating
+  appliedOwner: DeratingCommandManager
   generatedEcuCommandOutputs:
     fanDuty: 95
     deratingCommand: 45
@@ -940,392 +1125,6 @@ harnessDevices:
 - name: ToyThermalProtectionController
   role: controller
   boundary: hal
-stepEvidence:
-- stepIndex: 0
-  atMs: 0
-  scenarioInput:
-    name: temperatureValid
-    value: true
-  before:
-    state: RESET
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-      invalidDebounced: false
-      recoveryRequest: false
-    outputs:
-      fanDuty: 0
-      deratingCommand: 0
-      diagnosticFault: false
-      safeCommandActive: false
-  virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 25
-    ToyTempSensorIC.temperatureValid: true
-  controlRuleEvaluations:
-  - rule: recoverFromLatch
-    priority: 10
-    stateScope: FAULT_LATCHED
-    stateScopeMatched: false
-    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
-      == true
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-008
-    - HAR-006
-    scenarios:
-    - thermal_protection_recovery
-  - rule: faultLatch
-    priority: 20
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: invalidDebounced == true
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: FAULT_LATCHED
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-007
-    - SYS-006
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: holdLatchedFault
-    priority: 30
-    stateScope: FAULT_LATCHED
-    stateScopeMatched: false
-    condition: always
-    matched: true
-    selectable: false
-    actionsIfMatched:
-      state: FAULT_LATCHED
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-007
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: sensorInvalid
-    priority: 40
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureValid == false
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: SENSOR_FAULT
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-006
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: derating
-    priority: 50
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= deratingEntryThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: DERATING
-      fanDuty: deratingFanDuty
-      deratingCommand: deratingLimit
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-005
-    - SYS-002
-    - HAR-004
-    scenarios:
-    - thermal_protection_derating
-    - thermal_protection_recovery
-  - rule: highCooling
-    priority: 60
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= coolingOnThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: COOLING
-      fanDuty: coolingDuty
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-003
-    - SYS-002
-    - HAR-004
-    scenarios:
-    - thermal_protection_normal
-  - rule: lowCooling
-    priority: 70
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC <= coolingOffThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-004
-    - HAR-004
-    scenarios:
-    - thermal_protection_boundary
-  selectionPolicy: lowest numeric priority wins after state scope and guard match
-  appliedRule: lowCooling
-  generatedEcuCommandOutputs:
-    fanDuty: 0
-    deratingCommand: 0
-    diagnosticFault: false
-    safeCommandActive: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
-      value: 0
-    - api: hal_load_limiter_set_derating
-      direction: controller to virtual IC
-      target: ToyLoadLimiterIC
-      value: 0
-    controllerSource: generated/protection_ecu_preview/controller.c
-  after:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-      invalidDebounced: false
-      recoveryRequest: false
-    outputs:
-      fanDuty: 0
-      deratingCommand: 0
-      diagnosticFault: false
-      safeCommandActive: false
-  requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
-  - SYS-004
-- stepIndex: 1
-  atMs: 50
-  scenarioInput:
-    name: temperatureC
-    value: 96
-  before:
-    state: IDLE
-    inputs:
-      temperatureC: 25
-      temperatureValid: true
-      invalidDebounced: false
-      recoveryRequest: false
-    outputs:
-      fanDuty: 0
-      deratingCommand: 0
-      diagnosticFault: false
-      safeCommandActive: false
-  virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 96
-    ToyTempSensorIC.temperatureValid: true
-  controlRuleEvaluations:
-  - rule: recoverFromLatch
-    priority: 10
-    stateScope: FAULT_LATCHED
-    stateScopeMatched: false
-    condition: temperatureValid == true and invalidDebounced == false and recoveryRequest
-      == true
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-008
-    - HAR-006
-    scenarios:
-    - thermal_protection_recovery
-  - rule: faultLatch
-    priority: 20
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: invalidDebounced == true
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: FAULT_LATCHED
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-007
-    - SYS-006
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: holdLatchedFault
-    priority: 30
-    stateScope: FAULT_LATCHED
-    stateScopeMatched: false
-    condition: always
-    matched: true
-    selectable: false
-    actionsIfMatched:
-      state: FAULT_LATCHED
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-007
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: sensorInvalid
-    priority: 40
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureValid == false
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: SENSOR_FAULT
-      fanDuty: safeDuty
-      deratingCommand: '0'
-      diagnosticFault: 'true'
-      safeCommandActive: 'true'
-    trace:
-    - SYS-006
-    - HAR-004
-    scenarios:
-    - thermal_protection_fault_latch
-    - thermal_protection_recovery
-  - rule: derating
-    priority: 50
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= deratingEntryThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: DERATING
-      fanDuty: deratingFanDuty
-      deratingCommand: deratingLimit
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-005
-    - SYS-002
-    - HAR-004
-    scenarios:
-    - thermal_protection_derating
-    - thermal_protection_recovery
-  - rule: highCooling
-    priority: 60
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC >= coolingOnThreshold
-    matched: true
-    selectable: true
-    actionsIfMatched:
-      state: COOLING
-      fanDuty: coolingDuty
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-003
-    - SYS-002
-    - HAR-004
-    scenarios:
-    - thermal_protection_normal
-  - rule: lowCooling
-    priority: 70
-    stateScope: '*'
-    stateScopeMatched: true
-    condition: temperatureC <= coolingOffThreshold
-    matched: false
-    selectable: false
-    actionsIfMatched:
-      state: IDLE
-      fanDuty: '0'
-      deratingCommand: '0'
-      diagnosticFault: 'false'
-      safeCommandActive: 'false'
-    trace:
-    - SYS-004
-    - HAR-004
-    scenarios:
-    - thermal_protection_boundary
-  selectionPolicy: lowest numeric priority wins after state scope and guard match
-  appliedRule: derating
-  generatedEcuCommandOutputs:
-    fanDuty: 95
-    deratingCommand: 45
-    diagnosticFault: false
-    safeCommandActive: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
-      value: 95
-    - api: hal_load_limiter_set_derating
-      direction: controller to virtual IC
-      target: ToyLoadLimiterIC
-      value: 45
-    controllerSource: generated/protection_ecu_preview/controller.c
-  after:
-    state: DERATING
-    inputs:
-      temperatureC: 96
-      temperatureValid: true
-      invalidDebounced: false
-      recoveryRequest: false
-    outputs:
-      fanDuty: 95
-      deratingCommand: 45
-      diagnosticFault: false
-      safeCommandActive: false
-  requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
-  - SYS-002
-  - SYS-005
 ```
 
 ## Generated ECU Command Outputs

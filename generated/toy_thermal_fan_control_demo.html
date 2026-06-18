@@ -233,10 +233,21 @@
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>4</strong><span>ports</span></div>
+        <div><strong>0</strong><span>functions</span></div>
         <div><strong>3</strong><span>control rules</span></div>
         <div><strong>3</strong><span>harness boundaries</span></div>
-        <div><strong>13</strong><span>requirement refs</span></div>
       </div>
+    </section>
+    <section class="panel">
+      <h2>Functional Architecture</h2>
+      <p>No functional decomposition is declared in the MBD source.</p>
+    </section>
+    <section class="panel">
+      <h2>Functional Decomposition</h2>
+      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
+      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td colspan="7">None</td></tr>
+      </tbody></table>
     </section>
     <section class="panel">
       <h2>Spec-To-MBD Compliance Review</h2>
@@ -440,10 +451,10 @@
       <section class="panel">
         <h2>Control Decision Table</h2>
         <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
-        <table><thead><tr><th>Priority</th><th>Rule</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td>1000</td><td>sensorFault</td><td>*</td><td>temperatureValid == false</td><td>state=FAULT, fanDuty=safeDuty, fault=true</td><td>SYS-005, HAR-004</td><td></td></tr>
-          <tr><td>1001</td><td>highTemperature</td><td>*</td><td>temperatureC &gt;= fanOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, fault=false</td><td>SYS-003, SYS-006</td><td></td></tr>
-          <tr><td>1002</td><td>lowTemperature</td><td>*</td><td>temperatureC &lt;= fanOffThreshold</td><td>state=IDLE, fanDuty=0, fault=false</td><td>SYS-004, SYS-006</td><td></td></tr>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>1000</td><td>sensorFault</td><td>unallocated</td><td>*</td><td>temperatureValid == false</td><td>state=FAULT, fanDuty=safeDuty, fault=true</td><td>SYS-005, HAR-004</td><td></td></tr>
+          <tr><td>1001</td><td>highTemperature</td><td>unallocated</td><td>*</td><td>temperatureC &gt;= fanOnThreshold</td><td>state=COOLING, fanDuty=coolingDuty, fault=false</td><td>SYS-003, SYS-006</td><td></td></tr>
+          <tr><td>1002</td><td>lowTemperature</td><td>unallocated</td><td>*</td><td>temperatureC &lt;= fanOffThreshold</td><td>state=IDLE, fanDuty=0, fault=false</td><td>SYS-004, SYS-006</td><td></td></tr>
         </tbody></table>
       </section>
       <section class="panel">

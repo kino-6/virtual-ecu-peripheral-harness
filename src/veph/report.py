@@ -7,7 +7,10 @@ from veph.scenario_types import ScenarioResult
 
 def render_report(result: ScenarioResult) -> str:
     status = "PASS" if result.passed else "FAIL"
-    model_inputs = _without_keys(result.model_inputs, {"traceabilityMatrix", "harnessBoundary"})
+    model_inputs = _without_keys(
+        result.model_inputs,
+        {"traceabilityMatrix", "harnessBoundary", "functionalDecomposition"},
+    )
     lines = [
         "# Scenario Report",
         "",
@@ -19,6 +22,9 @@ def render_report(result: ScenarioResult) -> str:
         "## Model Inputs",
         "",
         _as_yaml(model_inputs),
+        "## Functional Decomposition Evidence",
+        "",
+        _as_yaml(result.model_inputs.get("functionalDecomposition", [])),
         "## Traceability Matrix",
         "",
         _as_yaml(result.model_inputs.get("traceabilityMatrix", [])),
@@ -33,7 +39,7 @@ def render_report(result: ScenarioResult) -> str:
         _as_yaml(result.observed_behavior.get("stepEvidence", [])),
         "## Observed Behavior",
         "",
-        _as_yaml(result.observed_behavior),
+        _as_yaml(_without_keys(result.observed_behavior, {"stepEvidence"})),
         "## Generated ECU Command Outputs",
         "",
         _as_yaml(result.generated_ecu_command_outputs or {}),
