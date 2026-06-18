@@ -134,6 +134,8 @@ Project-local skills live under `.agents/skills/`:
   when artifact quality or acceptance gates are unclear.
 - `mbd-review-quality-gate`: use before presenting MBD demos, visualizations,
   trace reports, generated handoff artifacts, preview C, or harness evidence.
+- `japanese-technical-review`: use when writing Japanese engineering review
+  comments for MBD artifacts, specs, generated code, reports, or docs.
 
 Keep skills concise; move details into one-level `references/` files when needed.
 

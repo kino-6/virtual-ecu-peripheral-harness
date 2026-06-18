@@ -1,0 +1,4 @@
+interface:
+  display_name: "Japanese Technical Review"
+  short_description: "Write strict Japanese engineering reviews"
+  default_prompt: "Use $japanese-technical-review to write concise Japanese review comments with evidence, impact, and required corrections."
