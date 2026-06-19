@@ -1,8 +1,15 @@
 # Simple Threshold Indicator
 
-Fictional minimal MBD authoring example. This sample is deliberately small and
-does not describe a real IC, datasheet, ECU, company, production project, safety
-case, or certified code generator.
+Fictional minimal MBD authoring source. This file is not the rendered MBD model
+deliverable; it is the structured text input parsed into an internal IR and
+then exported to reviewable/generated artifacts such as `generated/demo.html`,
+Simulink `.m`, Modelica, SCXML, FMI metadata, and reports.
+
+The supported subset below captures the model semantics needed by the demo:
+component ports and parameters, state handoff, functional allocation, data
+flow, priority-ordered control rules, and harness boundaries. This sample is
+deliberately small and does not describe a real IC, datasheet, ECU, company,
+production project, safety case, or certified code generator.
 
 ```mbd-component
 component ToyThresholdIndicator

@@ -28,6 +28,7 @@ from veph.requirements_support import (
 from veph.samples.requirements_scaffolds import SampleScaffoldError, generate_sample_mbd_scaffold
 from veph.sample_catalog import SampleCatalogError, list_samples, load_sample
 from veph.scenario_runner import ScenarioError, run_scenario_file
+from veph.spec_mbd_alignment import SpecMbdAlignmentError, compare_spec_to_mbd
 
 
 Exporter = Callable[[object], str]
@@ -66,6 +67,7 @@ def main(argv: list[str] | None = None) -> int:
         SampleCatalogError,
         ScenarioError,
         PreviewScenarioError,
+        SpecMbdAlignmentError,
         OSError,
     ) as exc:
         parser.exit(1, f"error: {exc}\n")
@@ -147,6 +149,15 @@ def build_parser() -> argparse.ArgumentParser:
     validate_trace.add_argument("--out", required=True)
     validate_trace.set_defaults(func=_validate_trace)
 
+    validate_spec_mbd = subparsers.add_parser(
+        "validate-spec-mbd",
+        help="validate Spec.md Mermaid Design Overview against MBD source semantics",
+    )
+    validate_spec_mbd.add_argument("--spec", required=True)
+    validate_spec_mbd.add_argument("--mbd", required=True)
+    validate_spec_mbd.add_argument("--out", required=True)
+    validate_spec_mbd.set_defaults(func=_validate_spec_mbd)
+
     for name, command in EXPORT_COMMANDS.items():
         _add_export(subparsers, name, command)
     return parser
@@ -213,6 +224,14 @@ def _export_sample(args: argparse.Namespace) -> None:
         "simulink": export_simulink_m(model),
         "fmi": export_fmi_metadata(model),
     }
+    if "specMbdAlignment" in sample.paths.generated:
+        if sample.paths.spec is None:
+            raise OSError(f"sample {sample.id!r} requests spec/MBD alignment but has no spec path")
+        alignment_report = compare_spec_to_mbd(sample.paths.spec, sample.paths.model)
+        exported["specMbdAlignment"] = alignment_report.to_markdown()
+        if not alignment_report.passed:
+            _write_text(sample.paths.generated["specMbdAlignment"], alignment_report.to_markdown())
+            raise OSError(f"sample {sample.id!r} spec Mermaid does not match MBD source semantics")
     count = 0
     for artifact, content in exported.items():
         output = sample.paths.generated.get(artifact)
@@ -252,6 +271,13 @@ def _validate_trace(args: argparse.Namespace) -> None:
     _write_text(args.out, report.to_markdown())
     if not report.passed:
         raise OSError("requirements trace validation failed")
+
+
+def _validate_spec_mbd(args: argparse.Namespace) -> None:
+    report = compare_spec_to_mbd(args.spec, args.mbd)
+    _write_text(args.out, report.to_markdown())
+    if not report.passed:
+        raise OSError("spec Mermaid does not match MBD source semantics")
 
 
 def _export(args: argparse.Namespace, exporter: Callable) -> None:

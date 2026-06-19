@@ -17,5 +17,6 @@ generated:
   simulink: generated/create_model.m
   fmi: generated/fmi.json
   demo: generated/demo.html
+  specMbdAlignment: generated/spec_mbd_alignment.md
 reports:
   above_limit: reports/above_limit.md

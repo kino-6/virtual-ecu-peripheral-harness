@@ -72,6 +72,27 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 
+## Phase 19: Spec Mermaid To MBD Script Gate
+
+- [x] Document that `model.mbd.md` is an authoring source for generated MBD
+      review artifacts, not itself the visual MBD deliverable.
+- [x] Add a small parser for the supported `Spec.md` Mermaid Design Overview
+      subset: labeled nodes, decision nodes, labeled edges, input ports,
+      parameters, output actions, and report endpoints.
+- [x] Add a script/CLI gate that compares the parsed Spec Mermaid semantic graph
+      against the semantic MBD graph derived from `model.mbd.md`.
+- [x] Make mismatch diagnostics actionable: missing nodes, extra nodes, missing
+      edges, and extra edges.
+- [x] Add tests proving the simple threshold sample passes and an intentional
+      mismatch fails.
+- [x] Wire the gate into sample validation without adding large dependencies.
+
+Verification:
+
+- [x] Focused spec-to-MBD script tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 17: Sample Workspace Repository Structure
 
 - [x] Add a sample catalog/manifest abstraction for sample-local paths.

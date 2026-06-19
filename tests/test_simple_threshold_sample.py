@@ -11,6 +11,7 @@ from veph.exporters.simulink_m import export_simulink_m
 from veph.markup_parser import parse_markup_file
 from veph.preview_runtime import run_preview_file
 from veph.sample_catalog import load_sample
+from veph.spec_mbd_alignment import compare_spec_to_mbd
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,10 @@ def test_simple_threshold_generated_artifacts_are_deterministic():
         sample.paths.generated["modelica"]: export_modelica(model),
         sample.paths.generated["simulink"]: export_simulink_m(model),
         sample.paths.generated["fmi"]: export_fmi_metadata(model),
+        sample.paths.generated["specMbdAlignment"]: compare_spec_to_mbd(
+            sample.paths.spec,
+            sample.paths.model,
+        ).to_markdown(),
     }
 
     for path, regenerated in expected_outputs.items():
