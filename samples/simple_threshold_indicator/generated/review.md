@@ -14,6 +14,7 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 - `mbd-component`
 - `mbd-registers`
 - `mbd-state`
+- `mbd-decomposition`
 - `mbd-flow`
 - `mbd-control`
 - `mbd-harness`
@@ -33,7 +34,9 @@ Author in text. Verify in MBD tools. Python preview is only a preview/smoke-test
 
 ## Functional Decomposition
 
-- No functional decomposition declared.
+| Function | Responsibility | Owns | Inputs | Outputs | Trace | Scenarios |
+| --- | --- | --- | --- | --- | --- | --- |
+| `ThresholdCompare` | Compare sampleValue against limit and own the active decision | `active`, `ACTIVE`, `IDLE` | `sampleValue`, `limit` | `active`, `state` | `SIMPLE-001`, `SIMPLE-002`, `SIMPLE-003` | `above_limit` |
 
 ## Ports
 
@@ -61,13 +64,15 @@ Lifecycle/topology view. Executable behavior is owned by `mbd-control` and deriv
 
 ## Flow Preview
 
-- `ToyInputSource.sampleValue` -> `ToyThresholdIndicator.sampleValue` (scenario input) trace `SIMPLE-001`
+- `ToyInputSource.sampleValue` -> `ThresholdCompare.sampleValue` (scenario input) trace `SIMPLE-001`
+- `ToyThresholdIndicator.limit` -> `ThresholdCompare.limit` (threshold parameter) trace `SIMPLE-001, SIMPLE-002`
+- `ThresholdCompare.active` -> `ToyThresholdIndicator.active` (comparison result) trace `SIMPLE-001, SIMPLE-002`
 - `ToyThresholdIndicator.active` -> `ScenarioReport.observedBehavior` (reported output) trace `SIMPLE-003`
 
 ## Control Rules
 
-- priority `1000` `activate` from `*`: when `sampleValue >= limit` then `state=ACTIVE, active=true` trace `SIMPLE-001, SIMPLE-003` scenarios `above_limit`
-- priority `1001` `clear` from `*`: when `sampleValue < limit` then `state=IDLE, active=false` trace `SIMPLE-002, SIMPLE-003`
+- priority `10` `activate` owner `ThresholdCompare` from `*`: when `sampleValue >= limit` then `state=ACTIVE, active=true` trace `SIMPLE-001, SIMPLE-003` scenarios `above_limit`
+- priority `20` `clear` owner `ThresholdCompare` from `*`: when `sampleValue < limit` then `state=IDLE, active=false` trace `SIMPLE-002, SIMPLE-003`
 
 ## Harness Boundary
 

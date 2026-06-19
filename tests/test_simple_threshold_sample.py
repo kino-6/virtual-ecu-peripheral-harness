@@ -25,7 +25,9 @@ def test_simple_threshold_sample_is_intentionally_small():
     assert set(model.component.parameters) == {"limit"}
     assert len(model.transitions) == 2
     assert len(model.controls) == 2
-    assert len(model.flows) == 2
+    assert len(model.functions) == 1
+    assert model.functions[0].name == "ThresholdCompare"
+    assert len(model.flows) == 4
     assert len(model.harness_devices) == 2
 
 
@@ -45,6 +47,28 @@ def test_simple_threshold_generated_artifacts_are_deterministic():
 
     for path, regenerated in expected_outputs.items():
         assert path.read_text(encoding="utf-8") == regenerated
+
+
+def test_simple_threshold_generated_visuals_match_spec_design():
+    sample = load_sample("simple_threshold_indicator", ROOT)
+    mermaid = sample.paths.generated["mermaid"].read_text(encoding="utf-8")
+    html = sample.paths.generated["demo"].read_text(encoding="utf-8")
+
+    assert "ToyInputSource_sampleValue -->|\"scenario input\"| ThresholdCompare_sampleValue" in mermaid
+    assert "ToyThresholdIndicator_limit -->|\"threshold parameter\"| ThresholdCompare_limit" in mermaid
+    assert "ThresholdCompare_active -->|\"comparison result\"| ToyThresholdIndicator_active" in mermaid
+    assert "owner ThresholdCompare" in mermaid
+    assert "sampleValue >= limit" in mermaid
+    assert "sampleValue < limit" in mermaid
+
+    assert "ToyInputSource.sampleValue" in html
+    assert "Virtual Source" in html
+    assert "ToyThresholdIndicator.limit" in html
+    assert "Parameter" in html
+    assert "ThresholdCompare.sampleValue" in html
+    assert "ThresholdCompare.limit" in html
+    assert "ThresholdCompare.active" in html
+    assert "comparison result" in html
 
 
 def test_simple_threshold_preview_scenario_passes_with_report_sections(tmp_path):

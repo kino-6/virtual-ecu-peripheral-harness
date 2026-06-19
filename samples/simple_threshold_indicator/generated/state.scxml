@@ -3,8 +3,9 @@
   <!-- Generated state-machine handoff from samples/simple_threshold_indicator/model.mbd.md. -->
   <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
   <!-- Requirement refs: SIMPLE-001, SIMPLE-002, SIMPLE-003 -->
-  <!-- priority 1000 activate owner unallocated from * when sampleValue &gt;= limit trace SIMPLE-001, SIMPLE-003 scenarios above_limit -->
-  <!-- priority 1001 clear owner unallocated from * when sampleValue &lt; limit trace SIMPLE-002, SIMPLE-003 scenarios  -->
+  <!-- priority 10 activate owner ThresholdCompare from * when sampleValue &gt;= limit trace SIMPLE-001, SIMPLE-003 scenarios above_limit -->
+  <!-- priority 20 clear owner ThresholdCompare from * when sampleValue &lt; limit trace SIMPLE-002, SIMPLE-003 scenarios  -->
+  <!-- function ThresholdCompare owns active, ACTIVE, IDLE trace SIMPLE-001, SIMPLE-002, SIMPLE-003 -->
   <state id="IDLE">
     <transition event="sampleValue &gt;= limit trace SIMPLE-001" target="ACTIVE" />
   </state>

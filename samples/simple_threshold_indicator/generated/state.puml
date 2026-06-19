@@ -5,8 +5,9 @@ title ToyThresholdIndicator State Preview
 [*] --> IDLE
 IDLE --> ACTIVE : sampleValue >= limit trace SIMPLE-001
 ACTIVE --> IDLE : sampleValue < limit trace SIMPLE-002
-' Control activate: owner unallocated priority 1000 from *
+' Function ThresholdCompare: owns active, ACTIVE, IDLE trace SIMPLE-001, SIMPLE-002, SIMPLE-003
+' Control activate: owner ThresholdCompare priority 10 from *
 ' Trace activate: SIMPLE-001, SIMPLE-003
-' Control clear: owner unallocated priority 1001 from *
+' Control clear: owner ThresholdCompare priority 20 from *
 ' Trace clear: SIMPLE-002, SIMPLE-003
 @enduml

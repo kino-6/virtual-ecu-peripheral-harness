@@ -36,7 +36,7 @@ add_line(model, 'Rule_activate_active_true_Const/1', 'Rule_activate_active_Switc
 add_line(model, 'Rule_activate_Compare/1', 'Rule_activate_active_Switch/2', 'autorouting', 'on');
 add_line(model, 'Default_active_0_0/1', 'Rule_activate_active_Switch/3', 'autorouting', 'on');
 add_line(model, 'Rule_activate_active_Switch/1', 'Out_active/1', 'autorouting', 'on');
-% priority 1000 activate: owner unallocated from * when sampleValue >= limit then {'state': 'ACTIVE', 'active': 'true'} scenarios ['above_limit']
+% priority 10 activate: owner ThresholdCompare from * when sampleValue >= limit then {'state': 'ACTIVE', 'active': 'true'} scenarios ['above_limit']
 add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_clear_Compare']);
 set_param([model '/Rule_clear_Compare'], 'relop', '<');
 set_param([model '/Rule_clear_Compare'], 'const', 'limit');
@@ -58,10 +58,13 @@ add_line(model, 'Rule_clear_active_false_Const/1', 'Rule_clear_active_Switch/1',
 add_line(model, 'Rule_clear_Compare/1', 'Rule_clear_active_Switch/2', 'autorouting', 'on');
 add_line(model, 'Default_active_1_0/1', 'Rule_clear_active_Switch/3', 'autorouting', 'on');
 add_line(model, 'Rule_clear_active_Switch/1', 'Out_active/1', 'autorouting', 'on');
-% priority 1001 clear: owner unallocated from * when sampleValue < limit then {'state': 'IDLE', 'active': 'false'} scenarios []
+% priority 20 clear: owner ThresholdCompare from * when sampleValue < limit then {'state': 'IDLE', 'active': 'false'} scenarios []
 % Functional decomposition summary:
+% function ThresholdCompare: owns ['active', 'ACTIVE', 'IDLE']; inputs ['sampleValue', 'limit']; outputs ['active', 'state']
 % Flow handoff summary:
-% flow ToyInputSource.sampleValue -> ToyThresholdIndicator.sampleValue: scenario input
+% flow ToyInputSource.sampleValue -> ThresholdCompare.sampleValue: scenario input
+% flow ToyThresholdIndicator.limit -> ThresholdCompare.limit: threshold parameter
+% flow ThresholdCompare.active -> ToyThresholdIndicator.active: comparison result
 % flow ToyThresholdIndicator.active -> ScenarioReport.observedBehavior: reported output
 % State transition summary:
 % IDLE -> ACTIVE when sampleValue >= limit trace SIMPLE-001

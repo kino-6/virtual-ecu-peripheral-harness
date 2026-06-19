@@ -460,8 +460,10 @@ def _ir_flow_node_positions(model: MbdModelIR, flows: list[FlowIR]) -> dict[str,
 
 def _ir_flow_column(model: MbdModelIR, endpoint: str) -> int:
     role = _endpoint_role(model, endpoint)
-    if role == "sensor":
+    if role in {"sensor", "source"}:
         return 0
+    if _is_component_parameter_endpoint(model, endpoint):
+        return 1
     if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
         return 1
     if endpoint.startswith(model.component.name) or role == "controller":
@@ -473,6 +475,10 @@ def _ir_flow_kind(model: MbdModelIR, endpoint: str) -> str:
     role = _endpoint_role(model, endpoint)
     if role == "sensor":
         return "Virtual Sensor"
+    if role == "source":
+        return "Virtual Source"
+    if _is_component_parameter_endpoint(model, endpoint):
+        return "Parameter"
     if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
         return "HAL Boundary"
     if endpoint.startswith(model.component.name) or role == "controller":
@@ -489,7 +495,18 @@ def _endpoint_role(model: MbdModelIR, endpoint: str) -> str:
     for device in model.harness_devices:
         if device.name == root:
             return device.role
+    for function in model.functions:
+        if function.name == root:
+            return "controller"
     return ""
+
+
+def _is_component_parameter_endpoint(model: MbdModelIR, endpoint: str) -> bool:
+    prefix = f"{model.component.name}."
+    if not endpoint.startswith(prefix):
+        return False
+    signal = endpoint.removeprefix(prefix)
+    return signal in model.component.parameters
 
 
 def _column_count(positions: dict[str, tuple[int, int, str]], column: int) -> int:

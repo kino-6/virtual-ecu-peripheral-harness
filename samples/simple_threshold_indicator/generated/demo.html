@@ -233,20 +233,38 @@
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>2</strong><span>ports</span></div>
-        <div><strong>0</strong><span>functions</span></div>
+        <div><strong>1</strong><span>functions</span></div>
         <div><strong>2</strong><span>control rules</span></div>
         <div><strong>2</strong><span>harness boundaries</span></div>
       </div>
     </section>
     <section class="panel">
       <h2>Functional Architecture</h2>
-      <p>No functional decomposition is declared in the MBD source.</p>
+      <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>
+      <svg class="diagram" viewBox="0 0 1180 168" role="img" aria-label="Functional decomposition generated from mbd-decomposition">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="44" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="66" class="node-title small">ThresholdCompare</text>
+        <text x="58" y="87" class="node-note">owns active, ACTIVE, IDLE</text>
+        <line x1="342" y1="73" x2="396" y2="73" class="ir-arrow"></line>
+        <rect x="396" y="44" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="68" class="node-note">in sampleValue, limit</text>
+        <text x="412" y="88" class="node-note">out active, state</text>
+        <line x1="712" y1="73" x2="766" y2="73" class="ir-arrow"></line>
+        <rect x="766" y="44" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="68" class="node-note">trace SIMPLE-001, SIMPLE-002, SIMPLE-003</text>
+        <text x="782" y="88" class="edge-note">Compare sampleValue against limit and own the active ...</text>
+      </svg>
     </section>
     <section class="panel">
       <h2>Functional Decomposition</h2>
       <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
       <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td colspan="7">None</td></tr>
+          <tr><td>ThresholdCompare</td><td>Compare sampleValue against limit and own the active decision</td><td>active, ACTIVE, IDLE</td><td>sampleValue, limit</td><td>active, state</td><td>SIMPLE-001, SIMPLE-002, SIMPLE-003</td><td>above_limit</td></tr>
       </tbody></table>
     </section>
     <section class="panel">
@@ -255,9 +273,9 @@
       <table>
         <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
         <tbody>
-          <tr><td><code>SIMPLE-001</code></td><td>component:ToyThresholdIndicator, flow:ToyInputSource.sampleValue-&gt;ToyThresholdIndicator.sampleValue, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
-          <tr><td><code>SIMPLE-002</code></td><td>component:ToyThresholdIndicator, control:clear, harness:ToyThresholdIndicator</td><td>No scenario trace declared</td></tr>
-          <tr><td><code>SIMPLE-003</code></td><td>component:ToyThresholdIndicator, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
+          <tr><td><code>SIMPLE-001</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyInputSource.sampleValue-&gt;ThresholdCompare.sampleValue, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
+          <tr><td><code>SIMPLE-002</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:clear, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
+          <tr><td><code>SIMPLE-003</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
         </tbody>
       </table>
     </section>
@@ -284,28 +302,41 @@
     <section class="panel">
       <h2>MBD Data Flow Diagram</h2>
       <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
-      <svg class="diagram" viewBox="0 0 1180 360" role="img" aria-label="MBD data flow generated from mbd-flow">
+      <svg class="diagram" viewBox="0 0 1180 380" role="img" aria-label="MBD data flow generated from mbd-flow">
         <defs>
           <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
           </marker>
         </defs>
-        <path d="M 1136 73 C 876 73, 876 73, 616 73" class="ir-flow-line"></path>
-        <text x="876" y="65" text-anchor="middle" class="signal-label">scenario input</text>
-        <path d="M 846 143 C 876 143, 876 143, 906 143" class="ir-flow-line"></path>
-        <text x="876" y="135" text-anchor="middle" class="signal-label">reported output</text>
+        <path d="M 266 73 C 441 73, 441 73, 616 73" class="ir-flow-line"></path>
+        <text x="441" y="65" text-anchor="middle" class="signal-label">scenario input</text>
+        <path d="M 556 73 C 586 73, 586 143, 616 143" class="ir-flow-line"></path>
+        <text x="586" y="100" text-anchor="middle" class="signal-label">threshold parameter</text>
+        <path d="M 846 213 C 731 213, 731 283, 616 283" class="ir-flow-line"></path>
+        <text x="731" y="240" text-anchor="middle" class="signal-label">comparison result</text>
+        <path d="M 846 283 C 876 283, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="170" text-anchor="middle" class="signal-label">reported output</text>
+        <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyInputSource.sampleValue</text>
+        <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Source</text>
+        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="68" text-anchor="middle" class="node-title small">ToyThresholdIndicator.limit</text>
+        <text x="441" y="88" text-anchor="middle" class="node-note">Parameter</text>
         <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyThresholdIndicator.sampleValue</text>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ThresholdCompare.sampleValue</text>
         <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
         <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyThresholdIndicator.active</text>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ThresholdCompare.limit</text>
         <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ThresholdCompare.active</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyThresholdIndicator.active</text>
+        <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
         <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
-        <text x="1021" y="68" text-anchor="middle" class="node-title small">ToyInputSource.sampleValue</text>
-        <text x="1021" y="88" text-anchor="middle" class="node-note">Virtual Actuator</text>
-        <rect x="906" y="116" width="230" height="54" rx="8" class="node"></rect>
-        <text x="1021" y="138" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
-        <text x="1021" y="158" text-anchor="middle" class="node-note">Report</text>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Report</text>
       </svg>
     </section>
     <section class="panel">
@@ -361,9 +392,9 @@
       <h2>Requirements Trace Matrix</h2>
       <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
       <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
-          <tr><td>SIMPLE-001</td><td>component:ToyThresholdIndicator, flow:ToyInputSource.sampleValue-&gt;ToyThresholdIndicator.sampleValue, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td></tr>
-          <tr><td>SIMPLE-002</td><td>component:ToyThresholdIndicator, control:clear, harness:ToyThresholdIndicator</td></tr>
-          <tr><td>SIMPLE-003</td><td>component:ToyThresholdIndicator, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td></tr>
+          <tr><td>SIMPLE-001</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyInputSource.sampleValue-&gt;ThresholdCompare.sampleValue, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td></tr>
+          <tr><td>SIMPLE-002</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:clear, harness:ToyThresholdIndicator</td></tr>
+          <tr><td>SIMPLE-003</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td></tr>
       </tbody></table>
     </section>
     <section class="panel">
@@ -373,6 +404,7 @@
         <li><code>mbd-component</code></li>
         <li><code>mbd-registers</code></li>
         <li><code>mbd-state</code></li>
+        <li><code>mbd-decomposition</code></li>
         <li><code>mbd-flow</code></li>
         <li><code>mbd-control</code></li>
         <li><code>mbd-harness</code></li>
@@ -400,8 +432,8 @@
         <h2>Control Decision Table</h2>
         <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
         <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td>1000</td><td>activate</td><td>unallocated</td><td>*</td><td>sampleValue &gt;= limit</td><td>state=ACTIVE, active=true</td><td>SIMPLE-001, SIMPLE-003</td><td>above_limit</td></tr>
-          <tr><td>1001</td><td>clear</td><td>unallocated</td><td>*</td><td>sampleValue &lt; limit</td><td>state=IDLE, active=false</td><td>SIMPLE-002, SIMPLE-003</td><td></td></tr>
+          <tr><td>10</td><td>activate</td><td>ThresholdCompare</td><td>*</td><td>sampleValue &gt;= limit</td><td>state=ACTIVE, active=true</td><td>SIMPLE-001, SIMPLE-003</td><td>above_limit</td></tr>
+          <tr><td>20</td><td>clear</td><td>ThresholdCompare</td><td>*</td><td>sampleValue &lt; limit</td><td>state=IDLE, active=false</td><td>SIMPLE-002, SIMPLE-003</td><td></td></tr>
         </tbody></table>
       </section>
       <section class="panel">
@@ -415,7 +447,9 @@
     <section class="panel">
       <h2>Flow Handoff</h2>
       <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
-          <tr><td>ToyInputSource.sampleValue</td><td>ToyThresholdIndicator.sampleValue</td><td>scenario input</td><td>SIMPLE-001</td></tr>
+          <tr><td>ToyInputSource.sampleValue</td><td>ThresholdCompare.sampleValue</td><td>scenario input</td><td>SIMPLE-001</td></tr>
+          <tr><td>ToyThresholdIndicator.limit</td><td>ThresholdCompare.limit</td><td>threshold parameter</td><td>SIMPLE-001, SIMPLE-002</td></tr>
+          <tr><td>ThresholdCompare.active</td><td>ToyThresholdIndicator.active</td><td>comparison result</td><td>SIMPLE-001, SIMPLE-002</td></tr>
           <tr><td>ToyThresholdIndicator.active</td><td>ScenarioReport.observedBehavior</td><td>reported output</td><td>SIMPLE-003</td></tr>
       </tbody></table>
     </section>

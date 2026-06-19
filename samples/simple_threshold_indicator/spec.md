@@ -18,6 +18,36 @@ thermal-control behavior or a product-like IC specification.
 `ToyInputSource` is a fictional scenario-controlled source. It is not a real
 sensor, IC, datasheet, register map, or production-derived interface.
 
+## Design Overview
+
+```mermaid
+flowchart LR
+  source[ToyInputSource] -->|sampleValue| input[Input Port: sampleValue]
+  limit[Parameter: limit] --> compare{sampleValue >= limit?}
+  input --> compare
+  compare -->|true| active[Output active = true]
+  compare -->|false| inactive[Output active = false]
+  active --> report[ScenarioReport.observedBehavior]
+  inactive --> report
+```
+
+The model has one scenario-controlled input, one threshold parameter, one
+boolean output, and no physical plant. The comparison result is the only control
+decision.
+
+```mermaid
+stateDiagram-v2
+  [*] --> IDLE
+  IDLE --> ACTIVE: sampleValue >= limit
+  ACTIVE --> IDLE: sampleValue < limit
+```
+
+Trace intent:
+
+- `SIMPLE-001`: `IDLE --> ACTIVE`, `active=true`
+- `SIMPLE-002`: `ACTIVE --> IDLE`, `active=false`
+- `SIMPLE-003`: preview report evidence
+
 ## Review Goal
 
 A reviewer should be able to open the generated demo or report and understand

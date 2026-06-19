@@ -10,7 +10,8 @@ equation
   // 0: IDLE
   // 1: ACTIVE
   // Functional decomposition handoff summary:
+  // function ThresholdCompare: owns active, ACTIVE, IDLE trace SIMPLE-001, SIMPLE-002, SIMPLE-003 scenarios above_limit
   // Control rule handoff summary:
-  // priority 1000 activate: from * when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001, SIMPLE-003 scenarios above_limit
-  // priority 1001 clear: from * when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002, SIMPLE-003
+  // priority 10 activate: owner ThresholdCompare from * when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001, SIMPLE-003 scenarios above_limit
+  // priority 20 clear: owner ThresholdCompare from * when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002, SIMPLE-003
 end ToyThresholdIndicator;

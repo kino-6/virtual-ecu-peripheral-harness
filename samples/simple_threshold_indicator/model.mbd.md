@@ -24,14 +24,20 @@ IDLE --> ACTIVE: sampleValue >= limit trace SIMPLE-001
 ACTIVE --> IDLE: sampleValue < limit trace SIMPLE-002
 ```
 
+```mbd-decomposition
+function ThresholdCompare: responsibility=Compare sampleValue against limit and own the active decision; owns=active,ACTIVE,IDLE; inputs=sampleValue,limit; outputs=active,state; trace=SIMPLE-001,SIMPLE-002,SIMPLE-003; scenarios=above_limit
+```
+
 ```mbd-flow
-ToyInputSource.sampleValue -> ToyThresholdIndicator.sampleValue: scenario input trace SIMPLE-001
+ToyInputSource.sampleValue -> ThresholdCompare.sampleValue: scenario input trace SIMPLE-001
+ToyThresholdIndicator.limit -> ThresholdCompare.limit: threshold parameter trace SIMPLE-001 SIMPLE-002
+ThresholdCompare.active -> ToyThresholdIndicator.active: comparison result trace SIMPLE-001 SIMPLE-002
 ToyThresholdIndicator.active -> ScenarioReport.observedBehavior: reported output trace SIMPLE-003
 ```
 
 ```mbd-control
-rule activate: when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001 SIMPLE-003 scenarios above_limit
-rule clear: when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002 SIMPLE-003
+priority 10 rule activate: owner ThresholdCompare from * when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001 SIMPLE-003 scenarios above_limit
+priority 20 rule clear: owner ThresholdCompare from * when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002 SIMPLE-003
 ```
 
 ```mbd-harness

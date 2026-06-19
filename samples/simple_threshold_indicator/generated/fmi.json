@@ -8,8 +8,8 @@
       },
       "condition": "sampleValue >= limit",
       "name": "activate",
-      "owner": "",
-      "priority": 1000,
+      "owner": "ThresholdCompare",
+      "priority": 10,
       "scenarios": [
         "above_limit"
       ],
@@ -26,8 +26,8 @@
       },
       "condition": "sampleValue < limit",
       "name": "clear",
-      "owner": "",
-      "priority": 1001,
+      "owner": "ThresholdCompare",
+      "priority": 20,
       "scenarios": [],
       "stateScope": "*",
       "trace": [
@@ -37,7 +37,33 @@
     }
   ],
   "fmiIntent": "metadata stub only; no FMU is generated",
-  "functionalDecomposition": [],
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "sampleValue",
+        "limit"
+      ],
+      "name": "ThresholdCompare",
+      "outputs": [
+        "active",
+        "state"
+      ],
+      "owns": [
+        "active",
+        "ACTIVE",
+        "IDLE"
+      ],
+      "responsibility": "Compare sampleValue against limit and own the active decision",
+      "scenarios": [
+        "above_limit"
+      ],
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
   "harnessDevices": [
     {
       "boundary": "virtual_ic",

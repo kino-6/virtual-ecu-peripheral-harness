@@ -24,8 +24,8 @@ ports:
     default: 'false'
 controlRules:
 - name: activate
-  owner: ''
-  priority: 1000
+  owner: ThresholdCompare
+  priority: 10
   stateScope: '*'
   condition: sampleValue >= limit
   actions:
@@ -37,8 +37,8 @@ controlRules:
   scenarios:
   - above_limit
 - name: clear
-  owner: ''
-  priority: 1001
+  owner: ThresholdCompare
+  priority: 20
   stateScope: '*'
   condition: sampleValue < limit
   actions:
@@ -62,7 +62,24 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
 ## Functional Decomposition Evidence
 
 ```yaml
-[]
+- name: ThresholdCompare
+  responsibility: Compare sampleValue against limit and own the active decision
+  owns:
+  - active
+  - ACTIVE
+  - IDLE
+  inputs:
+  - sampleValue
+  - limit
+  outputs:
+  - active
+  - state
+  trace:
+  - SIMPLE-001
+  - SIMPLE-002
+  - SIMPLE-003
+  scenarios:
+  - above_limit
 ```
 
 ## Traceability Matrix
@@ -71,7 +88,10 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
 - requirement: SIMPLE-001
   modelElements:
   - component:ToyThresholdIndicator
-  - flow:ToyInputSource.sampleValue->ToyThresholdIndicator.sampleValue
+  - function:ThresholdCompare
+  - flow:ToyInputSource.sampleValue->ThresholdCompare.sampleValue
+  - flow:ToyThresholdIndicator.limit->ThresholdCompare.limit
+  - flow:ThresholdCompare.active->ToyThresholdIndicator.active
   - control:activate
   - harness:ToyInputSource
   - harness:ToyThresholdIndicator
@@ -82,6 +102,9 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
 - requirement: SIMPLE-002
   modelElements:
   - component:ToyThresholdIndicator
+  - function:ThresholdCompare
+  - flow:ToyThresholdIndicator.limit->ThresholdCompare.limit
+  - flow:ThresholdCompare.active->ToyThresholdIndicator.active
   - control:clear
   - harness:ToyThresholdIndicator
   evidence:
@@ -91,6 +114,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
 - requirement: SIMPLE-003
   modelElements:
   - component:ToyThresholdIndicator
+  - function:ThresholdCompare
   - flow:ToyThresholdIndicator.active->ScenarioReport.observedBehavior
   - control:activate
   - control:clear
@@ -145,8 +169,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     ToyThresholdIndicator.sampleValue: 12
   controlRuleEvaluations:
   - rule: activate
-    owner: ''
-    priority: 1000
+    owner: ThresholdCompare
+    priority: 10
     stateScope: '*'
     stateScopeMatched: true
     condition: sampleValue >= limit
@@ -161,8 +185,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios:
     - above_limit
   - rule: clear
-    owner: ''
-    priority: 1001
+    owner: ThresholdCompare
+    priority: 20
     stateScope: '*'
     stateScopeMatched: true
     condition: sampleValue < limit
@@ -177,7 +201,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     scenarios: []
   selectionPolicy: lowest numeric priority wins after state scope and guard match
   appliedRule: activate
-  appliedOwner: ''
+  appliedOwner: ThresholdCompare
   generatedEcuCommandOutputs:
     active: true
     commandFlows:

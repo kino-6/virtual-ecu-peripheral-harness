@@ -58,8 +58,8 @@
         "value": null
       },
       "name": "activate",
-      "owner": "",
-      "priority": 1000,
+      "owner": "ThresholdCompare",
+      "priority": 10,
       "scenarios": [
         "above_limit"
       ],
@@ -107,8 +107,8 @@
         "value": null
       },
       "name": "clear",
-      "owner": "",
-      "priority": 1001,
+      "owner": "ThresholdCompare",
+      "priority": 20,
       "scenarios": [],
       "state_scope": "*",
       "trace": [
@@ -121,9 +121,27 @@
     {
       "label": "scenario input",
       "source": "ToyInputSource.sampleValue",
-      "target": "ToyThresholdIndicator.sampleValue",
+      "target": "ThresholdCompare.sampleValue",
       "trace": [
         "SIMPLE-001"
+      ]
+    },
+    {
+      "label": "threshold parameter",
+      "source": "ToyThresholdIndicator.limit",
+      "target": "ThresholdCompare.limit",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002"
+      ]
+    },
+    {
+      "label": "comparison result",
+      "source": "ThresholdCompare.active",
+      "target": "ToyThresholdIndicator.active",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002"
       ]
     },
     {
@@ -135,7 +153,33 @@
       ]
     }
   ],
-  "functions": [],
+  "functions": [
+    {
+      "inputs": [
+        "sampleValue",
+        "limit"
+      ],
+      "name": "ThresholdCompare",
+      "outputs": [
+        "active",
+        "state"
+      ],
+      "owns": [
+        "active",
+        "ACTIVE",
+        "IDLE"
+      ],
+      "responsibility": "Compare sampleValue against limit and own the active decision",
+      "scenarios": [
+        "above_limit"
+      ],
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
   "harness_devices": [
     {
       "boundary": "virtual_ic",
@@ -210,11 +254,15 @@
       "language": "mbd-state"
     },
     {
-      "body": "ToyInputSource.sampleValue -> ToyThresholdIndicator.sampleValue: scenario input trace SIMPLE-001\nToyThresholdIndicator.active -> ScenarioReport.observedBehavior: reported output trace SIMPLE-003",
+      "body": "function ThresholdCompare: responsibility=Compare sampleValue against limit and own the active decision; owns=active,ACTIVE,IDLE; inputs=sampleValue,limit; outputs=active,state; trace=SIMPLE-001,SIMPLE-002,SIMPLE-003; scenarios=above_limit",
+      "language": "mbd-decomposition"
+    },
+    {
+      "body": "ToyInputSource.sampleValue -> ThresholdCompare.sampleValue: scenario input trace SIMPLE-001\nToyThresholdIndicator.limit -> ThresholdCompare.limit: threshold parameter trace SIMPLE-001 SIMPLE-002\nThresholdCompare.active -> ToyThresholdIndicator.active: comparison result trace SIMPLE-001 SIMPLE-002\nToyThresholdIndicator.active -> ScenarioReport.observedBehavior: reported output trace SIMPLE-003",
       "language": "mbd-flow"
     },
     {
-      "body": "rule activate: when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001 SIMPLE-003 scenarios above_limit\nrule clear: when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002 SIMPLE-003",
+      "body": "priority 10 rule activate: owner ThresholdCompare from * when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001 SIMPLE-003 scenarios above_limit\npriority 20 rule clear: owner ThresholdCompare from * when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002 SIMPLE-003",
       "language": "mbd-control"
     },
     {
