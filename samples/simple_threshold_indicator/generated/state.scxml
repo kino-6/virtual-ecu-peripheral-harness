@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="IDLE">
+  <!-- Generated state-machine handoff from samples/simple_threshold_indicator/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: SIMPLE-001, SIMPLE-002, SIMPLE-003 -->
+  <!-- priority 1000 activate owner unallocated from * when sampleValue &gt;= limit trace SIMPLE-001, SIMPLE-003 scenarios above_limit -->
+  <!-- priority 1001 clear owner unallocated from * when sampleValue &lt; limit trace SIMPLE-002, SIMPLE-003 scenarios  -->
+  <state id="IDLE">
+    <transition event="sampleValue &gt;= limit trace SIMPLE-001" target="ACTIVE" />
+  </state>
+  <state id="ACTIVE">
+    <transition event="sampleValue &lt; limit trace SIMPLE-002" target="IDLE" />
+  </state>
+</scxml>

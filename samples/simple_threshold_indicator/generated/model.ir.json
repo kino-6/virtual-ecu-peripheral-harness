@@ -1,0 +1,239 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "8"
+    },
+    "name": "ToyThresholdIndicator",
+    "parameters": {
+      "limit": {
+        "default": "10",
+        "name": "limit",
+        "type": "count"
+      }
+    },
+    "trace": [
+      "SIMPLE-001",
+      "SIMPLE-002",
+      "SIMPLE-003"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "active": "true",
+        "state": "ACTIVE"
+      },
+      "condition": "sampleValue >= limit",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "sampleValue",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "sampleValue >= limit",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": ">=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "limit",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "sampleValue >= limit",
+          "value": null
+        },
+        "source": "sampleValue >= limit",
+        "value": null
+      },
+      "name": "activate",
+      "owner": "",
+      "priority": 1000,
+      "scenarios": [
+        "above_limit"
+      ],
+      "state_scope": "*",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-003"
+      ]
+    },
+    {
+      "actions": {
+        "active": "false",
+        "state": "IDLE"
+      },
+      "condition": "sampleValue < limit",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "sampleValue",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "sampleValue < limit",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "<",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "limit",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "sampleValue < limit",
+          "value": null
+        },
+        "source": "sampleValue < limit",
+        "value": null
+      },
+      "name": "clear",
+      "owner": "",
+      "priority": 1001,
+      "scenarios": [],
+      "state_scope": "*",
+      "trace": [
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "scenario input",
+      "source": "ToyInputSource.sampleValue",
+      "target": "ToyThresholdIndicator.sampleValue",
+      "trace": [
+        "SIMPLE-001"
+      ]
+    },
+    {
+      "label": "reported output",
+      "source": "ToyThresholdIndicator.active",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "SIMPLE-003"
+      ]
+    }
+  ],
+  "functions": [],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyInputSource",
+      "role": "source",
+      "trace": [
+        "SIMPLE-001"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyThresholdIndicator",
+      "role": "controller",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "SIMPLE-001",
+      "SIMPLE-002",
+      "SIMPLE-003"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_threshold_indicator/model.mbd.md"
+  },
+  "ports": {
+    "active": {
+      "default": "false",
+      "direction": "out",
+      "name": "active",
+      "type": "bool"
+    },
+    "sampleValue": {
+      "default": "0",
+      "direction": "in",
+      "name": "sampleValue",
+      "type": "count"
+    }
+  },
+  "registers": {
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "active": {
+          "bit": 0,
+          "bits": "0",
+          "name": "active",
+          "reset": "0"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyThresholdIndicator\ntrace SIMPLE-001 SIMPLE-002 SIMPLE-003\nbus virtual mode=preview wordBits=8\nparameter limit: count = 10\n\nport in sampleValue: count = 0\nport out active: bool = false",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 0 active reset=0",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "IDLE --> ACTIVE: sampleValue >= limit trace SIMPLE-001\nACTIVE --> IDLE: sampleValue < limit trace SIMPLE-002",
+      "language": "mbd-state"
+    },
+    {
+      "body": "ToyInputSource.sampleValue -> ToyThresholdIndicator.sampleValue: scenario input trace SIMPLE-001\nToyThresholdIndicator.active -> ScenarioReport.observedBehavior: reported output trace SIMPLE-003",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "rule activate: when sampleValue >= limit then state=ACTIVE, active=true trace SIMPLE-001 SIMPLE-003 scenarios above_limit\nrule clear: when sampleValue < limit then state=IDLE, active=false trace SIMPLE-002 SIMPLE-003",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToyInputSource role=source boundary=virtual_ic trace SIMPLE-001\necu ToyThresholdIndicator role=controller boundary=hal trace SIMPLE-001 SIMPLE-002 SIMPLE-003",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_threshold_indicator/model.mbd.md",
+  "title": "Simple Threshold Indicator",
+  "transitions": [
+    {
+      "condition": "sampleValue >= limit trace SIMPLE-001",
+      "source": "IDLE",
+      "target": "ACTIVE"
+    },
+    {
+      "condition": "sampleValue < limit trace SIMPLE-002",
+      "source": "ACTIVE",
+      "target": "IDLE"
+    }
+  ]
+}

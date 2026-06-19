@@ -1,0 +1,21 @@
+id: simple_threshold_indicator
+title: Simple Threshold Indicator
+kind: minimal-mbd
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  above_limit: scenarios/above_limit.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+reports:
+  above_limit: reports/above_limit.md

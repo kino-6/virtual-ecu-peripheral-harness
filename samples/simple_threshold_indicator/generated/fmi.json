@@ -1,0 +1,100 @@
+{
+  "component": "ToyThresholdIndicator",
+  "controlRules": [
+    {
+      "actions": {
+        "active": "true",
+        "state": "ACTIVE"
+      },
+      "condition": "sampleValue >= limit",
+      "name": "activate",
+      "owner": "",
+      "priority": 1000,
+      "scenarios": [
+        "above_limit"
+      ],
+      "stateScope": "*",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-003"
+      ]
+    },
+    {
+      "actions": {
+        "active": "false",
+        "state": "IDLE"
+      },
+      "condition": "sampleValue < limit",
+      "name": "clear",
+      "owner": "",
+      "priority": 1001,
+      "scenarios": [],
+      "stateScope": "*",
+      "trace": [
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyInputSource",
+      "role": "source",
+      "trace": [
+        "SIMPLE-001"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyThresholdIndicator",
+      "role": "controller",
+      "trace": [
+        "SIMPLE-001",
+        "SIMPLE-002",
+        "SIMPLE-003"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "0",
+      "name": "sampleValue",
+      "type": "count"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "false",
+      "name": "active",
+      "type": "bool"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "10",
+      "name": "limit",
+      "type": "count"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "SIMPLE-001",
+    "SIMPLE-002",
+    "SIMPLE-003"
+  ],
+  "source": "samples/simple_threshold_indicator/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "IDLE",
+    "ACTIVE"
+  ]
+}

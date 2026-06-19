@@ -130,6 +130,8 @@ samples/<sample-id>/
 
 - `samples/toy_power_monitor/generated/`: internal IR, review docs, diagrams,
   Simulink `.m`, Modelica `.mo`, SCXML, and FMI metadata for the compact sample.
+- `samples/simple_threshold_indicator/`: intentionally tiny one-input,
+  one-threshold, one-output MBD sample for checking the workflow shape.
 - `samples/thermal_fan_control/generated/`: MBD handoff artifacts for the small
   thermal control validation sample.
 - `samples/thermal_fan_control/preview_c/`: preview-only synthetic ECU C

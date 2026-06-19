@@ -1,0 +1,11 @@
+name: simple_threshold_above_limit
+model: ToyThresholdIndicator
+steps:
+  - atMs: 0
+    setInput:
+      name: sampleValue
+      value: 12
+expect:
+  finalState: ACTIVE
+  outputs:
+    active: true

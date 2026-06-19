@@ -11,9 +11,8 @@ Archived task history:
 
 ## Current Goal
 
-Restructure the repository so sample source, scenarios, generated artifacts,
-reports, and preview code live under explicit sample workspaces instead of
-root-level sample-specific directories.
+Add a very small sample that produces an intentionally simple MBD artifact for
+reviewing the sample-workspace workflow without thermal-control complexity.
 
 ## Quality Gates
 
@@ -33,6 +32,10 @@ root-level sample-specific directories.
       preview C output.
 - [x] Root-level `examples/`, `scenarios/`, `generated/`, and `reports/` are no
       longer the required place for new samples.
+- [x] New simple sample has one clear input, one threshold parameter, one output,
+      two states, and one preview scenario.
+- [x] New simple sample is registered by `list-samples` and regenerated through
+      `export-sample`.
 
 ## Phase 16: Sample Isolation Boundary
 
@@ -49,6 +52,23 @@ root-level sample-specific directories.
 Verification:
 
 - [x] Focused exporter/runtime/codegen tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
+## Phase 18: Minimal MBD Sample
+
+- [x] Add `samples/simple_threshold_indicator/` with `sample.yml`, `spec.md`,
+      `model.mbd.md`, and one scenario.
+- [x] Generate sample-local Markdown, Mermaid, PlantUML, SCXML, Modelica,
+      Simulink `.m`, FMI metadata, demo HTML, IR, and report artifacts.
+- [x] Add tests proving the simple sample stays intentionally small and
+      deterministic.
+
+Verification:
+
+- [x] `python -m veph list-samples` includes `simple_threshold_indicator`.
+- [x] `python -m veph export-sample simple_threshold_indicator` succeeds.
+- [x] Focused simple-sample tests pass.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 

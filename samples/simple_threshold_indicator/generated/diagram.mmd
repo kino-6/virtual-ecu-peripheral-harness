@@ -1,0 +1,30 @@
+flowchart LR
+  %% Generated preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  ToyInputSource_sampleValue["ToyInputSource.sampleValue"]
+  ToyThresholdIndicator_sampleValue["ToyThresholdIndicator.sampleValue"]
+  %% Trace: SIMPLE-001
+  %% ToyInputSource_sampleValue --> ToyThresholdIndicator_sampleValue
+  ToyInputSource_sampleValue -->|"scenario input"| ToyThresholdIndicator_sampleValue
+  ToyThresholdIndicator_active["ToyThresholdIndicator.active"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SIMPLE-003
+  %% ToyThresholdIndicator_active --> ScenarioReport_observedBehavior
+  ToyThresholdIndicator_active -->|"reported output"| ScenarioReport_observedBehavior
+  rule_activate{"priority 1000<br/>rule activate<br/>from *"}
+  %% Trace: SIMPLE-001, SIMPLE-003
+  %% Scenarios: above_limit
+  state["state"]
+  rule_activate -->|"sampleValue >= limit"| state
+  active["active"]
+  rule_activate -->|"sampleValue >= limit"| active
+  rule_clear{"priority 1001<br/>rule clear<br/>from *"}
+  %% Trace: SIMPLE-002, SIMPLE-003
+  state["state"]
+  rule_clear -->|"sampleValue < limit"| state
+  active["active"]
+  rule_clear -->|"sampleValue < limit"| active
+  ToyInputSource["ToyInputSource<br/>virtual_ic"]
+  %% Trace: SIMPLE-001
+  ToyThresholdIndicator["ToyThresholdIndicator<br/>hal"]
+  %% Trace: SIMPLE-001, SIMPLE-002, SIMPLE-003
