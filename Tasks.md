@@ -93,6 +93,32 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 
+## Phase 20: Generic Spec Mermaid To MBD Converter And Viewer
+
+- [x] Add a generic converter for the supported Spec Mermaid flowchart subset:
+      source nodes, `Input Port: ...`, `Parameter: ...`, decision nodes,
+      `Output ... = ...`, report nodes, and labeled true/false branches.
+- [x] Parse the adjacent simple `stateDiagram-v2` subset when present and carry
+      it into generated `mbd-state`.
+- [x] Generate MBD authoring Markdown from Mermaid semantics without
+      hardcoding `simple_threshold_indicator` names or values; require explicit
+      metadata such as component name when Mermaid cannot express it.
+- [x] Add a CLI command that converts `Spec.md` Mermaid to MBD authoring source
+      and fails with actionable diagnostics for unsupported Mermaid syntax.
+- [x] Add a review viewer that shows the original Spec Mermaid semantics and
+      converted MBD semantics side-by-side with node/edge alignment evidence.
+- [x] Wire the simple sample to generate a converted MBD artifact and viewer
+      from `spec.md`.
+- [x] Add tests proving conversion output is deterministic, parseable, and
+      semantically aligned with the Spec Mermaid.
+
+Verification:
+
+- [x] Focused converter/viewer tests pass.
+- [x] `python -m veph export-sample simple_threshold_indicator` succeeds.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 17: Sample Workspace Repository Structure
 
 - [x] Add a sample catalog/manifest abstraction for sample-local paths.

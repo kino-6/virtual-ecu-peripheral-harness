@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +33,7 @@ class Sample:
     kind: str
     manifest_path: Path
     paths: SamplePaths
+    spec_mbd: dict[str, Any] = field(default_factory=dict)
 
 
 def samples_root(repo_root: str | Path | None = None) -> Path:
@@ -91,6 +92,7 @@ def load_sample(sample_id: str, repo_root: str | Path | None = None) -> Sample:
         kind=_optional_str(data, "kind") or "sample",
         manifest_path=manifest_path,
         paths=paths,
+        spec_mbd=data.get("specMbd") if isinstance(data.get("specMbd"), dict) else {},
     )
 
 

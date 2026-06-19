@@ -34,6 +34,39 @@ class SemanticGraph:
 
 
 @dataclass(frozen=True)
+class MermaidNode:
+    id: str
+    label: str
+    shape: str
+
+
+@dataclass(frozen=True)
+class MermaidEdge:
+    source_id: str
+    label: str
+    target_id: str
+
+
+@dataclass(frozen=True)
+class MermaidFlowchart:
+    nodes: dict[str, MermaidNode]
+    edges: tuple[MermaidEdge, ...]
+
+    def semantic_graph(self) -> SemanticGraph:
+        return SemanticGraph(
+            nodes=frozenset(node.label for node in self.nodes.values()),
+            edges=frozenset(
+                SemanticEdge(
+                    source=self.nodes[edge.source_id].label,
+                    label=edge.label,
+                    target=self.nodes[edge.target_id].label,
+                )
+                for edge in self.edges
+            ),
+        )
+
+
+@dataclass(frozen=True)
 class SpecMbdAlignmentReport:
     spec_path: Path
     mbd_path: Path
@@ -94,8 +127,18 @@ MERMAID_FENCE_RE = re.compile(r"```mermaid\n(?P<body>.*?)```", re.DOTALL)
 def compare_spec_to_mbd(spec_path: str | Path, mbd_path: str | Path) -> SpecMbdAlignmentReport:
     spec = Path(spec_path)
     mbd = Path(mbd_path)
+    return compare_spec_to_mbd_model(spec, parse_markup_file(mbd), mbd)
+
+
+def compare_spec_to_mbd_model(
+    spec_path: str | Path,
+    model: MbdModelIR,
+    mbd_path: str | Path,
+) -> SpecMbdAlignmentReport:
+    spec = Path(spec_path)
+    mbd = Path(mbd_path)
     spec_graph = parse_spec_design_overview(spec)
-    mbd_graph = semantic_graph_from_mbd(parse_markup_file(mbd))
+    mbd_graph = semantic_graph_from_mbd(model)
     matched_nodes = tuple(sorted(spec_graph.nodes & mbd_graph.nodes))
     matched_edges = tuple(edge.render() for edge in sorted(spec_graph.edges & mbd_graph.edges))
     missing_nodes = tuple(sorted(spec_graph.nodes - mbd_graph.nodes))
@@ -115,15 +158,23 @@ def compare_spec_to_mbd(spec_path: str | Path, mbd_path: str | Path) -> SpecMbdA
 
 
 def parse_spec_design_overview(path: str | Path) -> SemanticGraph:
+    return parse_spec_design_overview_flowchart(path).semantic_graph()
+
+
+def parse_spec_design_overview_flowchart(path: str | Path) -> MermaidFlowchart:
     spec_path = Path(path)
     text = spec_path.read_text(encoding="utf-8")
     body = _extract_design_overview_mermaid(text, spec_path)
-    return parse_mermaid_flowchart(body, spec_path)
+    return parse_mermaid_flowchart_model(body, spec_path)
 
 
 def parse_mermaid_flowchart(body: str, source_path: Path | None = None) -> SemanticGraph:
-    node_labels: dict[str, str] = {}
-    raw_edges: list[tuple[str, str, str]] = []
+    return parse_mermaid_flowchart_model(body, source_path).semantic_graph()
+
+
+def parse_mermaid_flowchart_model(body: str, source_path: Path | None = None) -> MermaidFlowchart:
+    nodes: dict[str, MermaidNode] = {}
+    edges: list[MermaidEdge] = []
     for raw_line in body.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("%%"):
@@ -132,37 +183,29 @@ def parse_mermaid_flowchart(body: str, source_path: Path | None = None) -> Seman
             continue
         edge_match = EDGE_RE.match(line)
         if edge_match:
-            source_id, source_label = _parse_mermaid_endpoint(edge_match.group("source").strip())
-            target_id, target_label = _parse_mermaid_endpoint(edge_match.group("target").strip())
-            if source_label:
-                node_labels[source_id] = source_label
-            if target_label:
-                node_labels[target_id] = target_label
-            raw_edges.append(
-                (
-                    source_id,
-                    (edge_match.group("label") or "").strip(),
-                    target_id,
+            source = _parse_mermaid_endpoint(edge_match.group("source").strip())
+            target = _parse_mermaid_endpoint(edge_match.group("target").strip())
+            if source.label:
+                nodes[source.id] = source
+            if target.label:
+                nodes[target.id] = target
+            _require_known_node(source.id, nodes, line, source_path)
+            _require_known_node(target.id, nodes, line, source_path)
+            edges.append(
+                MermaidEdge(
+                    source_id=source.id,
+                    label=(edge_match.group("label") or "").strip(),
+                    target_id=target.id,
                 )
             )
             continue
-        node_id, node_label = _parse_mermaid_endpoint(line)
-        if node_label:
-            node_labels[node_id] = node_label
+        node = _parse_mermaid_endpoint(line)
+        if node.label:
+            nodes[node.id] = node
             continue
         location = f" in {source_path}" if source_path is not None else ""
         raise SpecMbdAlignmentError(f"unsupported Mermaid line{location}: {line}")
-
-    nodes = frozenset(node_labels.values())
-    edges = frozenset(
-        SemanticEdge(
-            source=node_labels.get(source_id, source_id),
-            label=label,
-            target=node_labels.get(target_id, target_id),
-        )
-        for source_id, label, target_id in raw_edges
-    )
-    return SemanticGraph(nodes=nodes, edges=edges)
+    return MermaidFlowchart(nodes=nodes, edges=tuple(edges))
 
 
 def semantic_graph_from_mbd(model: MbdModelIR) -> SemanticGraph:
@@ -216,17 +259,30 @@ def _extract_design_overview_mermaid(text: str, source_path: Path) -> str:
     return match.group("body").strip()
 
 
-def _parse_mermaid_endpoint(text: str) -> tuple[str, str]:
+def _parse_mermaid_endpoint(text: str) -> MermaidNode:
     match = NODE_RE.match(text)
     if match is None:
         if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", text):
-            return text, ""
-        return text, ""
+            return MermaidNode(id=text, label="", shape="reference")
+        return MermaidNode(id=text, label="", shape="unsupported")
     bracket = match.group("bracket")
     close = match.group("close")
     if (bracket, close) not in {("[", "]"), ("{", "}")}:
-        return text, ""
-    return match.group("id"), match.group("label").strip().strip('"')
+        return MermaidNode(id=text, label="", shape="unsupported")
+    shape = "decision" if bracket == "{" else "node"
+    return MermaidNode(id=match.group("id"), label=match.group("label").strip().strip('"'), shape=shape)
+
+
+def _require_known_node(
+    node_id: str,
+    nodes: dict[str, MermaidNode],
+    line: str,
+    source_path: Path | None,
+) -> None:
+    if node_id in nodes:
+        return
+    location = f" in {source_path}" if source_path is not None else ""
+    raise SpecMbdAlignmentError(f"Mermaid edge references undefined node {node_id!r}{location}: {line}")
 
 
 def _find_threshold_pair(controls: list[ControlRuleIR]) -> tuple[ControlRuleIR, ControlRuleIR] | None:

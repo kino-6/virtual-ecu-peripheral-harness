@@ -18,5 +18,12 @@ generated:
   fmi: generated/fmi.json
   demo: generated/demo.html
   specMbdAlignment: generated/spec_mbd_alignment.md
+  convertedMbd: generated/from_spec.model.mbd.md
+  specMbdViewer: generated/spec_mbd_viewer.html
+specMbd:
+  component: ToyThresholdIndicator
+  scenario: above_limit
+  parameterDefaults:
+    limit: '10'
 reports:
   above_limit: reports/above_limit.md

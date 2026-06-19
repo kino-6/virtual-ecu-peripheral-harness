@@ -8,10 +8,12 @@ from veph.exporters.modelica import export_modelica
 from veph.exporters.plantuml import export_plantuml
 from veph.exporters.scxml import export_scxml
 from veph.exporters.simulink_m import export_simulink_m
-from veph.markup_parser import parse_markup_file
+from veph.markup_parser import parse_markup, parse_markup_file
 from veph.preview_runtime import run_preview_file
 from veph.sample_catalog import load_sample
-from veph.spec_mbd_alignment import compare_spec_to_mbd
+from veph.spec_mbd_alignment import compare_spec_to_mbd, compare_spec_to_mbd_model
+from veph.spec_mbd_conversion import generate_mbd_from_spec
+from veph.spec_mbd_viewer import export_spec_mbd_viewer
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +37,18 @@ def test_simple_threshold_sample_is_intentionally_small():
 def test_simple_threshold_generated_artifacts_are_deterministic():
     sample = load_sample("simple_threshold_indicator", ROOT)
     model = parse_markup_file(sample.paths.model)
+    converted_mbd = generate_mbd_from_spec(
+        sample.paths.spec,
+        component_name=sample.spec_mbd["component"],
+        parameter_defaults={"limit": "10"},
+        scenario=sample.spec_mbd["scenario"],
+    )
+    converted_model = parse_markup(converted_mbd, sample.paths.generated["convertedMbd"])
+    converted_report = compare_spec_to_mbd_model(
+        sample.paths.spec,
+        converted_model,
+        sample.paths.generated["convertedMbd"],
+    )
     expected_outputs = {
         sample.paths.generated["docs"]: export_markdown(model),
         sample.paths.generated["demo"]: export_demo_html(model),
@@ -48,6 +62,12 @@ def test_simple_threshold_generated_artifacts_are_deterministic():
             sample.paths.spec,
             sample.paths.model,
         ).to_markdown(),
+        sample.paths.generated["convertedMbd"]: converted_mbd,
+        sample.paths.generated["specMbdViewer"]: export_spec_mbd_viewer(
+            sample.paths.spec,
+            converted_model,
+            converted_report,
+        ),
     }
 
     for path, regenerated in expected_outputs.items():
