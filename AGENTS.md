@@ -19,7 +19,7 @@ samples/<sample-id>/model.mbd.md
   -> internal IR snapshot
   -> exporters
       -> Markdown review document
-      -> Mermaid / PlantUML preview diagrams
+      -> rendered model visualization, usually generated demo HTML; Mermaid / PlantUML source for trace/debug diagrams
       -> Simulink model-generation .m script
       -> SCXML or Stateflow-oriented handoff
       -> Modelica .mo text artifact
@@ -42,6 +42,9 @@ generated artifacts, reports, and preview C output. YAML is not the public
 source of truth; keep legacy `.tmbd.yml` only under a sample `legacy/`
 directory as optional compatibility input. Internal IR is a tooling snapshot,
 not a public standard.
+
+When asked to see, review, or validate the MBD, provide a rendered model visualization, usually `samples/<sample-id>/generated/demo.html`; Mermaid `.mmd`
+is trace/debug source, not the primary deliverable. The visualization must show spec-level inputs, parameters, decisions, outputs, state/control behavior, and report or harness boundaries.
 
 ## Requirements And Process Policy
 
