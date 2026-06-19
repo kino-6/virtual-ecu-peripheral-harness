@@ -15,17 +15,18 @@ It is intentionally small and fictional-example friendly.
 
 ## Authoring Source Policy
 
-`examples/*.mbd.md` is the public source. Generated files are review or handoff
-artifacts. The internal IR JSON exists to connect parser and exporters; it is
-not advertised as a user-facing standard.
+`samples/<sample-id>/model.mbd.md` is the public source for each sample.
+Generated files are review or handoff artifacts. The internal IR JSON exists to
+connect parser and exporters; it is not advertised as a user-facing standard.
 
 YAML is not the public source of truth. Existing YAML files may remain as legacy
 preview inputs, optional expanded machine-readable forms, or temporary
 implementation details.
 
 For substantial validation examples, begin with `Requirements.md`, derive a
-human-readable specification under `specs/`, then write the `.mbd.md` source.
-Do not jump directly from a vague idea into runtime or generated artifacts.
+human-readable sample specification under `samples/<sample-id>/spec.md`, then
+write the `.mbd.md` source. Do not jump directly from a vague idea into runtime
+or generated artifacts.
 
 ## ASPICE-Aware Process Boundary
 

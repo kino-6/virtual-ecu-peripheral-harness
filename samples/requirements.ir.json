@@ -1,0 +1,628 @@
+{
+  "requirements": [
+    {
+      "classification": null,
+      "id": "STK-001",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "A reviewer can read one textual source and understand the control intent without opening a commercial MBD tool."
+    },
+    {
+      "classification": null,
+      "id": "STK-002",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "An MBD engineer can regenerate handoff artifacts for external MBD tool review from the same textual source."
+    },
+    {
+      "classification": null,
+      "id": "STK-003",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "A software engineer can inspect product-like ECU control logic that uses HAL-style boundaries and is not production-derived."
+    },
+    {
+      "classification": null,
+      "id": "STK-004",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "A test engineer can run preview scenarios and see inputs, scenario steps, observed behavior, expected behavior, and pass/fail results separated in the report."
+    },
+    {
+      "classification": null,
+      "id": "STK-005",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "A process reviewer can trace requirements to markup sections, generated artifacts, preview scenarios, and tests."
+    },
+    {
+      "classification": null,
+      "id": "STK-006",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "An AI workflow reviewer can see how MBD and harness artifacts reduce manual synchronization work across requirements, model changes, preview code, and reports."
+    },
+    {
+      "classification": null,
+      "id": "STK-007",
+      "planned_evidence": "",
+      "section": "Stakeholder Needs",
+      "statement": "A toolchain reviewer can distinguish the external MBD handoff path from the repo-local preview loop."
+    },
+    {
+      "classification": null,
+      "id": "SYS-001",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall read a fictional temperature value from `ToyTempSensorIC`."
+    },
+    {
+      "classification": null,
+      "id": "SYS-002",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall command a fictional fan duty output through `ToyFanDriverIC`."
+    },
+    {
+      "classification": "DSC-A",
+      "id": "SYS-003",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall increase cooling command when temperature exceeds a fictional high threshold."
+    },
+    {
+      "classification": "DSC-A",
+      "id": "SYS-004",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall reduce cooling command only after temperature falls below a fictional low threshold, preserving hysteresis."
+    },
+    {
+      "classification": "DSC-B",
+      "id": "SYS-005",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall command fictional derating when temperature enters a high-but-valid protection range."
+    },
+    {
+      "classification": "DSC-C",
+      "id": "SYS-006",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall enter a safe fictional command when the temperature input is marked invalid."
+    },
+    {
+      "classification": "DSC-C",
+      "id": "SYS-007",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall latch a diagnostic fault when invalid sensor input persists beyond a fictional debounce window."
+    },
+    {
+      "classification": "DSC-C",
+      "id": "SYS-008",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall recover from a latched fault only after explicit recovery conditions are met."
+    },
+    {
+      "classification": null,
+      "id": "SYS-009",
+      "planned_evidence": "Markup components, control rules, scenarios, reports",
+      "section": "System Requirements",
+      "statement": "The system shall expose normal, threshold-boundary, derating, sensor-fault, fault-latch, and recovery scenario behavior through generated review reports."
+    },
+    {
+      "classification": null,
+      "id": "SWE-001",
+      "planned_evidence": "Parser tests, IR snapshot tests, preview C export tests",
+      "section": "Software Requirements",
+      "statement": "Each sample controller shall be described in `samples/<sample-id>/model.mbd.md` using Mermaid-like MBD markup as the public source."
+    },
+    {
+      "classification": null,
+      "id": "SWE-002",
+      "planned_evidence": "Parser tests, IR snapshot tests, preview C export tests",
+      "section": "Software Requirements",
+      "statement": "The parser shall convert the markup into an internal IR snapshot without requiring YAML as an input."
+    },
+    {
+      "classification": null,
+      "id": "SWE-003",
+      "planned_evidence": "Parser tests, IR snapshot tests, preview C export tests",
+      "section": "Software Requirements",
+      "statement": "The IR shall retain enough trace information to connect requirements, components, ports, states, flows, control rules, and tests."
+    },
+    {
+      "classification": null,
+      "id": "SWE-004",
+      "planned_evidence": "Parser tests, IR snapshot tests, preview C export tests",
+      "section": "Software Requirements",
+      "statement": "Generated preview C shall use HAL-style headers for sensor and fan interactions rather than Python internals."
+    },
+    {
+      "classification": null,
+      "id": "SWE-005",
+      "planned_evidence": "Parser tests, IR snapshot tests, preview C export tests",
+      "section": "Software Requirements",
+      "statement": "Generated preview C and Python preview behavior shall be labeled preview-only and non-certified."
+    },
+    {
+      "classification": null,
+      "id": "M2M-001",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "Mermaid-like Markdown shall be the public authoring source."
+    },
+    {
+      "classification": null,
+      "id": "M2M-002",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "The Mermaid-to-MBD engine shall parse authoring blocks into MBD IR."
+    },
+    {
+      "classification": null,
+      "id": "M2M-003",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "The engine shall preserve requirement IDs, signal names, states, control rules, data flows, safety-class-like tags, and harness boundaries."
+    },
+    {
+      "classification": null,
+      "id": "M2M-004",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "The engine shall reject ambiguous or malformed model semantics with actionable diagnostics."
+    },
+    {
+      "classification": null,
+      "id": "M2M-005",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "Generated MBD IR shall be deterministic from unchanged Mermaid-like source."
+    },
+    {
+      "classification": null,
+      "id": "M2M-006",
+      "planned_evidence": "Mermaid-to-MBD parser tests and diagnostics tests",
+      "section": "Mermaid-To-MBD Engine Requirements",
+      "statement": "Mermaid diagrams shall be review artifacts; they shall not replace semantic MBD IR."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-001",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "The repository shall extract requirement IDs, safety-class-like tags, statements, source sections, and planned evidence from `Requirements.md`."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-002",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "The repository shall generate or update a human-readable specification scaffold from extracted requirements."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-003",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "Generated specification scaffolds shall preserve requirement IDs and expose assumptions, open questions, unresolved behavior, and expected review evidence."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-004",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "The generated specification shall separate item behavior, software/control behavior, harness behavior, MBD handoff behavior, preview engine behavior, AI/RAG behavior, and process evidence."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-005",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "The agent shall ask the user before inventing behavior not present in requirements or approved specification text."
+    },
+    {
+      "classification": null,
+      "id": "REQ2SPEC-006",
+      "planned_evidence": "Requirements extraction tests and generated specification scaffold reviews",
+      "section": "Requirements-To-Spec Support Requirements",
+      "statement": "Specification updates shall be deterministic from unchanged requirements and template rules."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-001",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "The repository shall generate Mermaid-like MBD scaffold from approved requirements and human-readable specification content."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-002",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "Generated MBD source shall include trace references from model elements to requirement IDs and specification anchors."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-003",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "`DSC-B` and `DSC-C` requirements shall require explicit state, control, harness, scenario, and expected-behavior coverage before they can be marked covered."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-004",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "The validator shall report requirements that lack specification coverage."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-005",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "The validator shall report requirements that lack MBD coverage."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-006",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "The validator shall report MBD behavior that lacks requirement or specification trace."
+    },
+    {
+      "classification": null,
+      "id": "REQ2MBD-007",
+      "planned_evidence": "MBD scaffold generation tests and coverage validation reports",
+      "section": "Requirements-To-MBD Support Requirements",
+      "statement": "The scaffold generator shall emit open questions instead of silently inventing missing thresholds, timings, recovery rules, or fault semantics."
+    },
+    {
+      "classification": null,
+      "id": "IR-001",
+      "planned_evidence": "IR snapshot tests and source-to-IR trace tests",
+      "section": "MBD IR Requirements",
+      "statement": "MBD IR shall represent ports, parameters, states, transitions, control rules, data flows, harness boundaries, and safety-class-like tags."
+    },
+    {
+      "classification": null,
+      "id": "IR-002",
+      "planned_evidence": "IR snapshot tests and source-to-IR trace tests",
+      "section": "MBD IR Requirements",
+      "statement": "MBD IR shall retain traceability from requirement IDs to model elements."
+    },
+    {
+      "classification": null,
+      "id": "IR-003",
+      "planned_evidence": "IR snapshot tests and source-to-IR trace tests",
+      "section": "MBD IR Requirements",
+      "statement": "MBD IR shall be tool-facing intermediate data, not the public authoring format."
+    },
+    {
+      "classification": null,
+      "id": "IR-004",
+      "planned_evidence": "IR snapshot tests and source-to-IR trace tests",
+      "section": "MBD IR Requirements",
+      "statement": "MBD IR shall be exportable to existing MBD handoff artifacts."
+    },
+    {
+      "classification": null,
+      "id": "IR-005",
+      "planned_evidence": "IR snapshot tests and source-to-IR trace tests",
+      "section": "MBD IR Requirements",
+      "statement": "MBD IR shall be executable by the repo preview engine for supported subset semantics."
+    },
+    {
+      "classification": null,
+      "id": "MBD-001",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate a Markdown review document from the markup."
+    },
+    {
+      "classification": null,
+      "id": "MBD-002",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate Mermaid and PlantUML preview diagrams from the markup."
+    },
+    {
+      "classification": null,
+      "id": "MBD-003",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate a Simulink model-generation `.m` script from the markup."
+    },
+    {
+      "classification": null,
+      "id": "MBD-004",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate a Modelica `.mo` text artifact from the markup."
+    },
+    {
+      "classification": null,
+      "id": "MBD-005",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate SCXML or Stateflow-oriented handoff content when state behavior is present."
+    },
+    {
+      "classification": null,
+      "id": "MBD-006",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "The tool shall generate FMI-oriented metadata while clearly stating that no FMU is produced by this repository."
+    },
+    {
+      "classification": null,
+      "id": "MBD-007",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "Generated artifacts shall be deterministic for unchanged markup."
+    },
+    {
+      "classification": null,
+      "id": "MBD-008",
+      "planned_evidence": "Exporter tests and deterministic regeneration tests",
+      "section": "MBD Handoff Requirements",
+      "statement": "Existing MBD tools shall remain the intended backend for production-grade verification and production MBD code generation."
+    },
+    {
+      "classification": null,
+      "id": "ENG-001",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The repository shall provide a simplified Simulink-compatible preview engine."
+    },
+    {
+      "classification": null,
+      "id": "ENG-002",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The engine shall execute only an explicitly declared subset of MBD semantics."
+    },
+    {
+      "classification": null,
+      "id": "ENG-003",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The supported subset shall include at minimum inports, outports, parameters, compare, switch, logical operators, state transitions, and simple memory or hysteresis behavior."
+    },
+    {
+      "classification": null,
+      "id": "ENG-004",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The engine shall produce deterministic step-by-step execution traces."
+    },
+    {
+      "classification": null,
+      "id": "ENG-005",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The engine shall link each executed step to source model elements and requirement IDs when available."
+    },
+    {
+      "classification": null,
+      "id": "ENG-006",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "The engine shall not claim full Simulink compatibility."
+    },
+    {
+      "classification": null,
+      "id": "ENG-007",
+      "planned_evidence": "Preview engine semantic subset tests and execution traces",
+      "section": "Preview Engine Requirements",
+      "statement": "Unsupported behavior shall be reported as requiring external MBD tool verification."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-001",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "The repository shall provide a preview-only MBD-to-C scaffold path."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-002",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "Preview C shall be generated from MBD IR, not manually synchronized."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-003",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "Preview C shall use HAL-style boundaries."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-004",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "Preview C shall not call Python internals."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-005",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "Preview C shall be suitable for early AI/CI review, not production deployment."
+    },
+    {
+      "classification": null,
+      "id": "CGEN-006",
+      "planned_evidence": "Preview C generation tests and C syntax checks",
+      "section": "MBD-To-C Process Requirements",
+      "statement": "Production C generation is assumed to be handled by existing MBD/code-generation infrastructure."
+    },
+    {
+      "classification": null,
+      "id": "HAR-001",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "The preview harness shall simulate only fictional virtual IC boundaries needed by the scenario."
+    },
+    {
+      "classification": null,
+      "id": "HAR-002",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "The harness shall not modify ECU controller logic for simulation convenience."
+    },
+    {
+      "classification": null,
+      "id": "HAR-003",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "Preview scenarios shall be discrete steps, not a full plant or physics model."
+    },
+    {
+      "classification": null,
+      "id": "HAR-004",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "Reports shall separate model inputs, scenario steps, observed behavior, expected behavior, and pass/fail result."
+    },
+    {
+      "classification": null,
+      "id": "HAR-005",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "Scenario YAML, if used, shall be test input only and shall not be treated as the MBD source of truth."
+    },
+    {
+      "classification": null,
+      "id": "HAR-006",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "Harness shall support normal, threshold-boundary, derating, sensor fault, fault latch, and recovery scenarios."
+    },
+    {
+      "classification": null,
+      "id": "HAR-007",
+      "planned_evidence": "Preview runtime tests and scenario report checks",
+      "section": "Harness Requirements",
+      "statement": "Harness reports shall state which behavior was checked locally and which behavior requires external MBD/product-test infrastructure."
+    },
+    {
+      "classification": null,
+      "id": "AI-001",
+      "planned_evidence": "Impact analysis reports and regenerated artifact diffs",
+      "section": "AI Development Efficiency Requirements",
+      "statement": "AI shall be able to propose MBD updates from changed requirements."
+    },
+    {
+      "classification": null,
+      "id": "AI-002",
+      "planned_evidence": "Impact analysis reports and regenerated artifact diffs",
+      "section": "AI Development Efficiency Requirements",
+      "statement": "AI shall be able to regenerate artifacts deterministically from Mermaid-like source."
+    },
+    {
+      "classification": null,
+      "id": "AI-003",
+      "planned_evidence": "Impact analysis reports and regenerated artifact diffs",
+      "section": "AI Development Efficiency Requirements",
+      "statement": "AI shall be able to identify impacted requirements, model elements, preview engine behavior, generated C scaffold, and scenarios."
+    },
+    {
+      "classification": null,
+      "id": "AI-004",
+      "planned_evidence": "Impact analysis reports and regenerated artifact diffs",
+      "section": "AI Development Efficiency Requirements",
+      "statement": "Reports shall show enough traceability for a human reviewer to judge whether AI-generated changes are plausible."
+    },
+    {
+      "classification": null,
+      "id": "AI-005",
+      "planned_evidence": "Impact analysis reports and regenerated artifact diffs",
+      "section": "AI Development Efficiency Requirements",
+      "statement": "The workflow shall reduce manual synchronization between requirements, MBD diagrams, harness scenarios, generated preview code, and reports."
+    },
+    {
+      "classification": null,
+      "id": "RAG-001",
+      "planned_evidence": "Retrieved-context citations, trace links, and ask-back records",
+      "section": "RAG And Context Requirements",
+      "statement": "The workflow shall support retrieval over repository-local requirements, specifications, MBD source, generated artifacts, tests, reports, and design principles."
+    },
+    {
+      "classification": null,
+      "id": "RAG-002",
+      "planned_evidence": "Retrieved-context citations, trace links, and ask-back records",
+      "section": "RAG And Context Requirements",
+      "statement": "Retrieved context shall be cited or trace-linked in AI-generated changes when it affects requirements, MBD, harness behavior, or code scaffolds."
+    },
+    {
+      "classification": null,
+      "id": "RAG-003",
+      "planned_evidence": "Retrieved-context citations, trace links, and ask-back records",
+      "section": "RAG And Context Requirements",
+      "statement": "RAG shall be used to reduce missed synchronization across requirements, MBD IR, preview engine semantics, harness scenarios, generated C, and reports."
+    },
+    {
+      "classification": null,
+      "id": "RAG-004",
+      "planned_evidence": "Retrieved-context citations, trace links, and ask-back records",
+      "section": "RAG And Context Requirements",
+      "statement": "RAG shall not ingest real hardware datasheets, confidential product documentation, production ECU code, or vendor-specific register maps for this fictional MVP."
+    },
+    {
+      "classification": null,
+      "id": "RAG-005",
+      "planned_evidence": "Retrieved-context citations, trace links, and ask-back records",
+      "section": "RAG And Context Requirements",
+      "statement": "If required context is missing or contradictory, the agent shall ask the user instead of inventing product behavior."
+    },
+    {
+      "classification": null,
+      "id": "PROC-001",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "`Requirements.md` shall be updated before substantial changes to the validation example."
+    },
+    {
+      "classification": null,
+      "id": "PROC-002",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "`Tasks.md` shall break requirements into checked task-list items with explicit verification steps."
+    },
+    {
+      "classification": null,
+      "id": "PROC-003",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "Tests shall prove deterministic regeneration of generated artifacts."
+    },
+    {
+      "classification": null,
+      "id": "PROC-004",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "Documentation shall keep the commercial-tool-free MVP boundary clear while preserving the future path to Simulink, Modelica, and FMI export."
+    },
+    {
+      "classification": null,
+      "id": "PROC-005",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "Harness and preview engine implementation shall grow by TDD: add or update scenario/tests before adding supported semantics."
+    },
+    {
+      "classification": null,
+      "id": "PROC-006",
+      "planned_evidence": "`Tasks.md`, docs updates, quality gates, project philosophy tests",
+      "section": "Process Requirements",
+      "statement": "New preview engine semantics shall not be considered supported until they are declared, tested, reported, and linked to requirements."
+    }
+  ],
+  "source": "Requirements.md"
+}

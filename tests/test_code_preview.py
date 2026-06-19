@@ -6,13 +6,14 @@ import pytest
 
 from veph.exporters.code_preview import CodePreviewExportError, export_code_preview
 from veph.markup_parser import parse_markup_file
+from veph.sample_catalog import load_sample
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_export_code_preview_writes_hal_style_c_scaffold(tmp_path):
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    model = parse_markup_file(load_sample("thermal_fan_control", ROOT).paths.model)
     written = export_code_preview(model, tmp_path)
 
     assert {path.name for path in written} == {
@@ -38,7 +39,7 @@ def test_export_code_preview_writes_hal_style_c_scaffold(tmp_path):
 def test_generated_preview_c_is_syntax_checkable_when_cc_exists(tmp_path):
     if shutil.which("cc") is None:
         return
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    model = parse_markup_file(load_sample("thermal_fan_control", ROOT).paths.model)
     export_code_preview(model, tmp_path)
 
     subprocess.run(
@@ -49,7 +50,7 @@ def test_generated_preview_c_is_syntax_checkable_when_cc_exists(tmp_path):
 
 
 def test_export_code_preview_supports_thermal_protection_controller(tmp_path):
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
     export_code_preview(model, tmp_path)
 
     controller = (tmp_path / "controller.c").read_text(encoding="utf-8")
@@ -73,7 +74,7 @@ def test_export_code_preview_supports_thermal_protection_controller(tmp_path):
 def test_generated_thermal_protection_preview_c_is_syntax_checkable_when_cc_exists(tmp_path):
     if shutil.which("cc") is None:
         return
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
     export_code_preview(model, tmp_path)
 
     subprocess.run(
@@ -84,7 +85,7 @@ def test_generated_thermal_protection_preview_c_is_syntax_checkable_when_cc_exis
 
 
 def test_export_code_preview_rejects_unregistered_sample_without_thermal_fallback(tmp_path):
-    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+    model = parse_markup_file(load_sample("toy_power_monitor", ROOT).paths.model)
 
     with pytest.raises(CodePreviewExportError, match="ToyPowerMonitorIC.*supported components"):
         export_code_preview(model, tmp_path)

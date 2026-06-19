@@ -13,7 +13,8 @@ custom YAML modeling language.
 The intended pipeline is:
 
 ```text
-examples/*.mbd.md
+samples/<sample-id>/sample.yml
+samples/<sample-id>/model.mbd.md
   -> markup parser
   -> internal IR snapshot
   -> exporters
@@ -35,10 +36,12 @@ claim.
 
 ## Source-Of-Truth Policy
 
-Public source is `examples/*.mbd.md`. YAML is not the public source of truth;
-keep YAML only as legacy preview input, optional expanded machine-readable form,
-or implementation detail. Internal IR is a tooling snapshot, not a public
-standard.
+Public source is `samples/<sample-id>/model.mbd.md`. Each sample owns a
+`samples/<sample-id>/sample.yml` manifest that points to its spec, scenarios,
+generated artifacts, reports, and preview C output. YAML is not the public
+source of truth; keep legacy `.tmbd.yml` only under a sample `legacy/`
+directory as optional compatibility input. Internal IR is a tooling snapshot,
+not a public standard.
 
 ## Requirements And Process Policy
 
@@ -124,7 +127,7 @@ the main verification path.
 
 Project-local skills live under `.agents/skills/`:
 
-- `mbd-markup-authoring`: use for `examples/*.mbd.md`, markup grammar,
+- `mbd-markup-authoring`: use for `samples/<sample-id>/model.mbd.md`, markup grammar,
   `markup_parser.py`, and `ir.py` work.
 - `mbd-artifact-export`: use for exporter changes, generated artifacts, and
   source-to-artifact determinism.

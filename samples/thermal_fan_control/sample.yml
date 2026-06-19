@@ -1,0 +1,30 @@
+id: thermal_fan_control
+title: Toy Thermal Fan Control
+kind: preview-control
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+previewCodeDir: preview_c
+scenarios:
+  normal: scenarios/normal.yml
+  fault: scenarios/fault.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+reports:
+  normal: reports/normal.md
+  fault: reports/fault.md
+previewCode:
+  readme: preview_c/README.md
+  controllerSource: preview_c/controller.c
+  controllerHeader: preview_c/controller.h
+  halPwm: preview_c/hal_pwm.h
+  halSpi: preview_c/hal_spi.h

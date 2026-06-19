@@ -11,9 +11,9 @@ Archived task history:
 
 ## Current Goal
 
-Separate sample-specific assumptions from the common MBD authoring, export, and
-preview layers so future small-start samples do not inherit thermal-control
-behavior implicitly.
+Restructure the repository so sample source, scenarios, generated artifacts,
+reports, and preview code live under explicit sample workspaces instead of
+root-level sample-specific directories.
 
 ## Quality Gates
 
@@ -28,6 +28,11 @@ behavior implicitly.
       thermal scaffold output requires explicit sample selection.
 - [x] Tests prove unsupported preview codegen does not silently use the thermal
       fan scaffold.
+- [x] Canonical tests and documentation use `samples/<sample-id>/...` paths for
+      sample-specific source, scenarios, generated artifacts, reports, and
+      preview C output.
+- [x] Root-level `examples/`, `scenarios/`, `generated/`, and `reports/` are no
+      longer the required place for new samples.
 
 ## Phase 16: Sample Isolation Boundary
 
@@ -44,5 +49,23 @@ behavior implicitly.
 Verification:
 
 - [x] Focused exporter/runtime/codegen tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
+## Phase 17: Sample Workspace Repository Structure
+
+- [x] Add a sample catalog/manifest abstraction for sample-local paths.
+- [x] Move or mirror canonical sample source and generated evidence under
+      `samples/<sample-id>/`.
+- [x] Update tests to resolve sample paths through the catalog instead of
+      hardcoded root-level sample directories.
+- [x] Update README and project rules to document the sample workspace layout.
+- [x] Keep legacy root-level artifacts clearly compatibility-only or remove the
+      dependency from tests and docs.
+
+Verification:
+
+- [x] Sample catalog tests pass.
+- [x] Focused exporter/runtime/scenario tests pass with sample workspace paths.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.

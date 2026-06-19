@@ -11,8 +11,8 @@ Related commits:
 Completed scope:
 
 - Requirements-first baseline in `Requirements.md`.
-- Human-readable specification in `specs/toy_thermal_fan_control.md`.
-- Traceable MBD markup in `examples/toy_thermal_fan_control.mbd.md`.
+- Human-readable specification in `samples/thermal_fan_control/spec.md`.
+- Traceable MBD markup in `samples/thermal_fan_control/model.mbd.md`.
 - Parser and IR support for requirement refs, control rules, and harness
   devices.
 - Generated Markdown, Mermaid, PlantUML, SCXML, Simulink `.m`, Modelica, FMI

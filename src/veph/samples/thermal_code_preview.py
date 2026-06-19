@@ -74,7 +74,7 @@ def _controller_c(model: MbdModelIR) -> str:
     params = {name: parameter.default for name, parameter in model.component.parameters.items()}
     return "\n".join(
         [
-            "/* Generated from examples/toy_thermal_fan_control.mbd.md.",
+            f"/* Generated from {_source_display(model)}.",
             " * Preview-only synthetic ECU scaffold; not certified code generation.",
             " * Requirement traces are preserved in the source MBD markup and reports.",
             " */",

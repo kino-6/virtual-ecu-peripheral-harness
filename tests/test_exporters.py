@@ -11,6 +11,7 @@ from veph.exporters.scxml import export_scxml
 from veph.exporters.simulink_m import SimulinkSemanticExportError, export_simulink_m
 from veph.markup_parser import parse_markup, parse_markup_file
 from veph.model_loader import load_model
+from veph.sample_catalog import load_sample
 import pytest
 
 
@@ -18,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_each_exporter_creates_non_empty_output():
-    model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
+    model = load_model(load_sample("toy_power_monitor", ROOT).paths.legacy["legacyModel"])
 
     outputs = [
         export_markdown(model),
@@ -35,20 +36,21 @@ def test_each_exporter_creates_non_empty_output():
 
 
 def test_generated_artifacts_are_deterministic_from_markup_source():
-    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+    sample = load_sample("toy_power_monitor", ROOT)
+    model = parse_markup_file(sample.paths.model)
 
     expected_outputs = {
-        "generated/toy_power_monitor.md": export_markdown(model),
-        "generated/toy_power_monitor.mmd": export_mermaid(model),
-        "generated/toy_power_monitor.puml": export_plantuml(model),
-        "generated/toy_power_monitor.scxml": export_scxml(model),
-        "generated/ToyPowerMonitor.mo": export_modelica(model),
-        "generated/create_toy_power_monitor_model.m": export_simulink_m(model),
-        "generated/toy_power_monitor.fmi.json": export_fmi_metadata(model),
+        sample.paths.generated["docs"]: export_markdown(model),
+        sample.paths.generated["mermaid"]: export_mermaid(model),
+        sample.paths.generated["plantuml"]: export_plantuml(model),
+        sample.paths.generated["scxml"]: export_scxml(model),
+        sample.paths.generated["modelica"]: export_modelica(model),
+        sample.paths.generated["simulink"]: export_simulink_m(model),
+        sample.paths.generated["fmi"]: export_fmi_metadata(model),
     }
 
-    for relative_path, regenerated in expected_outputs.items():
-        assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+    for path, regenerated in expected_outputs.items():
+        assert path.read_text(encoding="utf-8") == regenerated
 
 
 def test_cli_export_commands_use_only_model_and_output_arguments():
@@ -69,42 +71,44 @@ def test_cli_export_commands_use_only_model_and_output_arguments():
 
 
 def test_thermal_generated_artifacts_are_deterministic_from_markup_source():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    sample = load_sample("thermal_fan_control", ROOT)
+    model = parse_markup_file(sample.paths.model)
 
     expected_outputs = {
-        "generated/toy_thermal_fan_control.md": export_markdown(model),
-        "generated/toy_thermal_fan_control.mmd": export_mermaid(model),
-        "generated/toy_thermal_fan_control.puml": export_plantuml(model),
-        "generated/toy_thermal_fan_control.scxml": export_scxml(model),
-        "generated/ToyThermalFanControl.mo": export_modelica(model),
-        "generated/create_toy_thermal_fan_control_model.m": export_simulink_m(model),
-        "generated/toy_thermal_fan_control.fmi.json": export_fmi_metadata(model),
+        sample.paths.generated["docs"]: export_markdown(model),
+        sample.paths.generated["mermaid"]: export_mermaid(model),
+        sample.paths.generated["plantuml"]: export_plantuml(model),
+        sample.paths.generated["scxml"]: export_scxml(model),
+        sample.paths.generated["modelica"]: export_modelica(model),
+        sample.paths.generated["simulink"]: export_simulink_m(model),
+        sample.paths.generated["fmi"]: export_fmi_metadata(model),
     }
 
-    for relative_path, regenerated in expected_outputs.items():
-        assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+    for path, regenerated in expected_outputs.items():
+        assert path.read_text(encoding="utf-8") == regenerated
 
 
 def test_thermal_protection_generated_artifacts_are_deterministic_from_markup_source():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    sample = load_sample("thermal_protection_controller", ROOT)
+    model = parse_markup_file(sample.paths.model)
 
     expected_outputs = {
-        "generated/toy_thermal_protection_controller.md": export_markdown(model),
-        "generated/toy_thermal_protection_controller_demo.html": export_demo_html(model),
-        "generated/toy_thermal_protection_controller.mmd": export_mermaid(model),
-        "generated/toy_thermal_protection_controller.puml": export_plantuml(model),
-        "generated/toy_thermal_protection_controller.scxml": export_scxml(model),
-        "generated/ToyThermalProtectionController.mo": export_modelica(model),
-        "generated/create_toy_thermal_protection_controller_model.m": export_simulink_m(model),
-        "generated/toy_thermal_protection_controller.fmi.json": export_fmi_metadata(model),
+        sample.paths.generated["docs"]: export_markdown(model),
+        sample.paths.generated["demo"]: export_demo_html(model),
+        sample.paths.generated["mermaid"]: export_mermaid(model),
+        sample.paths.generated["plantuml"]: export_plantuml(model),
+        sample.paths.generated["scxml"]: export_scxml(model),
+        sample.paths.generated["modelica"]: export_modelica(model),
+        sample.paths.generated["simulink"]: export_simulink_m(model),
+        sample.paths.generated["fmi"]: export_fmi_metadata(model),
     }
 
-    for relative_path, regenerated in expected_outputs.items():
-        assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+    for path, regenerated in expected_outputs.items():
+        assert path.read_text(encoding="utf-8") == regenerated
 
 
 def test_thermal_protection_simulink_handoff_structures_high_cooling_rule():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
 
     script = export_simulink_m(model)
     semantic_lines = _without_comment_lines(script)
@@ -121,7 +125,7 @@ def test_thermal_protection_simulink_handoff_structures_high_cooling_rule():
 
 
 def test_thermal_protection_simulink_handoff_structures_fault_latch_rule():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
 
     script = export_simulink_m(model)
     semantic_lines = _without_comment_lines(script)
@@ -136,7 +140,7 @@ def test_thermal_protection_simulink_handoff_structures_fault_latch_rule():
 
 
 def test_simulink_rule_semantics_are_not_comment_only():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
 
     semantic_lines = _without_comment_lines(export_simulink_m(model))
 
@@ -147,12 +151,12 @@ def test_simulink_rule_semantics_are_not_comment_only():
 
 
 def test_simulink_export_reports_unsupported_expression_diagnostics():
-    source = (ROOT / "examples" / "toy_thermal_protection_controller.mbd.md").read_text(encoding="utf-8")
+    source = load_sample("thermal_protection_controller", ROOT).paths.model.read_text(encoding="utf-8")
     source = source.replace(
         "when temperatureC >= coolingOnThreshold then state=COOLING",
         "when temperatureC + 1 >= coolingOnThreshold then state=COOLING",
     )
-    model = parse_markup(source, ROOT / "examples" / "unsupported_expression.mbd.md")
+    model = parse_markup(source, ROOT / "samples" / "unsupported_expression" / "model.mbd.md")
 
     with pytest.raises(SimulinkSemanticExportError, match="highCooling.*unsupported condition.*\\+"):
         export_simulink_m(model)
@@ -163,7 +167,7 @@ def _without_comment_lines(text: str) -> str:
 
 
 def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():
-    model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
+    model = load_model(load_sample("toy_power_monitor", ROOT).paths.legacy["legacyModel"])
 
     html = export_demo_html(model)
 
@@ -183,7 +187,7 @@ def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():
 
 
 def test_thermal_demo_html_visualizes_trace_control_and_harness():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    model = parse_markup_file(load_sample("thermal_fan_control", ROOT).paths.model)
 
     html = export_demo_html(model)
 
@@ -197,7 +201,7 @@ def test_thermal_demo_html_visualizes_trace_control_and_harness():
 
 
 def test_thermal_protection_demo_html_visualizes_complete_process_slice():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
 
     html = export_demo_html(model)
     mermaid = export_mermaid(model)
@@ -239,7 +243,7 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
 
 
 def test_markdown_documents_mbd_blocks_and_connections():
-    model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
+    model = load_model(load_sample("toy_power_monitor", ROOT).paths.legacy["legacyModel"])
 
     markdown = export_markdown(model)
 

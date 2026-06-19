@@ -1,0 +1,64 @@
+{
+  "component": "ToyPowerMonitorIC",
+  "controlRules": [],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [],
+  "harnessDevices": [],
+  "inputs": [
+    {
+      "default": "12.0",
+      "name": "voltage",
+      "type": "V"
+    }
+  ],
+  "outputs": [
+    {
+      "default": null,
+      "name": "ready",
+      "type": "bool"
+    },
+    {
+      "default": null,
+      "name": "fault",
+      "type": "bool"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "7.0",
+      "name": "undervoltageThreshold",
+      "type": "V"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    },
+    {
+      "access": "rw",
+      "address": "0x02",
+      "name": "CONTROL"
+    },
+    {
+      "access": "ro",
+      "address": "0x03",
+      "name": "FAULT"
+    },
+    {
+      "access": "ro",
+      "address": "0x04",
+      "name": "VOLTAGE"
+    }
+  ],
+  "requirementRefs": [],
+  "source": "samples/toy_power_monitor/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "RESET",
+    "INIT",
+    "NORMAL",
+    "FAULT_LATCHED"
+  ]
+}

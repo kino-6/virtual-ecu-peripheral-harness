@@ -1,0 +1,27 @@
+id: toy_power_monitor
+title: Toy Power Monitor
+kind: legacy-preview
+model: model.mbd.md
+spec: manual.md
+legacyModel: legacy/model.tmbd.yml
+legacyEcuInterface: legacy/ecu_interface.tmbd.yml
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  normal_startup: scenarios/normal_startup.yml
+  undervoltage_fault: scenarios/undervoltage_fault.yml
+  spi_timeout: scenarios/spi_timeout.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+reports:
+  normal_startup: reports/normal_startup.md
+  undervoltage_fault: reports/undervoltage_fault.md
+  spi_timeout: reports/spi_timeout.md

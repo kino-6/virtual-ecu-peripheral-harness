@@ -57,7 +57,7 @@ Do not invent missing thresholds, timings, recovery rules, or fault semantics.
 
 ## Software And Control Behavior
 
-- `SWE-001`: The controller shall be described in `examples/*.mbd.md` using Mermaid-like MBD markup as the public source.
+- `SWE-001`: Each sample controller shall be described in `samples/<sample-id>/model.mbd.md` using Mermaid-like MBD markup as the public source.
 - `SWE-002`: The parser shall convert the markup into an internal IR snapshot without requiring YAML as an input.
 - `SWE-003`: The IR shall retain enough trace information to connect requirements, components, ports, states, flows, control rules, and tests.
 - `SWE-004`: Generated preview C shall use HAL-style headers for sensor and fan interactions rather than Python internals.
@@ -154,7 +154,7 @@ Do not invent missing thresholds, timings, recovery rules, or fault semantics.
 | `SYS-007` | `DSC-C` | System Requirements | The system shall latch a diagnostic fault when invalid sensor input persists beyond a fictional debounce window. | Markup components, control rules, scenarios, reports |
 | `SYS-008` | `DSC-C` | System Requirements | The system shall recover from a latched fault only after explicit recovery conditions are met. | Markup components, control rules, scenarios, reports |
 | `SYS-009` | `` | System Requirements | The system shall expose normal, threshold-boundary, derating, sensor-fault, fault-latch, and recovery scenario behavior through generated review reports. | Markup components, control rules, scenarios, reports |
-| `SWE-001` | `` | Software Requirements | The controller shall be described in `examples/*.mbd.md` using Mermaid-like MBD markup as the public source. | Parser tests, IR snapshot tests, preview C export tests |
+| `SWE-001` | `` | Software Requirements | Each sample controller shall be described in `samples/<sample-id>/model.mbd.md` using Mermaid-like MBD markup as the public source. | Parser tests, IR snapshot tests, preview C export tests |
 | `SWE-002` | `` | Software Requirements | The parser shall convert the markup into an internal IR snapshot without requiring YAML as an input. | Parser tests, IR snapshot tests, preview C export tests |
 | `SWE-003` | `` | Software Requirements | The IR shall retain enough trace information to connect requirements, components, ports, states, flows, control rules, and tests. | Parser tests, IR snapshot tests, preview C export tests |
 | `SWE-004` | `` | Software Requirements | Generated preview C shall use HAL-style headers for sensor and fan interactions rather than Python internals. | Parser tests, IR snapshot tests, preview C export tests |

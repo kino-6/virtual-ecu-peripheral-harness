@@ -1,16 +1,22 @@
 from pathlib import Path
 
 from veph.preview_runtime import run_preview_file
+from veph.sample_catalog import load_sample
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _sample(sample_id: str):
+    return load_sample(sample_id, ROOT)
+
+
 def test_thermal_fan_normal_preview_scenario_passes(tmp_path):
     report_path = tmp_path / "thermal_fan_normal.md"
+    sample = _sample("thermal_fan_control")
     result = run_preview_file(
-        ROOT / "examples" / "toy_thermal_fan_control.mbd.md",
-        ROOT / "scenarios" / "thermal_fan_normal.yml",
+        sample.paths.model,
+        sample.paths.scenarios["normal"],
         report_path=report_path,
     )
 
@@ -41,9 +47,10 @@ def test_thermal_fan_normal_preview_scenario_passes(tmp_path):
 
 
 def test_thermal_fan_fault_preview_scenario_passes(tmp_path):
+    sample = _sample("thermal_fan_control")
     result = run_preview_file(
-        ROOT / "examples" / "toy_thermal_fan_control.mbd.md",
-        ROOT / "scenarios" / "thermal_fan_fault.yml",
+        sample.paths.model,
+        sample.paths.scenarios["fault"],
         report_path=tmp_path / "thermal_fan_fault.md",
     )
 
@@ -56,9 +63,10 @@ def test_thermal_fan_fault_preview_scenario_passes(tmp_path):
 
 def test_thermal_protection_derating_scenario_passes_with_report_sections(tmp_path):
     report_path = tmp_path / "thermal_protection_derating.md"
+    sample = _sample("thermal_protection_controller")
     result = run_preview_file(
-        ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",
-        ROOT / "scenarios" / "thermal_protection_derating.yml",
+        sample.paths.model,
+        sample.paths.scenarios["derating"],
         report_path=report_path,
     )
 
@@ -80,15 +88,16 @@ def test_thermal_protection_derating_scenario_passes_with_report_sections(tmp_pa
     assert "## Expected Behavior" in report
     assert "## Pass/Fail Result" in report
     assert "Preview subset assumption" in report
-    assert "examples/toy_thermal_protection_controller.mbd.md" in report
+    assert "samples/thermal_protection_controller/model.mbd.md" in report
     assert "previewCodeSource" in report
     assert "DeratingCommandManager" in report
 
 
 def test_thermal_protection_boundary_scenario_proves_low_threshold_return(tmp_path):
+    sample = _sample("thermal_protection_controller")
     result = run_preview_file(
-        ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",
-        ROOT / "scenarios" / "thermal_protection_boundary.yml",
+        sample.paths.model,
+        sample.paths.scenarios["boundary"],
         report_path=tmp_path / "thermal_protection_boundary.md",
     )
 
@@ -100,14 +109,15 @@ def test_thermal_protection_boundary_scenario_proves_low_threshold_return(tmp_pa
 
 
 def test_thermal_protection_fault_latch_and_recovery_scenarios_pass(tmp_path):
+    sample = _sample("thermal_protection_controller")
     fault = run_preview_file(
-        ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",
-        ROOT / "scenarios" / "thermal_protection_fault_latch.yml",
+        sample.paths.model,
+        sample.paths.scenarios["fault_latch"],
         report_path=tmp_path / "thermal_protection_fault_latch.md",
     )
     recovery = run_preview_file(
-        ROOT / "examples" / "toy_thermal_protection_controller.mbd.md",
-        ROOT / "scenarios" / "thermal_protection_recovery.yml",
+        sample.paths.model,
+        sample.paths.scenarios["recovery"],
         report_path=tmp_path / "thermal_protection_recovery.md",
     )
 

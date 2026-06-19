@@ -211,8 +211,9 @@ claiming ISO 26262 or ASIL compliance:
 
 ## Software Requirements
 
-- `SWE-001`: The controller shall be described in `examples/*.mbd.md` using
-  Mermaid-like MBD markup as the public source.
+- `SWE-001`: Each sample controller shall be described in
+  `samples/<sample-id>/model.mbd.md` using Mermaid-like MBD markup as the public
+  source.
 - `SWE-002`: The parser shall convert the markup into an internal IR snapshot
   without requiring YAML as an input.
 - `SWE-003`: The IR shall retain enough trace information to connect

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToyPowerMonitorIC Markup-to-MBD Demo</title>
+  <style>
+:root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5f6f76;
+      --line: #c7d2d6;
+      --panel: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+      --accent-soft: #dcebea;
+      --warn: #8a4b25;
+      --warn-soft: #f6e7d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-copy, .hero-facts, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .hero-copy { padding: 28px; }
+    .hero-copy p {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    p, span, li, td, th { color: var(--muted); }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      background: var(--line);
+    }
+    .hero-facts div {
+      background: var(--panel);
+      padding: 18px;
+    }
+    .hero-facts strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .hero-facts span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+    }
+    .diagram {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+      margin-top: 16px;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .node, .state {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 2;
+    }
+    .mbd-block {
+      fill: #ffffff;
+      stroke: #78909a;
+      stroke-width: 2;
+      filter: drop-shadow(0 2px 2px rgba(23, 32, 38, 0.08));
+    }
+    .initial { fill: var(--accent-soft); stroke: var(--accent); }
+    .arrow, .state-arrow {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .state-arrow { stroke: #475569; marker-end: url(#stateArrow); }
+    .signal-line {
+      stroke: #256f3f;
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#signalArrow);
+    }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
+    .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
+    .node-title, .state-label {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-title.small { font-size: 12px; }
+    .block-title {
+      fill: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .block-kind {
+      fill: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .port-label {
+      fill: #334155;
+      font-size: 11px;
+    }
+    .signal-label {
+      fill: #1f5f36;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-note, .edge-note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .edge-label {
+      fill: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); font-weight: 700; }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .policy {
+      border-color: #e0c3a8;
+      background: var(--warn-soft);
+    }
+    .policy h2 { color: var(--warn); }
+    @media (max-width: 840px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
+      .hero-copy, .panel { padding: 16px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p>Author in text. Verify in MBD tools.</p>
+        <h1>ToyPowerMonitorIC Markup-to-MBD Demo</h1>
+        <span>Generated from Mermaid-like Markdown markup. This is a preview, not the verification backend.</span>
+      </div>
+      <div class="hero-facts" aria-label="model facts">
+        <div><strong>3</strong><span>ports</span></div>
+        <div><strong>0</strong><span>functions</span></div>
+        <div><strong>0</strong><span>control rules</span></div>
+        <div><strong>0</strong><span>harness boundaries</span></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Functional Architecture</h2>
+      <p>No functional decomposition is declared in the MBD source.</p>
+    </section>
+    <section class="panel">
+      <h2>Functional Decomposition</h2>
+      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
+      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td colspan="7">None</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Spec-To-MBD Compliance Review</h2>
+      <p>This review gate is generated from requirement traces in the MBD source. Expected behavior remains in the sample specification; this table only shows model and scenario evidence.</p>
+      <table>
+        <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td colspan="3">None</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Checklist</h2>
+      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements traceability</td><td>Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.</td><td>Reject broad component-level trace as proof.</td></tr>
+          <tr><td>Interface and data-flow review</td><td>Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.</td><td>Reject hidden harness shortcuts.</td></tr>
+          <tr><td>State/control behavior</td><td>States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.</td><td>Reject split or contradictory behavior.</td></tr>
+          <tr><td>Requirements-based scenario evidence</td><td>Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.</td><td>Reject pass/fail without expected behavior.</td></tr>
+          <tr><td>Modeling standards and readability</td><td>Names are stable, diagrams are readable, and views are simpler than the behavior under review.</td><td>Reject needless visual complexity.</td></tr>
+          <tr><td>Generated artifact boundary</td><td>Handoff files and preview C are generated outputs from the MBD source.</td><td>Reject manual synchronization.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Control Semantics Ownership</h2>
+      <p><code>mbd-control</code> is the behavior owner for state and output decisions. State diagrams, SCXML, Simulink, Modelica, preview C, reports, and this HTML page are derived review or handoff views.</p>
+      <p>Selection policy: lower numeric priority wins after state scope and guard match. This removes hidden dependence on parser or runtime list order.</p>
+    </section>
+    <section class="panel">
+      <h2>MBD Data Flow Diagram</h2>
+      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 380" role="img" aria-label="MBD data flow generated from mbd-flow">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 1136 73 C 731 73, 731 73, 326 73" class="ir-flow-line"></path>
+        <text x="731" y="65" text-anchor="middle" class="signal-label">write CONTROL.enable</text>
+        <path d="M 556 73 C 586 73, 586 73, 616 73" class="ir-flow-line"></path>
+        <text x="586" y="65" text-anchor="middle" class="signal-label">spi write</text>
+        <path d="M 846 143 C 586 143, 586 73, 326 73" class="ir-flow-line"></path>
+        <text x="586" y="100" text-anchor="middle" class="signal-label">spi read</text>
+        <path d="M 556 73 C 731 73, 731 143, 906 143" class="ir-flow-line"></path>
+        <text x="731" y="100" text-anchor="middle" class="signal-label">STATUS.ready, STATUS.undervoltageFault</text>
+        <path d="M 846 213 C 876 213, 876 143, 906 143" class="ir-flow-line"></path>
+        <text x="876" y="170" text-anchor="middle" class="signal-label">ready signal</text>
+        <path d="M 846 283 C 876 283, 876 143, 906 143" class="ir-flow-line"></path>
+        <text x="876" y="205" text-anchor="middle" class="signal-label">fault signal</text>
+        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="68" text-anchor="middle" class="node-title small">HAL_SPI</text>
+        <text x="441" y="88" text-anchor="middle" class="node-note">HAL Boundary</text>
+        <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyPowerMonitorIC.CONTROL</text>
+        <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyPowerMonitorIC.STATUS</text>
+        <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyPowerMonitorIC.ready</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyPowerMonitorIC.fault</text>
+        <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ECU_App.control_task</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <rect x="906" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="138" text-anchor="middle" class="node-title small">ECU_App.diagnostics</text>
+        <text x="1021" y="158" text-anchor="middle" class="node-note">Virtual Actuator</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine Diagram</h2>
+      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>
+      <svg class="diagram" viewBox="0 0 1180 320" role="img" aria-label="State machine generated from mbd-state">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">powerOn</text>
+        <path d="M 536 96 C 571 96, 571 96, 606 96" class="ir-state-line"></path>
+        <text x="571" y="86" text-anchor="middle" class="edge-note">initSequenceOk</text>
+        <path d="M 816 96 C 851 96, 851 96, 886 96" class="ir-state-line"></path>
+        <text x="851" y="86" text-anchor="middle" class="edge-note">voltage &lt; undervoltageThreshold</text>
+        <path d="M 991 128 C 571 128, 571 128, 151 128" class="ir-state-line"></path>
+        <text x="571" y="118" text-anchor="middle" class="edge-note">clearFault</text>
+        <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="103" text-anchor="middle" class="state-label">RESET</text>
+        <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="103" text-anchor="middle" class="state-label">INIT</text>
+        <rect x="606" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="711" y="103" text-anchor="middle" class="state-label">NORMAL</text>
+        <rect x="886" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="991" y="103" text-anchor="middle" class="state-label">FAULT_LATCHED</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Harness Boundary Diagram</h2>
+      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Harness boundary generated from mbd-harness">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test inputs</text>
+        <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="386" y="148" text-anchor="middle" class="node-title">Virtual Sensor</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">virtual IC</text>
+        <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyPowerMonitorIC</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">HAL controller</text>
+        <rect x="784" y="72" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="102" text-anchor="middle" class="node-title">Virtual Actuator</text>
+        <text x="884" y="124" text-anchor="middle" class="node-note">virtual IC</text>
+        <line x1="730" y1="153" x2="784" y2="107" class="ir-arrow"></line>
+        <rect x="1010" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1110" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="1110" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
+        <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
+        <line x1="984" y1="153" x2="1010" y2="153" class="ir-arrow"></line>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Requirements Trace Matrix</h2>
+      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
+      <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
+          <tr><td colspan="2">None</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Markup Sections</h2>
+      <p>The source is the Markdown authoring file. The IR and diagrams are generated artifacts.</p>
+      <ul>
+        <li><code>mbd-component</code></li>
+        <li><code>mbd-registers</code></li>
+        <li><code>mbd-state</code></li>
+        <li><code>mbd-flow</code></li>
+      </ul>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Ports</h2>
+        <table><thead><tr><th>Dir</th><th>Name</th><th>Type</th><th>Default</th></tr></thead><tbody>
+          <tr><td>in</td><td>voltage</td><td>V</td><td>12.0</td></tr>
+          <tr><td>out</td><td>ready</td><td>bool</td><td></td></tr>
+          <tr><td>out</td><td>fault</td><td>bool</td><td></td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>State Handoff</h2>
+        <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>
+        <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>
+          <tr><td>RESET</td><td>INIT</td><td>powerOn</td></tr>
+          <tr><td>INIT</td><td>NORMAL</td><td>initSequenceOk</td></tr>
+          <tr><td>NORMAL</td><td>FAULT_LATCHED</td><td>voltage &lt; undervoltageThreshold</td></tr>
+          <tr><td>FAULT_LATCHED</td><td>RESET</td><td>clearFault</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Control Decision Table</h2>
+        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td colspan="8">None</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>Harness Boundary</h2>
+        <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>
+          <tr><td colspan="4">None</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="panel">
+      <h2>Flow Handoff</h2>
+      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ECU_App.control_task</td><td>HAL_SPI</td><td>write CONTROL.enable</td><td></td></tr>
+          <tr><td>HAL_SPI</td><td>ToyPowerMonitorIC.CONTROL</td><td>spi write</td><td></td></tr>
+          <tr><td>ToyPowerMonitorIC.STATUS</td><td>HAL_SPI</td><td>spi read</td><td></td></tr>
+          <tr><td>HAL_SPI</td><td>ECU_App.diagnostics</td><td>STATUS.ready, STATUS.undervoltageFault</td><td></td></tr>
+          <tr><td>ToyPowerMonitorIC.ready</td><td>ECU_App.diagnostics</td><td>ready signal</td><td></td></tr>
+          <tr><td>ToyPowerMonitorIC.fault</td><td>ECU_App.diagnostics</td><td>fault signal</td><td></td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel policy">
+      <h2>Verification Boundary</h2>
+      <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>
+    </section>
+  </main>
+</body>
+</html>

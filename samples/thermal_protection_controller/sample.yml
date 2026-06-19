@@ -1,0 +1,37 @@
+id: thermal_protection_controller
+title: Toy Thermal Protection Controller
+kind: process-demo
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+previewCodeDir: preview_c
+scenarios:
+  normal: scenarios/normal.yml
+  boundary: scenarios/boundary.yml
+  derating: scenarios/derating.yml
+  fault_latch: scenarios/fault_latch.yml
+  recovery: scenarios/recovery.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+reports:
+  normal: reports/normal.md
+  boundary: reports/boundary.md
+  derating: reports/derating.md
+  fault_latch: reports/fault_latch.md
+  recovery: reports/recovery.md
+previewCode:
+  readme: preview_c/README.md
+  controllerSource: preview_c/controller.c
+  controllerHeader: preview_c/controller.h
+  halLoadLimiter: preview_c/hal_load_limiter.h
+  halPwm: preview_c/hal_pwm.h
+  halSpi: preview_c/hal_spi.h

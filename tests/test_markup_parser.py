@@ -1,13 +1,14 @@
 from pathlib import Path
 
 from veph.markup_parser import parse_markup_file
+from veph.sample_catalog import load_sample
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_markup_file_parses_to_internal_ir():
-    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+    model = parse_markup_file(load_sample("toy_power_monitor", ROOT).paths.model)
 
     assert model.title == "Toy Power Monitor IC"
     assert model.component.name == "ToyPowerMonitorIC"
@@ -20,11 +21,11 @@ def test_markup_file_parses_to_internal_ir():
     assert model.transitions[0].target == "INIT"
     assert model.flows[0].source == "ECU_App.control_task"
     assert model.flows[0].target == "HAL_SPI"
-    assert model.source_path.name == "toy_power_monitor.mbd.md"
+    assert model.source_path.name == "model.mbd.md"
 
 
 def test_internal_ir_json_is_not_public_authoring_format():
-    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+    model = parse_markup_file(load_sample("toy_power_monitor", ROOT).paths.model)
 
     data = model.to_dict()
 
@@ -34,7 +35,7 @@ def test_internal_ir_json_is_not_public_authoring_format():
 
 
 def test_thermal_fan_markup_keeps_requirement_traceability():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    model = parse_markup_file(load_sample("thermal_fan_control", ROOT).paths.model)
 
     assert model.component.name == "ToyThermalFanController"
     assert "SYS-001" in model.component.trace
@@ -50,7 +51,7 @@ def test_thermal_fan_markup_keeps_requirement_traceability():
 
 
 def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+    model = parse_markup_file(load_sample("thermal_protection_controller", ROOT).paths.model)
 
     recover_rule = next(control for control in model.controls if control.name == "recoverFromLatch")
     fault_function = next(function for function in model.functions if function.name == "FaultLatchRecoveryManager")

@@ -17,30 +17,33 @@ The intended pipeline is:
 
 ```text
 Requirements.md
-  -> specs/*.md
-examples/*.mbd.md
+  -> samples/<sample-id>/spec.md
+samples/<sample-id>/sample.yml
+samples/<sample-id>/model.mbd.md
   -> markup parser
   -> internal IR snapshot
-  -> exporters
+  -> samples/<sample-id>/generated/
       -> Markdown review document
       -> Mermaid / PlantUML preview diagrams
       -> Simulink model-generation .m script
       -> SCXML state-machine handoff
       -> Modelica .mo text artifact
       -> FMI-oriented metadata stub
-  -> optional Python preview only
+  -> optional Python preview only under samples/<sample-id>/reports/
 ```
 
 The public authoring source is Markdown with Mermaid-like fenced blocks, such as
-[examples/toy_power_monitor.mbd.md](examples/toy_power_monitor.mbd.md). The IR
-JSON is an internal snapshot for tooling. YAML files, where present, are legacy
-or optional machine-readable forms, not the public source of truth.
+[samples/toy_power_monitor/model.mbd.md](samples/toy_power_monitor/model.mbd.md).
+Each sample owns a `sample.yml` manifest that declares its source, scenarios,
+generated artifacts, reports, and preview C output. The IR JSON is an internal
+snapshot for tooling. YAML files, where present, are legacy or optional
+machine-readable forms, not the public source of truth.
 
 For larger validation examples, start from [Requirements.md](Requirements.md),
-derive a human-readable specification under `specs/`, then author the MBD markup.
-The project uses ASPICE-aware habits such as requirement IDs, traceability,
-review gates, and reproducible evidence, but it does not claim ASPICE
-compliance, safety certification, or tool qualification.
+derive a human-readable specification under `samples/<sample-id>/spec.md`, then
+author the MBD markup. The project uses ASPICE-aware habits such as requirement
+IDs, traceability, review gates, and reproducible evidence, but it does not
+claim ASPICE compliance, safety certification, or tool qualification.
 
 ## What This Project Is
 
@@ -85,61 +88,58 @@ HAL-style boundaries and are not production-derived.
 ## Commands
 
 ```bash
-python -m veph parse examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.ir.json
-python -m veph export-docs examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.md
-python -m veph export-mermaid examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.mmd
-python -m veph export-plantuml examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.puml
-python -m veph export-simulink-m examples/toy_power_monitor.mbd.md --out generated/create_toy_power_monitor_model.m
-python -m veph export-modelica examples/toy_power_monitor.mbd.md --out generated/ToyPowerMonitor.mo
-python -m veph export-fmi-metadata examples/toy_power_monitor.mbd.md --out generated/toy_power_monitor.fmi.json
+python -m veph list-samples
+python -m veph export-sample toy_power_monitor
+python -m veph export-sample thermal_fan_control
+python -m veph export-sample thermal_protection_controller
 pytest
 ```
 
-Thermal fan validation commands:
+Preview scenario examples:
 
 ```bash
-python -m veph parse examples/toy_thermal_fan_control.mbd.md --out generated/toy_thermal_fan_control.ir.json
-python -m veph export-mermaid examples/toy_thermal_fan_control.mbd.md --out generated/toy_thermal_fan_control.mmd
-python -m veph export-simulink-m examples/toy_thermal_fan_control.mbd.md --out generated/create_toy_thermal_fan_control_model.m
-python -m veph export-code-preview examples/toy_thermal_fan_control.mbd.md --out generated/ecu_preview/
-python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --scenario scenarios/thermal_fan_normal.yml --report reports/thermal_fan_normal.md
-python -m veph run-preview --model examples/toy_thermal_fan_control.mbd.md --scenario scenarios/thermal_fan_fault.yml --report reports/thermal_fan_fault.md
-pytest
+python -m veph run-preview \
+  --model samples/thermal_fan_control/model.mbd.md \
+  --scenario samples/thermal_fan_control/scenarios/normal.yml \
+  --report samples/thermal_fan_control/reports/normal.md
+
+python -m veph run-preview \
+  --model samples/thermal_protection_controller/model.mbd.md \
+  --scenario samples/thermal_protection_controller/scenarios/derating.yml \
+  --report samples/thermal_protection_controller/reports/derating.md
 ```
 
-Thermal protection process-demo commands:
+Legacy YAML preview commands may still exist, but new samples and public
+documentation should use `samples/<sample-id>/model.mbd.md`.
 
-```bash
-python -m veph parse examples/toy_thermal_protection_controller.mbd.md --out generated/toy_thermal_protection_controller.ir.json
-python -m veph export-demo examples/toy_thermal_protection_controller.mbd.md --out generated/toy_thermal_protection_controller_demo.html
-python -m veph export-code-preview examples/toy_thermal_protection_controller.mbd.md --out generated/protection_ecu_preview/
-python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_derating.yml --report reports/thermal_protection_derating.md
-python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_fault_latch.yml --report reports/thermal_protection_fault_latch.md
-python -m veph run-preview --model examples/toy_thermal_protection_controller.mbd.md --scenario scenarios/thermal_protection_recovery.yml --report reports/thermal_protection_recovery.md
-pytest
+## Sample Workspace Layout
+
+```text
+samples/<sample-id>/
+  sample.yml        # manifest and local path contract
+  model.mbd.md      # public MBD authoring source
+  spec.md           # optional human-readable sample specification
+  scenarios/        # preview scenario inputs
+  generated/        # reproducible handoff/review artifacts
+  reports/          # reproducible preview reports
+  preview_c/        # preview-only generated C when supported
+  legacy/           # optional compatibility YAML, not source of truth
 ```
-
-Legacy YAML preview commands may still exist while the project transitions, but
-new examples and public documentation should use `examples/*.mbd.md`.
 
 ## Generated Artifacts
 
-- `generated/toy_power_monitor.ir.json`: internal IR snapshot, not a public standard
-- `generated/toy_power_monitor.md`: review document with source-section traceability
-- `generated/toy_power_monitor.mmd`: Mermaid preview diagram
-- `generated/toy_power_monitor.puml`: PlantUML state preview
-- `generated/create_toy_power_monitor_model.m`: plausible Simulink API handoff script
-- `generated/ToyPowerMonitor.mo`: readable Modelica text artifact
-- `generated/toy_power_monitor.fmi.json`: FMI-oriented metadata stub
-- `generated/toy_thermal_fan_control.mmd`: requirements-traceable Mermaid data-flow preview
-- `generated/ecu_preview/`: preview-only synthetic ECU C scaffold
-- `reports/thermal_fan_normal.md`: preview report with separated inputs, steps,
-  observed behavior, generated ECU command outputs, expected behavior, and result
-- `specs/toy_thermal_protection_controller.md`: human-readable process-demo specification
-- `generated/toy_thermal_protection_controller_demo.html`: MBD visualization and trace preview
-- `generated/protection_ecu_preview/`: preview-only synthetic ECU C scaffold for the process demo
-- `reports/thermal_protection_*.md`: scenario reports for normal, derating,
-  fault-latch, and recovery behavior
+- `samples/toy_power_monitor/generated/`: internal IR, review docs, diagrams,
+  Simulink `.m`, Modelica `.mo`, SCXML, and FMI metadata for the compact sample.
+- `samples/thermal_fan_control/generated/`: MBD handoff artifacts for the small
+  thermal control validation sample.
+- `samples/thermal_fan_control/preview_c/`: preview-only synthetic ECU C
+  scaffold for that sample.
+- `samples/thermal_protection_controller/generated/`: reviewable process-demo
+  handoff artifacts.
+- `samples/thermal_protection_controller/reports/`: preview reports with
+  separated inputs, steps, observed behavior, expected behavior, and result.
+- `samples/thermal_protection_controller/preview_c/`: preview-only synthetic ECU
+  C scaffold for the process demo.
 
 These files are generated from the Markdown markup source. If an artifact is
 wrong, update the markup or exporter and regenerate.

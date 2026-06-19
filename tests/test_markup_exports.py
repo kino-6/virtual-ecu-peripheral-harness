@@ -8,20 +8,21 @@ from veph.exporters.plantuml import export_plantuml
 from veph.exporters.scxml import export_scxml
 from veph.exporters.simulink_m import export_simulink_m
 from veph.markup_parser import parse_markup_file
+from veph.sample_catalog import load_sample
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def _model():
-    return parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+    return parse_markup_file(load_sample("toy_power_monitor", ROOT).paths.model)
 
 
 def test_exported_markdown_is_traceable_to_markup_sections():
     output = export_markdown(_model())
 
     assert "# Toy Power Monitor IC" in output
-    assert "Source: `examples/toy_power_monitor.mbd.md`" in output
+    assert "Source: `samples/toy_power_monitor/model.mbd.md`" in output
     assert "mbd-component" in output
     assert "mbd-registers" in output
     assert "mbd-state" in output
@@ -73,7 +74,7 @@ def test_state_and_fmi_exports_are_handoff_stubs_not_full_toolchains():
 
 
 def test_thermal_exports_include_trace_control_and_harness_boundaries():
-    model = parse_markup_file(ROOT / "examples" / "toy_thermal_fan_control.mbd.md")
+    model = parse_markup_file(load_sample("thermal_fan_control", ROOT).paths.model)
 
     markdown = export_markdown(model)
     mermaid = export_mermaid(model)

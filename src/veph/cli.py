@@ -26,6 +26,7 @@ from veph.requirements_support import (
     validate_traceability,
 )
 from veph.samples.requirements_scaffolds import SampleScaffoldError, generate_sample_mbd_scaffold
+from veph.sample_catalog import SampleCatalogError, list_samples, load_sample
 from veph.scenario_runner import ScenarioError, run_scenario_file
 
 
@@ -62,6 +63,7 @@ def main(argv: list[str] | None = None) -> int:
         MarkupParseError,
         ModelValidationError,
         SampleScaffoldError,
+        SampleCatalogError,
         ScenarioError,
         PreviewScenarioError,
         OSError,
@@ -99,6 +101,13 @@ def build_parser() -> argparse.ArgumentParser:
     export_code.add_argument("source")
     export_code.add_argument("--out", required=True)
     export_code.set_defaults(func=_export_code_preview)
+
+    list_samples_cmd = subparsers.add_parser("list-samples", help="list registered sample workspaces")
+    list_samples_cmd.set_defaults(func=_list_samples)
+
+    export_sample = subparsers.add_parser("export-sample", help="regenerate sample-local handoff artifacts")
+    export_sample.add_argument("sample")
+    export_sample.set_defaults(func=_export_sample)
 
     extract_requirements_cmd = subparsers.add_parser(
         "extract-requirements",
@@ -183,6 +192,38 @@ def _export_code_preview(args: argparse.Namespace) -> None:
     model = parse_markup_file(args.source)
     written = export_code_preview(model, args.out)
     print(f"wrote {len(written)} files to {Path(args.out)}")
+
+
+def _list_samples(args: argparse.Namespace) -> None:
+    for sample in list_samples():
+        print(f"{sample.id}\t{sample.kind}\t{sample.title}\t{sample.paths.root}")
+
+
+def _export_sample(args: argparse.Namespace) -> None:
+    sample = load_sample(args.sample)
+    model = parse_markup_file(sample.paths.model)
+    exported = {
+        "ir": json.dumps(model.to_dict(), indent=2, sort_keys=True, default=str) + "\n",
+        "docs": export_markdown(model),
+        "demo": export_demo_html(model),
+        "mermaid": export_mermaid(model),
+        "plantuml": export_plantuml(model),
+        "scxml": export_scxml(model),
+        "modelica": export_modelica(model),
+        "simulink": export_simulink_m(model),
+        "fmi": export_fmi_metadata(model),
+    }
+    count = 0
+    for artifact, content in exported.items():
+        output = sample.paths.generated.get(artifact)
+        if output is None:
+            continue
+        _write_text(output, content)
+        count += 1
+    if sample.paths.preview_code_dir is not None:
+        written = export_code_preview(model, sample.paths.preview_code_dir)
+        count += len(written)
+    print(f"exported {count} sample artifact(s) for {sample.id}")
 
 
 def _extract_requirements(args: argparse.Namespace) -> None:

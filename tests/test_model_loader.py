@@ -3,13 +3,14 @@ from pathlib import Path
 import pytest
 
 from veph.model_loader import ModelValidationError, load_model
+from veph.sample_catalog import load_sample
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_loads_toy_power_monitor_model():
-    model = load_model(ROOT / "specs" / "toy_power_monitor.tmbd.yml")
+    model = load_model(load_sample("toy_power_monitor", ROOT).paths.legacy["legacyModel"])
 
     assert model.name == "ToyPowerMonitorIC"
     assert model.bus.type == "spi"

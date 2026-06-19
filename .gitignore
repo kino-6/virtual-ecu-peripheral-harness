@@ -54,6 +54,7 @@ cover/
 # Translations
 *.mo
 !generated/*.mo
+!samples/*/generated/*.mo
 *.pot
 
 # Django stuff:

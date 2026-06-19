@@ -279,9 +279,12 @@ def _traceability_matrix(model: MbdModelIR) -> list[dict[str, object]]:
 
 def _artifact_evidence(model: MbdModelIR) -> list[str]:
     stem = model.source_path.name.removesuffix(".mbd.md").removesuffix(".md")
+    generated_diagram = f"generated/{stem}.mmd"
+    if model.source_path.parent.name != "samples" and model.source_path.parent.parent.name == "samples":
+        generated_diagram = str(model.source_path.parent / "generated" / "diagram.mmd")
     return [
         str(model.source_path),
-        f"generated/{stem}.mmd",
+        generated_diagram,
         "preview report path supplied by run-preview",
     ]
 
