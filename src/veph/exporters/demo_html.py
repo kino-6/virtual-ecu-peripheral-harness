@@ -174,11 +174,11 @@ def _ir_semantic_mbd_svg(model: MbdModelIR) -> str:
             *(_semantic_svg_node(["Parameter", primary_parameter or "parameter"], 266, 36, 210, "model parameter")),
             '        <polygon points="650,108 735,153 650,198 565,153" class="rule-condition"></polygon>',
             f'        <text x="650" y="148" text-anchor="middle" class="node-title small">{escape(_shorten(true_rule.condition + "?", 30))}</text>',
-            f'        <text x="650" y="168" text-anchor="middle" class="node-note">owner {escape(true_rule.owner or model.component.name)}</text>',
-            *(_semantic_svg_node(_semantic_action_lines(model, true_rule), 796, 72, 226, f"true / {true_rule.name}")),
-            *(_semantic_svg_node(_semantic_action_lines(model, false_rule), 796, 184, 226, f"false / {false_rule.name}")),
+            *(_semantic_svg_node(_semantic_output_action_lines(model, true_rule), 796, 72, 226, "true")),
+            *(_semantic_svg_node(_semantic_output_action_lines(model, false_rule), 796, 184, 226, "false")),
             *(_semantic_svg_node(["ScenarioReport", "observedBehavior"], 1036, 118, 130, "observed")),
             '        <line x1="232" y1="153" x2="266" y2="153" class="ir-arrow"></line>',
+            f'        <text x="249" y="144" text-anchor="middle" class="edge-note">{escape(primary_input or "input")}</text>',
             '        <line x1="476" y1="153" x2="565" y2="153" class="ir-arrow"></line>',
             '        <line x1="476" y1="71" x2="596" y2="126" class="ir-arrow"></line>',
             '        <line x1="735" y1="153" x2="796" y2="107" class="ir-arrow"></line>',
@@ -824,6 +824,15 @@ def _semantic_action_lines(model: MbdModelIR, control: ControlRuleIR) -> list[st
         else:
             parts.append(f"{name} = {value}")
     return parts
+
+
+def _semantic_output_action_lines(model: MbdModelIR, control: ControlRuleIR) -> list[str]:
+    parts: list[str] = []
+    for name, value in control.actions.items():
+        port = model.ports.get(name)
+        if port is not None and port.direction == "out":
+            parts.append(f"Output {name} = {value}")
+    return parts or _semantic_action_lines(model, control)
 
 
 def _svg_defs(marker_id: str) -> list[str]:

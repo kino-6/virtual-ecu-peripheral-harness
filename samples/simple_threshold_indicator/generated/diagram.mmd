@@ -6,14 +6,14 @@ flowchart LR
   input_sampleValue["Input Port: sampleValue"]
   parameter_limit["Parameter: limit"]
   decision_activate_clear{"sampleValue >= limit?"}
-  action_activate["State ACTIVE<br/>Output active = true"]
-  action_clear["State IDLE<br/>Output active = false"]
+  action_activate["Output active = true"]
+  action_clear["Output active = false"]
   report_observed_behavior["ScenarioReport.observedBehavior"]
   source_ToyInputSource -->|"sampleValue"| input_sampleValue
   input_sampleValue --> decision_activate_clear
   parameter_limit --> decision_activate_clear
-  decision_activate_clear -->|"true / activate"| action_activate
-  decision_activate_clear -->|"false / clear"| action_clear
+  decision_activate_clear -->|"true"| action_activate
+  decision_activate_clear -->|"false"| action_clear
   action_activate --> report_observed_behavior
   action_clear --> report_observed_behavior
   %% Semantic Trace: SIMPLE-001, SIMPLE-002, SIMPLE-003

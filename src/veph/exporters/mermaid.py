@@ -90,14 +90,14 @@ def _threshold_pair_diagram(
         f'  {input_id}["Input Port: {primary_input or "input"}"]',
         f'  {parameter_id}["Parameter: {primary_parameter or "parameter"}"]',
         f'  {decision_id}{{"{true_rule.condition}?"}}',
-        f'  {true_action_id}["{_action_label(model, true_rule)}"]',
-        f'  {false_action_id}["{_action_label(model, false_rule)}"]',
+        f'  {true_action_id}["{_output_action_label(model, true_rule)}"]',
+        f'  {false_action_id}["{_output_action_label(model, false_rule)}"]',
         f'  {report_id}["{report}"]',
         f'  {source_id} -->|"{primary_input or "input"}"| {input_id}',
         f"  {input_id} --> {decision_id}",
         f"  {parameter_id} --> {decision_id}",
-        f'  {decision_id} -->|"true / {true_rule.name}"| {true_action_id}',
-        f'  {decision_id} -->|"false / {false_rule.name}"| {false_action_id}',
+        f'  {decision_id} -->|"true"| {true_action_id}',
+        f'  {decision_id} -->|"false"| {false_action_id}',
         f"  {true_action_id} --> {report_id}",
         f"  {false_action_id} --> {report_id}",
     ]
@@ -226,6 +226,15 @@ def _action_label(model: MbdModelIR, control: ControlRuleIR) -> str:
         else:
             parts.append(f"{name} = {value}")
     return "<br/>".join(parts)
+
+
+def _output_action_label(model: MbdModelIR, control: ControlRuleIR) -> str:
+    parts: list[str] = []
+    for name, value in control.actions.items():
+        port = model.ports.get(name)
+        if port is not None and port.direction == "out":
+            parts.append(f"Output {name} = {value}")
+    return "<br/>".join(parts) if parts else _action_label(model, control)
 
 
 def _node_id(name: str) -> str:

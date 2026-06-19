@@ -59,10 +59,10 @@ def test_simple_threshold_generated_visuals_match_spec_design():
     assert 'input_sampleValue["Input Port: sampleValue"]' in mermaid
     assert 'parameter_limit["Parameter: limit"]' in mermaid
     assert 'decision_activate_clear{"sampleValue >= limit?"}' in mermaid
-    assert 'action_activate["State ACTIVE<br/>Output active = true"]' in mermaid
-    assert 'action_clear["State IDLE<br/>Output active = false"]' in mermaid
-    assert 'decision_activate_clear -->|"true / activate"| action_activate' in mermaid
-    assert 'decision_activate_clear -->|"false / clear"| action_clear' in mermaid
+    assert 'action_activate["Output active = true"]' in mermaid
+    assert 'action_clear["Output active = false"]' in mermaid
+    assert 'decision_activate_clear -->|"true"| action_activate' in mermaid
+    assert 'decision_activate_clear -->|"false"| action_clear' in mermaid
     assert "ToyInputSource_sampleValue -->|\"scenario input\"| ThresholdCompare_sampleValue" in mermaid
     assert "ToyThresholdIndicator_limit -->|\"threshold parameter\"| ThresholdCompare_limit" in mermaid
     assert "ThresholdCompare_active -->|\"comparison result\"| ToyThresholdIndicator_active" in mermaid
@@ -80,6 +80,8 @@ def test_simple_threshold_generated_visuals_match_spec_design():
     assert "sampleValue &gt;= limit?" in html
     assert "Output active = true" in html
     assert "Output active = false" in html
+    assert "true" in html
+    assert "false" in html
     assert "ThresholdCompare.sampleValue" in html
     assert "ThresholdCompare.limit" in html
     assert "ThresholdCompare.active" in html
