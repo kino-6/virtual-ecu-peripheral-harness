@@ -238,16 +238,16 @@ def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
 
 
 def _ir_spec_compliance_review(model: MbdModelIR) -> str:
-    rows = "\n".join(_ir_spec_row(model, req_id) for req_id in [f"SYS-{index:03d}" for index in range(1, 10)])
+    rows = "\n".join(_ir_spec_row(model, req_id) for req_id in sorted(model.requirement_refs()))
     return "\n".join(
         [
             '    <section class="panel">',
             "      <h2>Spec-To-MBD Compliance Review</h2>",
-            "      <p>This is the first review gate: each system requirement must point to concrete MBD elements and scenario evidence. Broad component-level trace is intentionally not used as proof.</p>",
+            "      <p>This review gate is generated from requirement traces in the MBD source. Expected behavior remains in the sample specification; this table only shows model and scenario evidence.</p>",
             "      <table>",
-            "        <thead><tr><th>Requirement</th><th>Expected behavior</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>",
+            "        <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>",
             "        <tbody>",
-            rows,
+            flow_or_empty(rows, colspan=3),
             "        </tbody>",
             "      </table>",
             "    </section>",
@@ -256,37 +256,26 @@ def _ir_spec_compliance_review(model: MbdModelIR) -> str:
 
 
 def _ir_spec_row(model: MbdModelIR, req_id: str) -> str:
-    expected = {
-        "SYS-001": "Read fictional temperature and validity through HAL.",
-        "SYS-002": "Command fan duty through the virtual fan driver.",
-        "SYS-003": "Enter COOLING and command 70 percent fan duty at 78 degC or above.",
-        "SYS-004": "Return to IDLE only at 68 degC or below.",
-        "SYS-005": "Enter DERATING and command fan/limiter protection outputs at 94 degC or above.",
-        "SYS-006": "Enter sensor fault behavior and safe command when temperature validity is false.",
-        "SYS-007": "Latch a fault when invalidDebounced is true.",
-        "SYS-008": "Recover only when valid, invalidDebounced is false, and recoveryRequest is true.",
-        "SYS-009": "Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.",
-    }[req_id]
-    scenario = {
-        "SYS-001": "thermal_protection_normal",
-        "SYS-002": "thermal_protection_normal, thermal_protection_derating",
-        "SYS-003": "thermal_protection_normal",
-        "SYS-004": "thermal_protection_boundary",
-        "SYS-005": "thermal_protection_derating",
-        "SYS-006": "thermal_protection_fault_latch",
-        "SYS-007": "thermal_protection_fault_latch",
-        "SYS-008": "thermal_protection_recovery",
-        "SYS-009": "thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports",
-    }[req_id]
     evidence = ", ".join(_ir_elements_for_ref(model, req_id)) or "Missing concrete MBD trace"
+    scenario = ", ".join(_ir_scenarios_for_ref(model, req_id)) or "No scenario trace declared"
     return (
         "          <tr>"
         f"<td><code>{escape(req_id)}</code></td>"
-        f"<td>{escape(expected)}</td>"
         f"<td>{escape(evidence)}</td>"
         f"<td>{escape(scenario)}</td>"
         "</tr>"
     )
+
+
+def _ir_scenarios_for_ref(model: MbdModelIR, ref: str) -> list[str]:
+    scenarios: list[str] = []
+    for function in model.functions:
+        if ref in function.trace:
+            scenarios.extend(function.scenarios)
+    for control in model.controls:
+        if ref in control.trace:
+            scenarios.extend(control.scenarios)
+    return sorted(set(scenarios))
 
 
 def _ir_mbd_review_checklist() -> str:
@@ -437,7 +426,7 @@ def _ir_review_pipeline_svg(model: MbdModelIR) -> str:
 
 def _ir_data_flow_svg(model: MbdModelIR) -> str:
     flows = model.flows
-    positions = _ir_flow_node_positions(flows)
+    positions = _ir_flow_node_positions(model, flows)
     height = max(360, 100 + 70 * max(_column_count(positions, column) for column in range(4)))
     parts = [
         '    <section class="panel">',
@@ -454,41 +443,53 @@ def _ir_data_flow_svg(model: MbdModelIR) -> str:
     return "\n".join(parts)
 
 
-def _ir_flow_node_positions(flows: list[FlowIR]) -> dict[str, tuple[int, int, str]]:
+def _ir_flow_node_positions(model: MbdModelIR, flows: list[FlowIR]) -> dict[str, tuple[int, int, str]]:
     columns: list[list[str]] = [[], [], [], []]
     for flow in flows:
         for endpoint in [flow.source, flow.target]:
-            column = _ir_flow_column(endpoint)
+            column = _ir_flow_column(model, endpoint)
             if endpoint not in columns[column]:
                 columns[column].append(endpoint)
     positions: dict[str, tuple[int, int, str]] = {}
     x_by_column = [36, 326, 616, 906]
     for column, endpoints in enumerate(columns):
         for index, endpoint in enumerate(endpoints):
-            positions[endpoint] = (x_by_column[column], 46 + index * 70, _ir_flow_kind(endpoint))
+            positions[endpoint] = (x_by_column[column], 46 + index * 70, _ir_flow_kind(model, endpoint))
     return positions
 
 
-def _ir_flow_column(endpoint: str) -> int:
-    if endpoint.startswith("ToyTempSensorIC"):
+def _ir_flow_column(model: MbdModelIR, endpoint: str) -> int:
+    role = _endpoint_role(model, endpoint)
+    if role == "sensor":
         return 0
     if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
         return 1
-    if endpoint.startswith("ToyThermalProtectionController") or endpoint.startswith("ToyThermalFanController"):
+    if endpoint.startswith(model.component.name) or role == "controller":
         return 2
     return 3
 
 
-def _ir_flow_kind(endpoint: str) -> str:
-    if endpoint.startswith("ToyTempSensorIC"):
+def _ir_flow_kind(model: MbdModelIR, endpoint: str) -> str:
+    role = _endpoint_role(model, endpoint)
+    if role == "sensor":
         return "Virtual Sensor"
     if endpoint.startswith("HAL_") or endpoint.startswith("HAL."):
         return "HAL Boundary"
-    if endpoint.startswith("ToyThermal"):
+    if endpoint.startswith(model.component.name) or role == "controller":
         return "Controller"
     if endpoint.startswith("ScenarioReport"):
         return "Report"
+    if role == "actuator":
+        return "Virtual Actuator"
     return "Virtual Actuator"
+
+
+def _endpoint_role(model: MbdModelIR, endpoint: str) -> str:
+    root = endpoint.split(".", 1)[0]
+    for device in model.harness_devices:
+        if device.name == root:
+            return device.role
+    return ""
 
 
 def _column_count(positions: dict[str, tuple[int, int, str]], column: int) -> int:

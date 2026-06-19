@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from veph.exporters.code_preview import export_code_preview
+from veph.exporters.code_preview import CodePreviewExportError, export_code_preview
 from veph.exporters.fmi_metadata import export_fmi_metadata
 from veph.exporters.markdown import export_markdown
 from veph.exporters.demo_html import export_demo_html
@@ -25,6 +25,7 @@ from veph.requirements_support import (
     render_requirements_json,
     validate_traceability,
 )
+from veph.samples.requirements_scaffolds import SampleScaffoldError, generate_sample_mbd_scaffold
 from veph.scenario_runner import ScenarioError, run_scenario_file
 
 
@@ -56,7 +57,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         args.func(args)
-    except (MarkupParseError, ModelValidationError, ScenarioError, PreviewScenarioError, OSError) as exc:
+    except (
+        CodePreviewExportError,
+        MarkupParseError,
+        ModelValidationError,
+        SampleScaffoldError,
+        ScenarioError,
+        PreviewScenarioError,
+        OSError,
+    ) as exc:
         parser.exit(1, f"error: {exc}\n")
     return 0
 
@@ -113,6 +122,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scaffold_mbd.add_argument("source")
     scaffold_mbd.add_argument("--out", required=True)
+    scaffold_mbd.add_argument(
+        "--sample",
+        help="optional explicit sample scaffold; omitted means sample-neutral",
+    )
     scaffold_mbd.set_defaults(func=_scaffold_mbd)
 
     validate_trace = subparsers.add_parser(
@@ -184,6 +197,9 @@ def _scaffold_spec(args: argparse.Namespace) -> None:
 
 def _scaffold_mbd(args: argparse.Namespace) -> None:
     extracted = extract_requirements(args.source)
+    if args.sample:
+        _write_text(args.out, generate_sample_mbd_scaffold(args.sample, extracted))
+        return
     _write_text(args.out, generate_mbd_scaffold(extracted))
 
 

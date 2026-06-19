@@ -72,7 +72,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
                 "atMs": step.get("atMs", 0),
                 "scenarioInput": dict(signal),
                 "before": before,
-                "virtualIcObservation": _virtual_ic_observation(inputs),
+                "virtualIcObservation": _virtual_ic_observation(model, inputs),
                 "controlRuleEvaluations": evaluations,
                 "selectionPolicy": "lowest numeric priority wins after state scope and guard match",
                 "appliedRule": applied.name if applied else None,
@@ -278,22 +278,11 @@ def _traceability_matrix(model: MbdModelIR) -> list[dict[str, object]]:
 
 
 def _artifact_evidence(model: MbdModelIR) -> list[str]:
-    if model.component.name == "ToyThermalProtectionController":
-        return [
-            "examples/toy_thermal_protection_controller.mbd.md",
-            "generated/toy_thermal_protection_controller.mmd",
-            "generated/protection_ecu_preview/controller.c",
-            "reports/thermal_protection_normal.md",
-            "reports/thermal_protection_boundary.md",
-            "reports/thermal_protection_derating.md",
-            "reports/thermal_protection_fault_latch.md",
-            "reports/thermal_protection_recovery.md",
-        ]
+    stem = model.source_path.name.removesuffix(".mbd.md").removesuffix(".md")
     return [
-        "examples/toy_thermal_fan_control.mbd.md",
-        "generated/toy_thermal_fan_control.mmd",
-        "generated/ecu_preview/controller.c",
-        "reports/thermal_fan_normal.md or reports/thermal_fan_fault.md",
+        str(model.source_path),
+        f"generated/{stem}.mmd",
+        "preview report path supplied by run-preview",
     ]
 
 
@@ -350,60 +339,43 @@ def _state_snapshot(state: str, inputs: dict[str, Any], outputs: dict[str, Any])
     }
 
 
-def _virtual_ic_observation(inputs: dict[str, Any]) -> dict[str, Any]:
+def _virtual_ic_observation(model: MbdModelIR, inputs: dict[str, Any]) -> dict[str, Any]:
     return {
-        "ToyTempSensorIC.temperatureC": inputs.get("temperatureC"),
-        "ToyTempSensorIC.temperatureValid": inputs.get("temperatureValid"),
+        f"{model.component.name}.{name}": value
+        for name, value in inputs.items()
     }
 
 
 def _generated_outputs(model: MbdModelIR, outputs: dict[str, Any]) -> dict[str, Any]:
-    if model.component.name == "ToyThermalProtectionController":
-        return {
-            **dict(outputs),
-            "halCalls": [
-                {
-                    "api": "hal_spi_read_temperature_c",
-                    "direction": "virtual IC to controller",
-                    "source": "ToyTempSensorIC",
-                },
-                {
-                    "api": "hal_pwm_set_fan_duty",
-                    "direction": "controller to virtual IC",
-                    "target": "ToyFanDriverIC",
-                    "value": outputs.get("fanDuty"),
-                },
-                {
-                    "api": "hal_load_limiter_set_derating",
-                    "direction": "controller to virtual IC",
-                    "target": "ToyLoadLimiterIC",
-                    "value": outputs.get("deratingCommand"),
-                },
-            ],
-            "controllerSource": "generated/protection_ecu_preview/controller.c",
-        }
     return {
-        "fanDuty": outputs.get("fanDuty"),
-        "fault": outputs.get("fault"),
-        "halCalls": [
-            {
-                "api": "hal_spi_read_temperature_c",
-                "direction": "virtual IC to controller",
-                "source": "ToyTempSensorIC",
-            },
-            {
-                "api": "hal_pwm_set_fan_duty",
-                "direction": "controller to virtual IC",
-                "target": "ToyFanDriverIC",
-                "value": outputs.get("fanDuty"),
-            },
-        ],
-        "controllerSource": "generated/ecu_preview/controller.c",
+        **dict(outputs),
+        "commandFlows": _command_flows(model, outputs),
+        "previewCodeSource": "sample-specific preview C export, if available",
     }
 
 
+def _command_flows(model: MbdModelIR, outputs: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    prefix = f"{model.component.name}."
+    for flow in model.flows:
+        if not flow.source.startswith(prefix):
+            continue
+        output_name = flow.source.removeprefix(prefix)
+        if output_name in outputs:
+            rows.append(
+                {
+                    "source": flow.source,
+                    "target": flow.target,
+                    "label": flow.label,
+                    "value": outputs.get(output_name),
+                    "trace": list(flow.trace),
+                }
+            )
+    return rows
+
+
 def _step_requirement_refs(applied: ControlRuleIR | None) -> set[str]:
-    refs = {"HAR-001", "HAR-002", "HAR-004"}
+    refs: set[str] = set()
     if applied is not None:
         refs.update(applied.trace)
     return refs

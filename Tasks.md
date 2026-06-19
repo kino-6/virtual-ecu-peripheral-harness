@@ -11,34 +11,38 @@ Archived task history:
 
 ## Current Goal
 
-Create a semantic MBD export quality contract and improve the Simulink handoff
-exporter so supported thermal protection control rules are structurally
-represented, not only preserved as comments.
+Separate sample-specific assumptions from the common MBD authoring, export, and
+preview layers so future small-start samples do not inherit thermal-control
+behavior implicitly.
 
 ## Quality Gates
 
-- [x] Contract distinguishes review-only artifact, semantic handoff artifact,
-      and executable preview subset.
-- [x] Control rules carry a parsed expression AST, not only raw condition
-      strings.
-- [x] Simulink exporter fails with actionable diagnostics for unsupported
-      control expressions.
-- [x] Thermal protection Simulink handoff includes typed ports, constants,
-      compare blocks, logical blocks, and switch structures for supported
-      priority-ordered rules.
-- [x] Tests prevent rule semantics from regressing to comments only.
+- [x] Common HTML review output has no hardcoded thermal-protection
+      requirement expectations.
+- [x] Common preview reports derive observations, command outputs, trace
+      evidence, and artifact evidence from the parsed model instead of thermal
+      sample names.
+- [x] Preview C generation uses explicit sample-specific generators and fails
+      for unsupported components instead of falling back to a thermal template.
+- [x] Requirements-to-MBD scaffold generation is sample-neutral by default;
+      thermal scaffold output requires explicit sample selection.
+- [x] Tests prove unsupported preview codegen does not silently use the thermal
+      fan scaffold.
 
-## Phase 15: Semantic MBD Export Quality Gate
+## Phase 16: Sample Isolation Boundary
 
-- [x] Add `docs/mbd_semantic_export_contract.md`.
-- [x] Add minimal expression AST and parser support.
-- [x] Add Simulink semantic subset validation.
-- [x] Improve `export_simulink_m` for supported thermal protection rules.
-- [x] Add golden/regression/unsupported-expression tests.
-- [x] Regenerate `generated/create_toy_thermal_protection_controller_model.m`.
+- [x] Remove thermal-specific requirement and scenario tables from the common
+      HTML exporter.
+- [x] Remove thermal-specific observations, HAL calls, report paths, and
+      controller paths from the common preview runtime.
+- [x] Add an explicit preview-code generator registry.
+- [x] Add explicit sample scaffold selection for thermal-protection and keep the
+      default scaffold sample-neutral.
+- [x] Update tests to assert generic behavior and explicit unsupported-sample
+      diagnostics.
 
 Verification:
 
-- [x] Focused semantic export tests pass.
+- [x] Focused exporter/runtime/codegen tests pass.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.

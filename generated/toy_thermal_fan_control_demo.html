@@ -251,19 +251,23 @@
     </section>
     <section class="panel">
       <h2>Spec-To-MBD Compliance Review</h2>
-      <p>This is the first review gate: each system requirement must point to concrete MBD elements and scenario evidence. Broad component-level trace is intentionally not used as proof.</p>
+      <p>This review gate is generated from requirement traces in the MBD source. Expected behavior remains in the sample specification; this table only shows model and scenario evidence.</p>
       <table>
-        <thead><tr><th>Requirement</th><th>Expected behavior</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
+        <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
         <tbody>
-          <tr><td><code>SYS-001</code></td><td>Read fictional temperature and validity through HAL.</td><td>component:ToyThermalFanController, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td><td>thermal_protection_normal</td></tr>
-          <tr><td><code>SYS-002</code></td><td>Command fan duty through the virtual fan driver.</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyFanDriverIC</td><td>thermal_protection_normal, thermal_protection_derating</td></tr>
-          <tr><td><code>SYS-003</code></td><td>Enter COOLING and command 70 percent fan duty at 78 degC or above.</td><td>component:ToyThermalFanController, control:highTemperature</td><td>thermal_protection_normal</td></tr>
-          <tr><td><code>SYS-004</code></td><td>Return to IDLE only at 68 degC or below.</td><td>component:ToyThermalFanController, control:lowTemperature</td><td>thermal_protection_boundary</td></tr>
-          <tr><td><code>SYS-005</code></td><td>Enter DERATING and command fan/limiter protection outputs at 94 degC or above.</td><td>component:ToyThermalFanController, control:sensorFault</td><td>thermal_protection_derating</td></tr>
-          <tr><td><code>SYS-006</code></td><td>Enter sensor fault behavior and safe command when temperature validity is false.</td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:highTemperature, control:lowTemperature</td><td>thermal_protection_fault_latch</td></tr>
-          <tr><td><code>SYS-007</code></td><td>Latch a fault when invalidDebounced is true.</td><td>Missing concrete MBD trace</td><td>thermal_protection_fault_latch</td></tr>
-          <tr><td><code>SYS-008</code></td><td>Recover only when valid, invalidDebounced is false, and recoveryRequest is true.</td><td>Missing concrete MBD trace</td><td>thermal_protection_recovery</td></tr>
-          <tr><td><code>SYS-009</code></td><td>Generate scenario reports for normal, threshold-boundary, derating, sensor-invalid, fault-latch, and recovery.</td><td>Missing concrete MBD trace</td><td>thermal_protection_normal, thermal_protection_boundary, thermal_protection_derating, thermal_protection_fault_latch, thermal_protection_recovery reports</td></tr>
+          <tr><td><code>HAR-001</code></td><td>flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyTempSensorIC, harness:ToyFanDriverIC</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>HAR-002</code></td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalFanController.temperatureC, harness:ToyThermalFanController</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>HAR-004</code></td><td>flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:sensorFault</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>HAR-005</code></td><td>component:ToyThermalFanController</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>STK-001</code></td><td>component:ToyThermalFanController</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SWE-001</code></td><td>component:ToyThermalFanController</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SWE-004</code></td><td>flow:HAL_SPI.read_temperature-&gt;ToyThermalFanController.temperatureC, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, harness:ToyThermalFanController</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-001</code></td><td>component:ToyThermalFanController, flow:ToyTempSensorIC.temperatureC-&gt;HAL_SPI.read_temperature, harness:ToyTempSensorIC</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-002</code></td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fanDuty-&gt;HAL_PWM.set_fan_duty, flow:HAL_PWM.set_fan_duty-&gt;ToyFanDriverIC.dutyCommand, harness:ToyFanDriverIC</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-003</code></td><td>component:ToyThermalFanController, control:highTemperature</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-004</code></td><td>component:ToyThermalFanController, control:lowTemperature</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-005</code></td><td>component:ToyThermalFanController, control:sensorFault</td><td>No scenario trace declared</td></tr>
+          <tr><td><code>SYS-006</code></td><td>component:ToyThermalFanController, flow:ToyThermalFanController.fault-&gt;ScenarioReport.observedBehavior, control:highTemperature, control:lowTemperature</td><td>No scenario trace declared</td></tr>
         </tbody>
       </table>
     </section>

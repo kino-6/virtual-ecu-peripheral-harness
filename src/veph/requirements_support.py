@@ -4,7 +4,6 @@ import json
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
 
 
 REQ_RE = re.compile(r"^- `(?P<id>[A-Z0-9]+-\d+)`(?: \(`(?P<class>DSC-[A-Z]+)`\))?: (?P<text>.*)$")
@@ -183,19 +182,19 @@ def generate_spec_scaffold(extracted: ExtractedRequirements) -> str:
 
 def generate_mbd_scaffold(extracted: ExtractedRequirements) -> str:
     system_refs = _ids_for_sections(extracted, {"System Requirements"})
-    harness_refs = _ids_for_sections(extracted, {"Harness Requirements"})
     high_class_refs = [req.id for req in extracted.requirements if req.classification in {"DSC-B", "DSC-C"}]
     lines = [
         "# MBD Scaffold",
         "",
-        "> Generated scaffold from requirements. Do not treat this scaffold as approved behavior",
-        "> until open questions are reviewed.",
+        "> Generated sample-neutral scaffold from requirements. Do not treat this scaffold as approved behavior",
+        "> until open questions are reviewed and sample-specific boundaries are selected.",
         "",
         "## Review Status",
         "",
         "- Behavior approval: **PENDING**",
         "- Coverage meaning: traces identify intended coverage, not accepted model semantics.",
         "- TODO values are explicit placeholders, not accepted demo answers.",
+        "- Sample policy: this common scaffold does not choose a controller, IC, signal set, threshold, or scenario.",
         "- External MBD/product-test infrastructure is still required for production-grade verification.",
         "",
         "## Requirement Coverage Intent",
@@ -203,52 +202,39 @@ def generate_mbd_scaffold(extracted: ExtractedRequirements) -> str:
         *_coverage_intent_lines(extracted),
         "",
         "```mbd-component",
-        "component ToyThermalProtectionController",
+        "component TODO_ComponentName",
         f"trace {' '.join(system_refs[:8])}".rstrip(),
-        "bus virtual mode=preview wordBits=16",
-        "parameter TODO_highThreshold: degC = 0",
-        "parameter TODO_lowThreshold: degC = 0",
-        "parameter TODO_deratingLimit: percent = 0",
-        "parameter TODO_safeCommand: percent = 0",
+        "bus virtual mode=preview wordBits=TODO",
+        "parameter TODO_parameterName: TODO_unit = TODO_value",
         "",
-        "port in temperatureC: degC = 0",
-        "port in temperatureValid: bool = true",
-        "port out coolingCommand: percent = 0",
-        "port out deratingCommand: percent = 0",
-        "port out diagnosticFault: bool = false",
+        "port in TODO_inputSignal: TODO_type = TODO_default",
+        "port out TODO_outputSignal: TODO_type = TODO_default",
         "```",
         "",
         "```mbd-state",
-        "RESET --> NOMINAL: open-question SYS-008 trace SYS-008",
-        "NOMINAL --> COOLING: open-question threshold-high trace SYS-003",
-        "COOLING --> DERATING: open-question derating-entry trace SYS-005",
-        "DERATING --> FAULT_LATCHED: open-question persistent-invalid-sensor trace SYS-007",
-        "FAULT_LATCHED --> NOMINAL: open-question recovery-conditions trace SYS-008",
+        "# Add state transitions only after behavior is approved.",
+        "# Example shape: TODO_Source --> TODO_Target: TODO_condition trace TODO_REQ",
         "```",
         "",
         "```mbd-flow",
-        "ToyTempSensorIC.temperatureC -> HAL_SPI.read_temperature: virtual sensor sample trace SYS-001 HAR-001",
-        "HAL_SPI.read_temperature -> ToyThermalProtectionController.temperatureC: HAL input trace SWE-004 HAR-002",
-        "ToyThermalProtectionController.coolingCommand -> HAL_PWM.set_cooling: virtual actuator command trace SYS-002 HAR-001",
-        "ToyThermalProtectionController.deratingCommand -> ToyLoadLimiterIC.limit: virtual load limiter command trace SYS-005 HAR-006",
+        "# Add data flows after component and harness boundaries are approved.",
+        "# Example shape: TODO_Source.signal -> TODO_Target.signal: TODO_purpose trace TODO_REQ",
         "```",
         "",
         "```mbd-control",
-        "rule TODO_sensorFault: when temperatureValid == false then diagnosticFault=true trace SYS-006 SYS-007",
-        "rule TODO_highTemperature: when temperatureC >= TODO_highThreshold then coolingCommand=TODO trace SYS-003",
-        "rule TODO_derating: when temperatureC >= TODO_deratingEntry then deratingCommand=TODO trace SYS-005",
+        "# Add priority-ordered control rules after behavior is approved.",
+        "# Example shape: priority TODO rule TODO_name: owner TODO_Owner from * when TODO_condition then TODO_action=TODO_value trace TODO_REQ",
         "```",
         "",
         "```mbd-harness",
-        f"device ToyTempSensorIC role=sensor boundary=virtual_ic trace {' '.join(_matching_refs(harness_refs, ['HAR-001', 'HAR-006']))}",
-        "device ToyFanDriverIC role=actuator boundary=virtual_ic trace HAR-001",
-        "device ToyLoadLimiterIC role=actuator boundary=virtual_ic trace HAR-006",
-        "ecu ToyThermalProtectionController role=controller boundary=hal trace HAR-002 SWE-004",
+        "# Add virtual IC and ECU boundaries after the sample boundary is approved.",
+        "# Example shape: device TODO_Device role=TODO_role boundary=virtual_ic trace TODO_REQ",
+        "# Example shape: ecu TODO_Controller role=controller boundary=hal trace TODO_REQ",
         "```",
         "",
         "## Open Questions",
         "",
-        "Do not invent missing thresholds, timings, recovery rules, or fault semantics.",
+        "Do not invent missing thresholds, timings, recovery rules, component names, IC roles, or fault semantics.",
         "",
     ]
     for req_id in high_class_refs:
@@ -362,11 +348,6 @@ def _coverage_intent_lines(extracted: ExtractedRequirements) -> list[str]:
         if _requires_mbd_coverage(req):
             lines.append(f"- `{req.id}`: scaffold coverage required; refine into concrete model element before approval.")
     return lines or ["- No MBD coverage requirements extracted."]
-
-
-def _matching_refs(refs: Iterable[str], wanted: list[str]) -> list[str]:
-    ref_set = set(refs)
-    return [ref for ref in wanted if ref in ref_set]
 
 
 def _requires_mbd_coverage(req: RequirementRecord) -> bool:

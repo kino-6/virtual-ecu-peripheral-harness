@@ -7,6 +7,7 @@ from veph.requirements_support import (
     render_requirements_json,
     validate_traceability,
 )
+from veph.samples.requirements_scaffolds import generate_sample_mbd_scaffold
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,13 +48,26 @@ def test_generate_mbd_scaffold_preserves_trace_and_refuses_to_invent_behavior():
     scaffold = generate_mbd_scaffold(extracted)
 
     assert "# MBD Scaffold" in scaffold
-    assert "component ToyThermalProtectionController" in scaffold
+    assert "component TODO_ComponentName" in scaffold
     assert "trace SYS-001 SYS-002" in scaffold
     assert "```mbd-control" in scaffold
     assert "Behavior approval: **PENDING**" in scaffold
     assert "TODO values are explicit placeholders, not accepted demo answers." in scaffold
+    assert "does not choose a controller, IC, signal set, threshold, or scenario" in scaffold
     assert "open-question SYS-007" in scaffold
     assert "Do not treat this scaffold as approved behavior" in scaffold
+    assert "ToyThermalProtectionController" not in scaffold
+    assert "ToyTempSensorIC" not in scaffold
+
+
+def test_thermal_protection_mbd_scaffold_requires_explicit_sample_selection():
+    extracted = extract_requirements(ROOT / "Requirements.md")
+    scaffold = generate_sample_mbd_scaffold("thermal-protection", extracted)
+
+    assert "component ToyThermalProtectionController" in scaffold
+    assert "ToyTempSensorIC.temperatureC -> HAL_SPI.read_temperature" in scaffold
+    assert "rule TODO_sensorFault" in scaffold
+    assert "open-question SYS-007" in scaffold
 
 
 def test_validate_traceability_reports_missing_and_untraced_behavior():

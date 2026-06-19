@@ -353,12 +353,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: ENG-002
   modelElements:
   - function:ValidityDebounceManager
@@ -366,12 +361,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: HAR-001
   modelElements:
   - function:SensorInterface
@@ -383,12 +373,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: HAR-002
   modelElements:
   - function:SensorInterface
@@ -397,12 +382,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: HAR-003
   modelElements:
   - function:ValidityDebounceManager
@@ -410,12 +390,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: HAR-004
   modelElements:
   - function:OutputMappingDiagnostics
@@ -430,12 +405,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: HAR-006
   modelElements:
   - flow:HAL_LIMITER.set_derating->ToyLoadLimiterIC.limitCommand
@@ -444,48 +414,28 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SWE-001
   modelElements:
   - component:ToyThermalProtectionController
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SWE-002
   modelElements:
   - component:ToyThermalProtectionController
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SWE-003
   modelElements:
   - component:ToyThermalProtectionController
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SWE-004
   modelElements:
   - flow:HAL_SPI.read_temperature->ToyThermalProtectionController.temperatureC
@@ -495,12 +445,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-001
   modelElements:
   - function:SensorInterface
@@ -510,12 +455,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-002
   modelElements:
   - function:CoolingCommandManager
@@ -528,12 +468,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-003
   modelElements:
   - function:ThermalStateManager
@@ -542,12 +477,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-004
   modelElements:
   - function:ThermalStateManager
@@ -556,12 +486,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-005
   modelElements:
   - function:ThermalStateManager
@@ -573,12 +498,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-006
   modelElements:
   - function:ValidityDebounceManager
@@ -592,12 +512,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-007
   modelElements:
   - function:ValidityDebounceManager
@@ -610,12 +525,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-008
   modelElements:
   - function:FaultLatchRecoveryManager
@@ -623,12 +533,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 - requirement: SYS-009
   modelElements:
   - function:OutputMappingDiagnostics
@@ -636,12 +541,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_protection_controller.mbd.md
   - generated/toy_thermal_protection_controller.mmd
-  - generated/protection_ecu_preview/controller.c
-  - reports/thermal_protection_normal.md
-  - reports/thermal_protection_boundary.md
-  - reports/thermal_protection_derating.md
-  - reports/thermal_protection_fault_latch.md
-  - reports/thermal_protection_recovery.md
+  - preview report path supplied by run-preview
 ```
 
 ## Scenario Steps
@@ -710,8 +610,10 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       diagnosticFault: false
       safeCommandActive: false
   virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 25
-    ToyTempSensorIC.temperatureValid: true
+    ToyThermalProtectionController.temperatureC: 25
+    ToyThermalProtectionController.temperatureValid: true
+    ToyThermalProtectionController.invalidDebounced: false
+    ToyThermalProtectionController.recoveryRequest: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
     owner: FaultLatchRecoveryManager
@@ -862,19 +764,39 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     deratingCommand: 0
     diagnosticFault: false
     safeCommandActive: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
+    commandFlows:
+    - source: ToyThermalProtectionController.fanDuty
+      target: HAL_PWM.set_fan_duty
+      label: generated ECU fan command
       value: 0
-    - api: hal_load_limiter_set_derating
-      direction: controller to virtual IC
-      target: ToyLoadLimiterIC
+      trace:
+      - SYS-002
+      - SWE-004
+      - CGEN-003
+    - source: ToyThermalProtectionController.deratingCommand
+      target: HAL_LIMITER.set_derating
+      label: generated ECU derating command
       value: 0
-    controllerSource: generated/protection_ecu_preview/controller.c
+      trace:
+      - SYS-005
+      - SWE-004
+      - CGEN-003
+    - source: ToyThermalProtectionController.diagnosticFault
+      target: ScenarioReport.observedBehavior
+      label: diagnostic observation
+      value: false
+      trace:
+      - SYS-006
+      - SYS-007
+      - HAR-004
+    - source: ToyThermalProtectionController.safeCommandActive
+      target: ScenarioReport.passFailResult
+      label: scenario pass/fail evidence
+      value: false
+      trace:
+      - SYS-009
+      - HAR-004
+    previewCodeSource: sample-specific preview C export, if available
   after:
     state: IDLE
     inputs:
@@ -888,8 +810,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       diagnosticFault: false
       safeCommandActive: false
   requirementRefs:
-  - HAR-001
-  - HAR-002
   - HAR-004
   - SYS-004
 - stepIndex: 1
@@ -910,8 +830,10 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       diagnosticFault: false
       safeCommandActive: false
   virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 82
-    ToyTempSensorIC.temperatureValid: true
+    ToyThermalProtectionController.temperatureC: 82
+    ToyThermalProtectionController.temperatureValid: true
+    ToyThermalProtectionController.invalidDebounced: false
+    ToyThermalProtectionController.recoveryRequest: false
   controlRuleEvaluations:
   - rule: recoverFromLatch
     owner: FaultLatchRecoveryManager
@@ -1062,19 +984,39 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
     deratingCommand: 0
     diagnosticFault: false
     safeCommandActive: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
+    commandFlows:
+    - source: ToyThermalProtectionController.fanDuty
+      target: HAL_PWM.set_fan_duty
+      label: generated ECU fan command
       value: 70
-    - api: hal_load_limiter_set_derating
-      direction: controller to virtual IC
-      target: ToyLoadLimiterIC
+      trace:
+      - SYS-002
+      - SWE-004
+      - CGEN-003
+    - source: ToyThermalProtectionController.deratingCommand
+      target: HAL_LIMITER.set_derating
+      label: generated ECU derating command
       value: 0
-    controllerSource: generated/protection_ecu_preview/controller.c
+      trace:
+      - SYS-005
+      - SWE-004
+      - CGEN-003
+    - source: ToyThermalProtectionController.diagnosticFault
+      target: ScenarioReport.observedBehavior
+      label: diagnostic observation
+      value: false
+      trace:
+      - SYS-006
+      - SYS-007
+      - HAR-004
+    - source: ToyThermalProtectionController.safeCommandActive
+      target: ScenarioReport.passFailResult
+      label: scenario pass/fail evidence
+      value: false
+      trace:
+      - SYS-009
+      - HAR-004
+    previewCodeSource: sample-specific preview C export, if available
   after:
     state: COOLING
     inputs:
@@ -1088,8 +1030,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       diagnosticFault: false
       safeCommandActive: false
   requirementRefs:
-  - HAR-001
-  - HAR-002
   - HAR-004
   - SYS-002
   - SYS-003
@@ -1134,19 +1074,39 @@ fanDuty: 70
 deratingCommand: 0
 diagnosticFault: false
 safeCommandActive: false
-halCalls:
-- api: hal_spi_read_temperature_c
-  direction: virtual IC to controller
-  source: ToyTempSensorIC
-- api: hal_pwm_set_fan_duty
-  direction: controller to virtual IC
-  target: ToyFanDriverIC
+commandFlows:
+- source: ToyThermalProtectionController.fanDuty
+  target: HAL_PWM.set_fan_duty
+  label: generated ECU fan command
   value: 70
-- api: hal_load_limiter_set_derating
-  direction: controller to virtual IC
-  target: ToyLoadLimiterIC
+  trace:
+  - SYS-002
+  - SWE-004
+  - CGEN-003
+- source: ToyThermalProtectionController.deratingCommand
+  target: HAL_LIMITER.set_derating
+  label: generated ECU derating command
   value: 0
-controllerSource: generated/protection_ecu_preview/controller.c
+  trace:
+  - SYS-005
+  - SWE-004
+  - CGEN-003
+- source: ToyThermalProtectionController.diagnosticFault
+  target: ScenarioReport.observedBehavior
+  label: diagnostic observation
+  value: false
+  trace:
+  - SYS-006
+  - SYS-007
+  - HAR-004
+- source: ToyThermalProtectionController.safeCommandActive
+  target: ScenarioReport.passFailResult
+  label: scenario pass/fail evidence
+  value: false
+  trace:
+  - SYS-009
+  - HAR-004
+previewCodeSource: sample-specific preview C export, if available
 ```
 
 ## Expected Behavior

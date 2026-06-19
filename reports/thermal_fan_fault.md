@@ -112,8 +112,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: HAR-002
   modelElements:
   - flow:HAL_SPI.read_temperature->ToyThermalFanController.temperatureC
@@ -121,8 +120,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: HAR-004
   modelElements:
   - flow:ToyThermalFanController.fault->ScenarioReport.observedBehavior
@@ -130,32 +128,28 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: HAR-005
   modelElements:
   - component:ToyThermalFanController
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: STK-001
   modelElements:
   - component:ToyThermalFanController
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SWE-001
   modelElements:
   - component:ToyThermalFanController
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SWE-004
   modelElements:
   - flow:HAL_SPI.read_temperature->ToyThermalFanController.temperatureC
@@ -164,8 +158,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-001
   modelElements:
   - component:ToyThermalFanController
@@ -174,8 +167,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-002
   modelElements:
   - component:ToyThermalFanController
@@ -185,8 +177,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-003
   modelElements:
   - component:ToyThermalFanController
@@ -194,8 +185,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-004
   modelElements:
   - component:ToyThermalFanController
@@ -203,8 +193,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-005
   modelElements:
   - component:ToyThermalFanController
@@ -212,8 +201,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 - requirement: SYS-006
   modelElements:
   - component:ToyThermalFanController
@@ -223,8 +211,7 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   evidence:
   - examples/toy_thermal_fan_control.mbd.md
   - generated/toy_thermal_fan_control.mmd
-  - generated/ecu_preview/controller.c
-  - reports/thermal_fan_normal.md or reports/thermal_fan_fault.md
+  - preview report path supplied by run-preview
 ```
 
 ## Scenario Steps
@@ -280,8 +267,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       fanDuty: 0
       fault: false
   virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 82
-    ToyTempSensorIC.temperatureValid: true
+    ToyThermalFanController.temperatureC: 82
+    ToyThermalFanController.temperatureValid: true
   controlRuleEvaluations:
   - rule: sensorFault
     owner: ''
@@ -337,15 +324,22 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   generatedEcuCommandOutputs:
     fanDuty: 80
     fault: false
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
+    commandFlows:
+    - source: ToyThermalFanController.fanDuty
+      target: HAL_PWM.set_fan_duty
+      label: generated ECU command
       value: 80
-    controllerSource: generated/ecu_preview/controller.c
+      trace:
+      - SYS-002
+      - SWE-004
+    - source: ToyThermalFanController.fault
+      target: ScenarioReport.observedBehavior
+      label: fault observation
+      value: false
+      trace:
+      - SYS-006
+      - HAR-004
+    previewCodeSource: sample-specific preview C export, if available
   after:
     state: COOLING
     inputs:
@@ -355,9 +349,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       fanDuty: 80
       fault: false
   requirementRefs:
-  - HAR-001
-  - HAR-002
-  - HAR-004
   - SYS-003
   - SYS-006
 - stepIndex: 1
@@ -374,8 +365,8 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       fanDuty: 80
       fault: false
   virtualIcObservation:
-    ToyTempSensorIC.temperatureC: 82
-    ToyTempSensorIC.temperatureValid: false
+    ToyThermalFanController.temperatureC: 82
+    ToyThermalFanController.temperatureValid: false
   controlRuleEvaluations:
   - rule: sensorFault
     owner: ''
@@ -431,15 +422,22 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
   generatedEcuCommandOutputs:
     fanDuty: 35
     fault: true
-    halCalls:
-    - api: hal_spi_read_temperature_c
-      direction: virtual IC to controller
-      source: ToyTempSensorIC
-    - api: hal_pwm_set_fan_duty
-      direction: controller to virtual IC
-      target: ToyFanDriverIC
+    commandFlows:
+    - source: ToyThermalFanController.fanDuty
+      target: HAL_PWM.set_fan_duty
+      label: generated ECU command
       value: 35
-    controllerSource: generated/ecu_preview/controller.c
+      trace:
+      - SYS-002
+      - SWE-004
+    - source: ToyThermalFanController.fault
+      target: ScenarioReport.observedBehavior
+      label: fault observation
+      value: true
+      trace:
+      - SYS-006
+      - HAR-004
+    previewCodeSource: sample-specific preview C export, if available
   after:
     state: FAULT
     inputs:
@@ -449,8 +447,6 @@ previewSubsetAssumption: 'Preview subset assumption: discrete scenario steps rep
       fanDuty: 35
       fault: true
   requirementRefs:
-  - HAR-001
-  - HAR-002
   - HAR-004
   - SYS-005
 ```
@@ -485,15 +481,22 @@ harnessDevices:
 ```yaml
 fanDuty: 35
 fault: true
-halCalls:
-- api: hal_spi_read_temperature_c
-  direction: virtual IC to controller
-  source: ToyTempSensorIC
-- api: hal_pwm_set_fan_duty
-  direction: controller to virtual IC
-  target: ToyFanDriverIC
+commandFlows:
+- source: ToyThermalFanController.fanDuty
+  target: HAL_PWM.set_fan_duty
+  label: generated ECU command
   value: 35
-controllerSource: generated/ecu_preview/controller.c
+  trace:
+  - SYS-002
+  - SWE-004
+- source: ToyThermalFanController.fault
+  target: ScenarioReport.observedBehavior
+  label: fault observation
+  value: true
+  trace:
+  - SYS-006
+  - HAR-004
+previewCodeSource: sample-specific preview C export, if available
 ```
 
 ## Expected Behavior

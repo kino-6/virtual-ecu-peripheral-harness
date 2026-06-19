@@ -2,7 +2,9 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from veph.exporters.code_preview import export_code_preview
+import pytest
+
+from veph.exporters.code_preview import CodePreviewExportError, export_code_preview
 from veph.markup_parser import parse_markup_file
 
 
@@ -79,3 +81,10 @@ def test_generated_thermal_protection_preview_c_is_syntax_checkable_when_cc_exis
         cwd=tmp_path,
         check=True,
     )
+
+
+def test_export_code_preview_rejects_unregistered_sample_without_thermal_fallback(tmp_path):
+    model = parse_markup_file(ROOT / "examples" / "toy_power_monitor.mbd.md")
+
+    with pytest.raises(CodePreviewExportError, match="ToyPowerMonitorIC.*supported components"):
+        export_code_preview(model, tmp_path)
