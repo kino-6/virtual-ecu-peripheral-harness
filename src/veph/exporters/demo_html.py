@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from html import escape
 
-from veph.ir import FlowIR, MbdModelIR, TransitionIR
+from veph.ir import ControlRuleIR, ExpressionIR, FlowIR, MbdModelIR, TransitionIR
 from veph.model_loader import Block, Connection, PeripheralModel, Transition
 
 
@@ -72,6 +72,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             f"        <div><strong>{len(model.harness_devices)}</strong><span>harness boundaries</span></div>",
             "      </div>",
             "    </section>",
+            _ir_semantic_mbd_svg(model),
             _ir_functional_decomposition_svg(model),
             '    <section class="panel">',
             "      <h2>Functional Decomposition</h2>",
@@ -150,6 +151,46 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
 
 def flow_or_empty(rows: str, colspan: int = 4) -> str:
     return rows if rows else f'          <tr><td colspan="{colspan}">None</td></tr>'
+
+
+def _ir_semantic_mbd_svg(model: MbdModelIR) -> str:
+    threshold_pair = _find_threshold_pair(model.controls)
+    if threshold_pair is None:
+        return ""
+    true_rule, false_rule = threshold_pair
+    primary_input, primary_parameter = _primary_condition_terms(model, true_rule.condition_expr)
+    source = _source_for_signal(model.flows, primary_input) or "ScenarioInput"
+    output_name = _primary_output_action(model, true_rule) or _primary_output_action(model, false_rule) or "output"
+    report = _report_for_signal(model.flows, output_name) or "ScenarioReport.observedBehavior"
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>Semantic MBD Block Diagram</h2>",
+            "      <p>Generated from parsed ports, parameters, control expressions, actions, and flows. This is the review model; the Markdown source is only the authoring input.</p>",
+            '      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Semantic MBD block diagram generated from parsed model semantics">',
+            *(_svg_defs("irSemanticArrow")),
+            *(_semantic_svg_node([source], 42, 118, 190, "scenario source")),
+            *(_semantic_svg_node(["Input Port", primary_input or "input"], 266, 118, 210, "model input")),
+            *(_semantic_svg_node(["Parameter", primary_parameter or "parameter"], 266, 36, 210, "model parameter")),
+            '        <polygon points="650,108 735,153 650,198 565,153" class="rule-condition"></polygon>',
+            f'        <text x="650" y="148" text-anchor="middle" class="node-title small">{escape(_shorten(true_rule.condition + "?", 30))}</text>',
+            f'        <text x="650" y="168" text-anchor="middle" class="node-note">owner {escape(true_rule.owner or model.component.name)}</text>',
+            *(_semantic_svg_node(_semantic_action_lines(model, true_rule), 796, 72, 226, f"true / {true_rule.name}")),
+            *(_semantic_svg_node(_semantic_action_lines(model, false_rule), 796, 184, 226, f"false / {false_rule.name}")),
+            *(_semantic_svg_node(["ScenarioReport", "observedBehavior"], 1036, 118, 130, "observed")),
+            '        <line x1="232" y1="153" x2="266" y2="153" class="ir-arrow"></line>',
+            '        <line x1="476" y1="153" x2="565" y2="153" class="ir-arrow"></line>',
+            '        <line x1="476" y1="71" x2="596" y2="126" class="ir-arrow"></line>',
+            '        <line x1="735" y1="153" x2="796" y2="107" class="ir-arrow"></line>',
+            '        <text x="774" y="117" text-anchor="middle" class="edge-note">true</text>',
+            '        <line x1="735" y1="153" x2="796" y2="219" class="ir-arrow"></line>',
+            '        <text x="774" y="203" text-anchor="middle" class="edge-note">false</text>',
+            '        <line x1="1022" y1="107" x2="1036" y2="153" class="ir-arrow"></line>',
+            '        <line x1="1022" y1="219" x2="1036" y2="153" class="ir-arrow"></line>',
+            "      </svg>",
+            "    </section>",
+        ]
+    )
 
 
 def _ir_function_rows(model: MbdModelIR) -> str:
@@ -656,6 +697,133 @@ def _ir_svg_node(title: str, x: int, y: int, note: str) -> list[str]:
         f'        <text x="{x + 115}" y="{y + 22}" text-anchor="middle" class="node-title small">{escape(_shorten(title, 34))}</text>',
         f'        <text x="{x + 115}" y="{y + 42}" text-anchor="middle" class="node-note">{escape(note)}</text>',
     ]
+
+
+def _semantic_svg_node(lines: list[str], x: int, y: int, width: int, note: str) -> list[str]:
+    center = x + width // 2
+    title_lines = lines[:2] or [""]
+    if len(title_lines) == 1:
+        title_svg = [
+            f'        <text x="{center}" y="{y + 30}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[0], 24))}</text>'
+        ]
+    else:
+        title_svg = [
+            f'        <text x="{center}" y="{y + 25}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[0], 22))}</text>',
+            f'        <text x="{center}" y="{y + 43}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[1], 22))}</text>',
+        ]
+    return [
+        f'        <rect x="{x}" y="{y}" width="{width}" height="70" rx="8" class="node"></rect>',
+        *title_svg,
+        f'        <text x="{center}" y="{y + 62}" text-anchor="middle" class="node-note">{escape(note)}</text>',
+    ]
+
+
+def _find_threshold_pair(controls: list[ControlRuleIR]) -> tuple[ControlRuleIR, ControlRuleIR] | None:
+    for first in controls:
+        first_key = _comparison_key(first.condition_expr)
+        if first_key is None:
+            continue
+        for second in controls:
+            if first is second:
+                continue
+            second_key = _comparison_key(second.condition_expr)
+            if second_key is None:
+                continue
+            left, right, operator = first_key
+            if (left, right) == second_key[:2] and _is_complement(operator, second_key[2]):
+                return (first, second) if first.priority <= second.priority else (second, first)
+    return None
+
+
+def _comparison_key(expression: ExpressionIR) -> tuple[str, str, str] | None:
+    if expression.kind != "comparison" or expression.left is None or expression.right is None:
+        return None
+    left = _expression_name(expression.left)
+    right = _expression_name(expression.right)
+    if not left or not right:
+        return None
+    return left, right, expression.operator
+
+
+def _expression_name(expression: ExpressionIR) -> str:
+    if expression.kind == "variable":
+        return expression.name
+    if expression.kind in {"number", "boolean"}:
+        return str(expression.value).lower()
+    return ""
+
+
+def _is_complement(first: str, second: str) -> bool:
+    return (first, second) in {
+        (">=", "<"),
+        ("<", ">="),
+        (">", "<="),
+        ("<=", ">"),
+        ("==", "!="),
+        ("!=", "=="),
+    }
+
+
+def _primary_condition_terms(model: MbdModelIR, expression: ExpressionIR) -> tuple[str, str]:
+    variables = _expression_variables(expression)
+    primary_input = next((name for name in variables if name in model.ports), "")
+    primary_parameter = next((name for name in variables if name in model.component.parameters), "")
+    return primary_input, primary_parameter
+
+
+def _expression_variables(expression: ExpressionIR) -> list[str]:
+    if expression.kind == "variable":
+        return [expression.name]
+    variables: list[str] = []
+    if expression.left is not None:
+        variables.extend(_expression_variables(expression.left))
+    if expression.right is not None:
+        variables.extend(_expression_variables(expression.right))
+    for operand in expression.operands:
+        variables.extend(_expression_variables(operand))
+    return list(dict.fromkeys(variables))
+
+
+def _source_for_signal(flows: list[FlowIR], signal: str) -> str:
+    if not signal:
+        return ""
+    for flow in flows:
+        target_signal = flow.target.rsplit(".", 1)[-1]
+        source_root = flow.source.split(".", 1)[0]
+        if target_signal == signal and source_root != "ScenarioReport":
+            return source_root
+    return ""
+
+
+def _report_for_signal(flows: list[FlowIR], signal: str) -> str:
+    if not signal:
+        return ""
+    for flow in flows:
+        source_signal = flow.source.rsplit(".", 1)[-1]
+        if source_signal == signal and flow.target.startswith("ScenarioReport."):
+            return flow.target
+    return ""
+
+
+def _primary_output_action(model: MbdModelIR, control: ControlRuleIR) -> str:
+    for name in control.actions:
+        port = model.ports.get(name)
+        if port is not None and port.direction == "out":
+            return name
+    return ""
+
+
+def _semantic_action_lines(model: MbdModelIR, control: ControlRuleIR) -> list[str]:
+    parts: list[str] = []
+    for name, value in control.actions.items():
+        port = model.ports.get(name)
+        if port is not None and port.direction == "out":
+            parts.append(f"Output {name} = {value}")
+        elif name == "state":
+            parts.append(f"State {value}")
+        else:
+            parts.append(f"{name} = {value}")
+    return parts
 
 
 def _svg_defs(marker_id: str) -> list[str]:

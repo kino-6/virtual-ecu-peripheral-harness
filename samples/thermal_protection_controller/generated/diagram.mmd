@@ -1,6 +1,51 @@
 flowchart LR
-  %% Generated preview from Mermaid-like MBD markup.
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
   %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_recoverFromLatch{"temperatureValid == true and invalidDebounced == false and recoveryRequest == true?"}
+  action_recoverFromLatch["State IDLE<br/>Output fanDuty = 0<br/>Output deratingCommand = 0<br/>Output diagnosticFault = false<br/>Output safeCommandActive = false"]
+  input_temperatureValid["Input Port: temperatureValid"]
+  input_temperatureValid --> decision_recoverFromLatch
+  input_invalidDebounced["Input Port: invalidDebounced"]
+  input_invalidDebounced --> decision_recoverFromLatch
+  input_recoveryRequest["Input Port: recoveryRequest"]
+  input_recoveryRequest --> decision_recoverFromLatch
+  decision_recoverFromLatch -->|"true / recoverFromLatch"| action_recoverFromLatch
+  decision_faultLatch{"invalidDebounced == true?"}
+  action_faultLatch["State FAULT_LATCHED<br/>Output fanDuty = safeDuty<br/>Output deratingCommand = 0<br/>Output diagnosticFault = true<br/>Output safeCommandActive = true"]
+  input_invalidDebounced["Input Port: invalidDebounced"]
+  input_invalidDebounced --> decision_faultLatch
+  decision_faultLatch -->|"true / faultLatch"| action_faultLatch
+  decision_holdLatchedFault{"always?"}
+  action_holdLatchedFault["State FAULT_LATCHED<br/>Output fanDuty = safeDuty<br/>Output deratingCommand = 0<br/>Output diagnosticFault = true<br/>Output safeCommandActive = true"]
+  decision_holdLatchedFault -->|"true / holdLatchedFault"| action_holdLatchedFault
+  decision_sensorInvalid{"temperatureValid == false?"}
+  action_sensorInvalid["State SENSOR_FAULT<br/>Output fanDuty = safeDuty<br/>Output deratingCommand = 0<br/>Output diagnosticFault = true<br/>Output safeCommandActive = true"]
+  input_temperatureValid["Input Port: temperatureValid"]
+  input_temperatureValid --> decision_sensorInvalid
+  decision_sensorInvalid -->|"true / sensorInvalid"| action_sensorInvalid
+  decision_derating{"temperatureC >= deratingEntryThreshold?"}
+  action_derating["State DERATING<br/>Output fanDuty = deratingFanDuty<br/>Output deratingCommand = deratingLimit<br/>Output diagnosticFault = false<br/>Output safeCommandActive = false"]
+  input_temperatureC["Input Port: temperatureC"]
+  input_temperatureC --> decision_derating
+  parameter_deratingEntryThreshold["Parameter: deratingEntryThreshold"]
+  parameter_deratingEntryThreshold --> decision_derating
+  decision_derating -->|"true / derating"| action_derating
+  decision_highCooling{"temperatureC >= coolingOnThreshold?"}
+  action_highCooling["State COOLING<br/>Output fanDuty = coolingDuty<br/>Output deratingCommand = 0<br/>Output diagnosticFault = false<br/>Output safeCommandActive = false"]
+  input_temperatureC["Input Port: temperatureC"]
+  input_temperatureC --> decision_highCooling
+  parameter_coolingOnThreshold["Parameter: coolingOnThreshold"]
+  parameter_coolingOnThreshold --> decision_highCooling
+  decision_highCooling -->|"true / highCooling"| action_highCooling
+  decision_lowCooling{"temperatureC <= coolingOffThreshold?"}
+  action_lowCooling["State IDLE<br/>Output fanDuty = 0<br/>Output deratingCommand = 0<br/>Output diagnosticFault = false<br/>Output safeCommandActive = false"]
+  input_temperatureC["Input Port: temperatureC"]
+  input_temperatureC --> decision_lowCooling
+  parameter_coolingOffThreshold["Parameter: coolingOffThreshold"]
+  parameter_coolingOffThreshold --> decision_lowCooling
+  decision_lowCooling -->|"true / lowCooling"| action_lowCooling
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
   ToyTempSensorIC_temperatureC["ToyTempSensorIC.temperatureC"]
   HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
   %% Trace: SYS-001, HAR-001

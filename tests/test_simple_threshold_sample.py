@@ -54,6 +54,15 @@ def test_simple_threshold_generated_visuals_match_spec_design():
     mermaid = sample.paths.generated["mermaid"].read_text(encoding="utf-8")
     html = sample.paths.generated["demo"].read_text(encoding="utf-8")
 
+    assert "%% Semantic MBD Block Diagram" in mermaid
+    assert 'source_ToyInputSource["ToyInputSource"]' in mermaid
+    assert 'input_sampleValue["Input Port: sampleValue"]' in mermaid
+    assert 'parameter_limit["Parameter: limit"]' in mermaid
+    assert 'decision_activate_clear{"sampleValue >= limit?"}' in mermaid
+    assert 'action_activate["State ACTIVE<br/>Output active = true"]' in mermaid
+    assert 'action_clear["State IDLE<br/>Output active = false"]' in mermaid
+    assert 'decision_activate_clear -->|"true / activate"| action_activate' in mermaid
+    assert 'decision_activate_clear -->|"false / clear"| action_clear' in mermaid
     assert "ToyInputSource_sampleValue -->|\"scenario input\"| ThresholdCompare_sampleValue" in mermaid
     assert "ToyThresholdIndicator_limit -->|\"threshold parameter\"| ThresholdCompare_limit" in mermaid
     assert "ThresholdCompare_active -->|\"comparison result\"| ToyThresholdIndicator_active" in mermaid
@@ -61,10 +70,16 @@ def test_simple_threshold_generated_visuals_match_spec_design():
     assert "sampleValue >= limit" in mermaid
     assert "sampleValue < limit" in mermaid
 
+    assert "Semantic MBD Block Diagram" in html
     assert "ToyInputSource.sampleValue" in html
     assert "Virtual Source" in html
+    assert "Input Port" in html
+    assert "sampleValue" in html
     assert "ToyThresholdIndicator.limit" in html
     assert "Parameter" in html
+    assert "sampleValue &gt;= limit?" in html
+    assert "Output active = true" in html
+    assert "Output active = false" in html
     assert "ThresholdCompare.sampleValue" in html
     assert "ThresholdCompare.limit" in html
     assert "ThresholdCompare.active" in html

@@ -1,6 +1,27 @@
 flowchart LR
-  %% Generated preview from Mermaid-like MBD markup.
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
   %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_sensorFault{"temperatureValid == false?"}
+  action_sensorFault["State FAULT<br/>Output fanDuty = safeDuty<br/>Output fault = true"]
+  input_temperatureValid["Input Port: temperatureValid"]
+  input_temperatureValid --> decision_sensorFault
+  decision_sensorFault -->|"true / sensorFault"| action_sensorFault
+  decision_highTemperature{"temperatureC >= fanOnThreshold?"}
+  action_highTemperature["State COOLING<br/>Output fanDuty = coolingDuty<br/>Output fault = false"]
+  input_temperatureC["Input Port: temperatureC"]
+  input_temperatureC --> decision_highTemperature
+  parameter_fanOnThreshold["Parameter: fanOnThreshold"]
+  parameter_fanOnThreshold --> decision_highTemperature
+  decision_highTemperature -->|"true / highTemperature"| action_highTemperature
+  decision_lowTemperature{"temperatureC <= fanOffThreshold?"}
+  action_lowTemperature["State IDLE<br/>Output fanDuty = 0<br/>Output fault = false"]
+  input_temperatureC["Input Port: temperatureC"]
+  input_temperatureC --> decision_lowTemperature
+  parameter_fanOffThreshold["Parameter: fanOffThreshold"]
+  parameter_fanOffThreshold --> decision_lowTemperature
+  decision_lowTemperature -->|"true / lowTemperature"| action_lowTemperature
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
   ToyTempSensorIC_temperatureC["ToyTempSensorIC.temperatureC"]
   HAL_SPI_read_temperature["HAL_SPI.read_temperature"]
   %% Trace: SYS-001, HAR-001

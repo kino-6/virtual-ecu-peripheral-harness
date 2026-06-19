@@ -1,6 +1,23 @@
 flowchart LR
-  %% Generated preview from Mermaid-like MBD markup.
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
   %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  source_ToyInputSource["ToyInputSource"]
+  input_sampleValue["Input Port: sampleValue"]
+  parameter_limit["Parameter: limit"]
+  decision_activate_clear{"sampleValue >= limit?"}
+  action_activate["State ACTIVE<br/>Output active = true"]
+  action_clear["State IDLE<br/>Output active = false"]
+  report_observed_behavior["ScenarioReport.observedBehavior"]
+  source_ToyInputSource -->|"sampleValue"| input_sampleValue
+  input_sampleValue --> decision_activate_clear
+  parameter_limit --> decision_activate_clear
+  decision_activate_clear -->|"true / activate"| action_activate
+  decision_activate_clear -->|"false / clear"| action_clear
+  action_activate --> report_observed_behavior
+  action_clear --> report_observed_behavior
+  %% Semantic Trace: SIMPLE-001, SIMPLE-002, SIMPLE-003
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
   ToyInputSource_sampleValue["ToyInputSource.sampleValue"]
   ThresholdCompare_sampleValue["ThresholdCompare.sampleValue"]
   %% Trace: SIMPLE-001
