@@ -38,51 +38,13 @@ def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
 
 
 def _export_ir_demo_html(model: MbdModelIR) -> str:
-    function_rows = "\n".join(
-        "          <tr>"
-        f"<td>{escape(function.name)}</td>"
-        f"<td>{escape(function.responsibility)}</td>"
-        f"<td>{escape(', '.join(function.owns))}</td>"
-        f"<td>{escape(', '.join(function.inputs))}</td>"
-        f"<td>{escape(', '.join(function.outputs))}</td>"
-        f"<td>{escape(', '.join(function.trace))}</td>"
-        f"<td>{escape(', '.join(function.scenarios))}</td>"
-        "</tr>"
-        for function in model.functions
-    )
-    req_rows = "\n".join(
-        f"          <tr><td>{escape(ref)}</td><td>{escape(', '.join(_ir_elements_for_ref(model, ref)))}</td></tr>"
-        for ref in sorted(model.requirement_refs())
-    )
-    control_rows = "\n".join(
-        "          <tr>"
-        f"<td>{escape(str(control.priority))}</td>"
-        f"<td>{escape(control.name)}</td>"
-        f"<td>{escape(control.owner or 'unallocated')}</td>"
-        f"<td>{escape(control.state_scope)}</td>"
-        f"<td>{escape(control.condition)}</td>"
-        f"<td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td>"
-        f"<td>{escape(', '.join(control.trace))}</td>"
-        f"<td>{escape(', '.join(control.scenarios))}</td>"
-        "</tr>"
-        for control in sorted(model.controls, key=lambda item: (item.priority, item.name))
-    )
-    harness_rows = "\n".join(
-        f"          <tr><td>{escape(device.name)}</td><td>{escape(device.role)}</td><td>{escape(device.boundary)}</td><td>{escape(', '.join(device.trace))}</td></tr>"
-        for device in model.harness_devices
-    )
-    flow_rows = "\n".join(
-        f"          <tr><td>{escape(flow.source)}</td><td>{escape(flow.target)}</td><td>{escape(flow.label)}</td><td>{escape(', '.join(flow.trace))}</td></tr>"
-        for flow in model.flows
-    )
-    state_rows = "\n".join(
-        f"          <tr><td>{escape(transition.source)}</td><td>{escape(transition.target)}</td><td>{escape(transition.condition)}</td></tr>"
-        for transition in model.transitions
-    )
-    port_rows = "\n".join(
-        f"          <tr><td>{escape(port.direction)}</td><td>{escape(port.name)}</td><td>{escape(port.type)}</td><td>{escape(port.default or '')}</td></tr>"
-        for port in model.ports.values()
-    )
+    function_rows = _ir_function_rows(model)
+    req_rows = _ir_requirement_rows(model)
+    control_rows = _ir_control_rows(model)
+    harness_rows = _ir_harness_rows(model)
+    flow_rows = _ir_flow_rows(model)
+    state_rows = _ir_state_rows(model)
+    port_rows = _ir_port_rows(model)
     return "\n".join(
         [
             "<!doctype html>",
@@ -188,6 +150,72 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
 
 def flow_or_empty(rows: str, colspan: int = 4) -> str:
     return rows if rows else f'          <tr><td colspan="{colspan}">None</td></tr>'
+
+
+def _ir_function_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        "          <tr>"
+        f"<td>{escape(function.name)}</td>"
+        f"<td>{escape(function.responsibility)}</td>"
+        f"<td>{escape(', '.join(function.owns))}</td>"
+        f"<td>{escape(', '.join(function.inputs))}</td>"
+        f"<td>{escape(', '.join(function.outputs))}</td>"
+        f"<td>{escape(', '.join(function.trace))}</td>"
+        f"<td>{escape(', '.join(function.scenarios))}</td>"
+        "</tr>"
+        for function in model.functions
+    )
+
+
+def _ir_requirement_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        f"          <tr><td>{escape(ref)}</td><td>{escape(', '.join(_ir_elements_for_ref(model, ref)))}</td></tr>"
+        for ref in sorted(model.requirement_refs())
+    )
+
+
+def _ir_control_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        "          <tr>"
+        f"<td>{escape(str(control.priority))}</td>"
+        f"<td>{escape(control.name)}</td>"
+        f"<td>{escape(control.owner or 'unallocated')}</td>"
+        f"<td>{escape(control.state_scope)}</td>"
+        f"<td>{escape(control.condition)}</td>"
+        f"<td>{escape(', '.join(f'{key}={value}' for key, value in control.actions.items()))}</td>"
+        f"<td>{escape(', '.join(control.trace))}</td>"
+        f"<td>{escape(', '.join(control.scenarios))}</td>"
+        "</tr>"
+        for control in sorted(model.controls, key=lambda item: (item.priority, item.name))
+    )
+
+
+def _ir_harness_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        f"          <tr><td>{escape(device.name)}</td><td>{escape(device.role)}</td><td>{escape(device.boundary)}</td><td>{escape(', '.join(device.trace))}</td></tr>"
+        for device in model.harness_devices
+    )
+
+
+def _ir_flow_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        f"          <tr><td>{escape(flow.source)}</td><td>{escape(flow.target)}</td><td>{escape(flow.label)}</td><td>{escape(', '.join(flow.trace))}</td></tr>"
+        for flow in model.flows
+    )
+
+
+def _ir_state_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        f"          <tr><td>{escape(transition.source)}</td><td>{escape(transition.target)}</td><td>{escape(transition.condition)}</td></tr>"
+        for transition in model.transitions
+    )
+
+
+def _ir_port_rows(model: MbdModelIR) -> str:
+    return "\n".join(
+        f"          <tr><td>{escape(port.direction)}</td><td>{escape(port.name)}</td><td>{escape(port.type)}</td><td>{escape(port.default or '')}</td></tr>"
+        for port in model.ports.values()
+    )
 
 
 def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:

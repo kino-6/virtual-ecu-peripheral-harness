@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from veph.ir import ControlRuleIR, MbdModelIR
+from veph.ir import ControlRuleIR, FunctionIR, HarnessDeviceIR, MbdModelIR
 from veph.markup_parser import parse_markup_file
 from veph.scenario_types import ScenarioResult
 
@@ -207,38 +207,16 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
             for name, port in model.ports.items()
         },
         "controlRules": [
-            {
-                "name": control.name,
-                "owner": control.owner,
-                "priority": control.priority,
-                "stateScope": control.state_scope,
-                "condition": control.condition,
-                "actions": dict(control.actions),
-                "trace": list(control.trace),
-                "scenarios": list(control.scenarios),
-            }
+            _control_rule_input(control)
             for control in model.controls
         ],
         "functionalDecomposition": [
-            {
-                "name": function.name,
-                "responsibility": function.responsibility,
-                "owns": list(function.owns),
-                "inputs": list(function.inputs),
-                "outputs": list(function.outputs),
-                "trace": list(function.trace),
-                "scenarios": list(function.scenarios),
-            }
+            _function_input(function)
             for function in model.functions
         ],
         "controlSelectionPolicy": "lowest numeric priority wins after state scope and guard match",
         "harnessBoundary": [
-            {
-                "name": device.name,
-                "role": device.role,
-                "boundary": device.boundary,
-                "trace": list(device.trace),
-            }
+            _harness_boundary_input(device)
             for device in model.harness_devices
         ],
         "traceabilityMatrix": _traceability_matrix(model),
@@ -249,6 +227,40 @@ def _model_inputs(model: MbdModelIR) -> dict[str, object]:
             "debounce is represented by explicit scenario inputs and must be "
             "verified by external MBD/product-test infrastructure."
         ),
+    }
+
+
+def _control_rule_input(control: ControlRuleIR) -> dict[str, object]:
+    return {
+        "name": control.name,
+        "owner": control.owner,
+        "priority": control.priority,
+        "stateScope": control.state_scope,
+        "condition": control.condition,
+        "actions": dict(control.actions),
+        "trace": list(control.trace),
+        "scenarios": list(control.scenarios),
+    }
+
+
+def _function_input(function: FunctionIR) -> dict[str, object]:
+    return {
+        "name": function.name,
+        "responsibility": function.responsibility,
+        "owns": list(function.owns),
+        "inputs": list(function.inputs),
+        "outputs": list(function.outputs),
+        "trace": list(function.trace),
+        "scenarios": list(function.scenarios),
+    }
+
+
+def _harness_boundary_input(device: HarnessDeviceIR) -> dict[str, object]:
+    return {
+        "name": device.name,
+        "role": device.role,
+        "boundary": device.boundary,
+        "trace": list(device.trace),
     }
 
 
