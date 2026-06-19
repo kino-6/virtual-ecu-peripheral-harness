@@ -6,6 +6,7 @@ from pathlib import Path
 from veph.ir import (
     ComponentIR,
     ControlRuleIR,
+    ExpressionIR,
     FlowIR,
     FunctionIR,
     HarnessDeviceIR,
@@ -257,16 +258,18 @@ def _parse_control(body: str) -> list[ControlRuleIR]:
             raise MarkupParseError(f"control rule missing then: {line}")
         action_text, trace, scenarios = _split_trace_and_scenarios(action_part)
         actions = _parse_actions(action_text)
+        condition = condition_part.strip()
         controls.append(
             ControlRuleIR(
                 name=name,
-                condition=condition_part.strip(),
+                condition=condition,
                 actions=actions,
                 priority=priority,
                 state_scope=state_scope,
                 owner=owner,
                 trace=trace,
                 scenarios=scenarios,
+                condition_expr=_parse_expression(condition),
             )
         )
     return controls
@@ -336,6 +339,97 @@ def _parse_semicolon_attrs(text: str) -> dict[str, str]:
 
 def _split_csv(text: str) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
+
+
+TOKEN_RE = re.compile(r"<=|>=|==|!=|<|>|[A-Za-z_][A-Za-z0-9_]*|\d+(?:\.\d+)?|\S")
+COMPARISON_OPERATORS = {"==", "!=", "<", "<=", ">", ">="}
+
+
+def _parse_expression(text: str) -> ExpressionIR:
+    tokens = TOKEN_RE.findall(text)
+    parser = _ExpressionParser(tokens, text)
+    try:
+        expression = parser.parse()
+    except MarkupParseError as exc:
+        return ExpressionIR(kind="unsupported", source=text, diagnostic=str(exc))
+    if parser.has_remaining():
+        return ExpressionIR(
+            kind="unsupported",
+            source=text,
+            diagnostic=f"unsupported expression token: {parser.peek()}",
+        )
+    return expression
+
+
+class _ExpressionParser:
+    def __init__(self, tokens: list[str], source: str) -> None:
+        self.tokens = tokens
+        self.source = source
+        self.index = 0
+
+    def parse(self) -> ExpressionIR:
+        if not self.tokens:
+            raise MarkupParseError("empty control expression")
+        return self._parse_or()
+
+    def has_remaining(self) -> bool:
+        return self.index < len(self.tokens)
+
+    def peek(self) -> str:
+        return self.tokens[self.index] if self.has_remaining() else ""
+
+    def _take(self) -> str:
+        token = self.peek()
+        self.index += 1
+        return token
+
+    def _parse_or(self) -> ExpressionIR:
+        operands = [self._parse_and()]
+        while self.peek() == "or":
+            self._take()
+            operands.append(self._parse_and())
+        if len(operands) == 1:
+            return operands[0]
+        return ExpressionIR(kind="logical", source=self.source, operator="or", operands=operands)
+
+    def _parse_and(self) -> ExpressionIR:
+        operands = [self._parse_comparison()]
+        while self.peek() == "and":
+            self._take()
+            operands.append(self._parse_comparison())
+        if len(operands) == 1:
+            return operands[0]
+        return ExpressionIR(kind="logical", source=self.source, operator="and", operands=operands)
+
+    def _parse_comparison(self) -> ExpressionIR:
+        left = self._parse_atom()
+        if self.peek() not in COMPARISON_OPERATORS:
+            return left
+        operator = self._take()
+        right = self._parse_atom()
+        return ExpressionIR(
+            kind="comparison",
+            source=self.source,
+            operator=operator,
+            left=left,
+            right=right,
+        )
+
+    def _parse_atom(self) -> ExpressionIR:
+        token = self._take()
+        lowered = token.lower()
+        if token == "always":
+            return ExpressionIR(kind="always", source=self.source)
+        if lowered == "true":
+            return ExpressionIR(kind="boolean", source=self.source, value=True)
+        if lowered == "false":
+            return ExpressionIR(kind="boolean", source=self.source, value=False)
+        if re.fullmatch(r"\d+(?:\.\d+)?", token):
+            value: int | float = float(token) if "." in token else int(token)
+            return ExpressionIR(kind="number", source=self.source, value=value)
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", token):
+            return ExpressionIR(kind="variable", source=self.source, name=token)
+        raise MarkupParseError(f"unsupported expression token: {token}")
 
 
 def _split_trace_tokens(tokens: list[str]) -> tuple[list[str], list[str]]:

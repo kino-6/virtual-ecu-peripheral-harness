@@ -72,6 +72,19 @@ class FunctionIR:
 
 
 @dataclass(frozen=True)
+class ExpressionIR:
+    kind: str
+    source: str = ""
+    value: str | int | float | bool | None = None
+    name: str = ""
+    operator: str = ""
+    left: "ExpressionIR | None" = None
+    right: "ExpressionIR | None" = None
+    operands: list["ExpressionIR"] = field(default_factory=list)
+    diagnostic: str = ""
+
+
+@dataclass(frozen=True)
 class ControlRuleIR:
     name: str
     condition: str
@@ -81,6 +94,12 @@ class ControlRuleIR:
     owner: str = ""
     trace: list[str] = field(default_factory=list)
     scenarios: list[str] = field(default_factory=list)
+    condition_expr: ExpressionIR = field(
+        default_factory=lambda: ExpressionIR(
+            kind="unsupported",
+            diagnostic="condition expression was not parsed",
+        )
+    )
 
 
 @dataclass(frozen=True)

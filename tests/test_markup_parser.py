@@ -69,6 +69,13 @@ def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
     assert recover_rule.owner == "FaultLatchRecoveryManager"
     assert recover_rule.state_scope == "FAULT_LATCHED"
     assert "invalidDebounced == false" in recover_rule.condition
+    assert recover_rule.condition_expr.kind == "logical"
+    assert recover_rule.condition_expr.operator == "and"
+    assert [operand.kind for operand in recover_rule.condition_expr.operands] == [
+        "comparison",
+        "comparison",
+        "comparison",
+    ]
     assert "invalidDebounced == false" in recover_transition.condition
     assert "SYS-008" in recover_rule.trace
     assert recover_rule.scenarios == ["thermal_protection_recovery"]

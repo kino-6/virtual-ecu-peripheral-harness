@@ -8,9 +8,10 @@ from veph.exporters.mermaid import export_mermaid
 from veph.exporters.modelica import export_modelica
 from veph.exporters.plantuml import export_plantuml
 from veph.exporters.scxml import export_scxml
-from veph.exporters.simulink_m import export_simulink_m
-from veph.markup_parser import parse_markup_file
+from veph.exporters.simulink_m import SimulinkSemanticExportError, export_simulink_m
+from veph.markup_parser import parse_markup, parse_markup_file
 from veph.model_loader import load_model
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,6 +101,65 @@ def test_thermal_protection_generated_artifacts_are_deterministic_from_markup_so
 
     for relative_path, regenerated in expected_outputs.items():
         assert (ROOT / relative_path).read_text(encoding="utf-8") == regenerated
+
+
+def test_thermal_protection_simulink_handoff_structures_high_cooling_rule():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    script = export_simulink_m(model)
+    semantic_lines = _without_comment_lines(script)
+
+    assert "add_block('simulink/Sources/In1', [model '/In_temperatureC'])" in script
+    assert "set_param([model '/In_temperatureC'], 'OutDataTypeStr', 'double')" in script
+    assert "add_block('simulink/Sources/Constant', [model '/Param_coolingOnThreshold'])" in script
+    assert "add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_highCooling_Compare'])" in semantic_lines
+    assert "set_param([model '/Rule_highCooling_Compare'], 'relop', '>=')" in semantic_lines
+    assert "set_param([model '/Rule_highCooling_Compare'], 'const', 'coolingOnThreshold')" in semantic_lines
+    assert "add_block('simulink/Signal Routing/Switch', [model '/Rule_highCooling_fanDuty_Switch'])" in semantic_lines
+    assert "add_line(model, 'Param_coolingDuty/1', 'Rule_highCooling_fanDuty_Switch/1'" in semantic_lines
+    assert "add_line(model, 'Rule_highCooling_fanDuty_Switch/1', 'Out_fanDuty/1'" in semantic_lines
+
+
+def test_thermal_protection_simulink_handoff_structures_fault_latch_rule():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    script = export_simulink_m(model)
+    semantic_lines = _without_comment_lines(script)
+
+    assert "add_block('simulink/Sources/In1', [model '/In_invalidDebounced'])" in script
+    assert "add_block('simulink/Logic and Bit Operations/Compare To Constant', [model '/Rule_faultLatch_Compare'])" in semantic_lines
+    assert "set_param([model '/Rule_faultLatch_Compare'], 'relop', '==')" in semantic_lines
+    assert "set_param([model '/Rule_faultLatch_Compare'], 'const', 'true')" in semantic_lines
+    assert "add_block('simulink/Signal Routing/Switch', [model '/Rule_faultLatch_safeCommandActive_Switch'])" in semantic_lines
+    assert "add_block('simulink/Sources/Constant', [model '/Rule_faultLatch_safeCommandActive_true_Const'])" in semantic_lines
+    assert "add_line(model, 'Rule_faultLatch_Compare/1', 'Rule_faultLatch_safeCommandActive_Switch/2'" in semantic_lines
+
+
+def test_simulink_rule_semantics_are_not_comment_only():
+    model = parse_markup_file(ROOT / "examples" / "toy_thermal_protection_controller.mbd.md")
+
+    semantic_lines = _without_comment_lines(export_simulink_m(model))
+
+    assert "Rule_highCooling_Compare" in semantic_lines
+    assert "Rule_faultLatch_Compare" in semantic_lines
+    assert "Rule_derating_fanDuty_Switch" in semantic_lines
+    assert "Rule_sensorInvalid_diagnosticFault_Switch" in semantic_lines
+
+
+def test_simulink_export_reports_unsupported_expression_diagnostics():
+    source = (ROOT / "examples" / "toy_thermal_protection_controller.mbd.md").read_text(encoding="utf-8")
+    source = source.replace(
+        "when temperatureC >= coolingOnThreshold then state=COOLING",
+        "when temperatureC + 1 >= coolingOnThreshold then state=COOLING",
+    )
+    model = parse_markup(source, ROOT / "examples" / "unsupported_expression.mbd.md")
+
+    with pytest.raises(SimulinkSemanticExportError, match="highCooling.*unsupported condition.*\\+"):
+        export_simulink_m(model)
+
+
+def _without_comment_lines(text: str) -> str:
+    return "\n".join(line for line in text.splitlines() if not line.startswith("%"))
 
 
 def test_demo_html_visualizes_mbd_and_data_flow_from_yaml():

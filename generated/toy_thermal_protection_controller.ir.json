@@ -59,6 +59,111 @@
         "state": "IDLE"
       },
       "condition": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "logical",
+        "left": null,
+        "name": "",
+        "operands": [
+          {
+            "diagnostic": "",
+            "kind": "comparison",
+            "left": {
+              "diagnostic": "",
+              "kind": "variable",
+              "left": null,
+              "name": "temperatureValid",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": null
+            },
+            "name": "",
+            "operands": [],
+            "operator": "==",
+            "right": {
+              "diagnostic": "",
+              "kind": "boolean",
+              "left": null,
+              "name": "",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": true
+            },
+            "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+            "value": null
+          },
+          {
+            "diagnostic": "",
+            "kind": "comparison",
+            "left": {
+              "diagnostic": "",
+              "kind": "variable",
+              "left": null,
+              "name": "invalidDebounced",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": null
+            },
+            "name": "",
+            "operands": [],
+            "operator": "==",
+            "right": {
+              "diagnostic": "",
+              "kind": "boolean",
+              "left": null,
+              "name": "",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": false
+            },
+            "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+            "value": null
+          },
+          {
+            "diagnostic": "",
+            "kind": "comparison",
+            "left": {
+              "diagnostic": "",
+              "kind": "variable",
+              "left": null,
+              "name": "recoveryRequest",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": null
+            },
+            "name": "",
+            "operands": [],
+            "operator": "==",
+            "right": {
+              "diagnostic": "",
+              "kind": "boolean",
+              "left": null,
+              "name": "",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+              "value": true
+            },
+            "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+            "value": null
+          }
+        ],
+        "operator": "and",
+        "right": null,
+        "source": "temperatureValid == true and invalidDebounced == false and recoveryRequest == true",
+        "value": null
+      },
       "name": "recoverFromLatch",
       "owner": "FaultLatchRecoveryManager",
       "priority": 10,
@@ -80,6 +185,37 @@
         "state": "FAULT_LATCHED"
       },
       "condition": "invalidDebounced == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "invalidDebounced",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "invalidDebounced == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "invalidDebounced == true",
+          "value": true
+        },
+        "source": "invalidDebounced == true",
+        "value": null
+      },
       "name": "faultLatch",
       "owner": "FaultLatchRecoveryManager",
       "priority": 20,
@@ -103,6 +239,17 @@
         "state": "FAULT_LATCHED"
       },
       "condition": "always",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "always",
+        "left": null,
+        "name": "",
+        "operands": [],
+        "operator": "",
+        "right": null,
+        "source": "always",
+        "value": null
+      },
       "name": "holdLatchedFault",
       "owner": "FaultLatchRecoveryManager",
       "priority": 30,
@@ -125,6 +272,37 @@
         "state": "SENSOR_FAULT"
       },
       "condition": "temperatureValid == false",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "temperatureValid",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureValid == false",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureValid == false",
+          "value": false
+        },
+        "source": "temperatureValid == false",
+        "value": null
+      },
       "name": "sensorInvalid",
       "owner": "FaultLatchRecoveryManager",
       "priority": 40,
@@ -147,6 +325,37 @@
         "state": "DERATING"
       },
       "condition": "temperatureC >= deratingEntryThreshold",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "temperatureC",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC >= deratingEntryThreshold",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": ">=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "deratingEntryThreshold",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC >= deratingEntryThreshold",
+          "value": null
+        },
+        "source": "temperatureC >= deratingEntryThreshold",
+        "value": null
+      },
       "name": "derating",
       "owner": "DeratingCommandManager",
       "priority": 50,
@@ -170,6 +379,37 @@
         "state": "COOLING"
       },
       "condition": "temperatureC >= coolingOnThreshold",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "temperatureC",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC >= coolingOnThreshold",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": ">=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "coolingOnThreshold",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC >= coolingOnThreshold",
+          "value": null
+        },
+        "source": "temperatureC >= coolingOnThreshold",
+        "value": null
+      },
       "name": "highCooling",
       "owner": "CoolingCommandManager",
       "priority": 60,
@@ -192,6 +432,37 @@
         "state": "IDLE"
       },
       "condition": "temperatureC <= coolingOffThreshold",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "temperatureC",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC <= coolingOffThreshold",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "<=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "coolingOffThreshold",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "temperatureC <= coolingOffThreshold",
+          "value": null
+        },
+        "source": "temperatureC <= coolingOffThreshold",
+        "value": null
+      },
       "name": "lowCooling",
       "owner": "CoolingCommandManager",
       "priority": 70,

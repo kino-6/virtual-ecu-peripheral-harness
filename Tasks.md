@@ -11,35 +11,34 @@ Archived task history:
 
 ## Current Goal
 
-Improve the thermal protection specification and MBD so the artifact passes the
-decomposition review gate: system context, functional components,
-responsibility allocation, signal ownership, control ownership, and scenario
-evidence are reviewable before detailed control rules.
+Create a semantic MBD export quality contract and improve the Simulink handoff
+exporter so supported thermal protection control rules are structurally
+represented, not only preserved as comments.
 
 ## Quality Gates
 
-- [x] Specification describes the system context and functional decomposition
-      before detailed behavior.
-- [x] MBD source includes decomposed functional components with responsibility,
-      signal ownership, trace, and scenario evidence.
-- [x] Control rules identify their owning function.
-- [x] Generated review artifacts show decomposition before control tables.
-- [x] Preview reports include decomposition and control ownership evidence.
-- [x] Tests reject missing decomposition/control ownership for the protection
-      demo.
+- [x] Contract distinguishes review-only artifact, semantic handoff artifact,
+      and executable preview subset.
+- [x] Control rules carry a parsed expression AST, not only raw condition
+      strings.
+- [x] Simulink exporter fails with actionable diagnostics for unsupported
+      control expressions.
+- [x] Thermal protection Simulink handoff includes typed ports, constants,
+      compare blocks, logical blocks, and switch structures for supported
+      priority-ordered rules.
+- [x] Tests prevent rule semantics from regressing to comments only.
 
-## Phase 14: Thermal Protection Decomposition
+## Phase 15: Semantic MBD Export Quality Gate
 
-- [x] Add parser/IR support for `mbd-decomposition`.
-- [x] Add control-rule owner support.
-- [x] Rewrite the protection specification around system context,
-      functional responsibilities, and allocations.
-- [x] Rewrite the protection MBD source to include functional decomposition.
-- [x] Update Markdown/HTML/Mermaid/Modelica/Simulink/SCXML/report exports.
-- [x] Regenerate generated artifacts and preview reports.
+- [x] Add `docs/mbd_semantic_export_contract.md`.
+- [x] Add minimal expression AST and parser support.
+- [x] Add Simulink semantic subset validation.
+- [x] Improve `export_simulink_m` for supported thermal protection rules.
+- [x] Add golden/regression/unsupported-expression tests.
+- [x] Regenerate `generated/create_toy_thermal_protection_controller_model.m`.
 
 Verification:
 
-- [x] Focused parser/exporter/runtime/codegen tests pass.
+- [x] Focused semantic export tests pass.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
