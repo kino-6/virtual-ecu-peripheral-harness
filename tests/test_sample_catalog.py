@@ -10,6 +10,7 @@ def test_sample_catalog_discovers_sample_workspaces():
     samples = {sample.id: sample for sample in list_samples(ROOT)}
 
     assert set(samples) == {
+        "simple_state_machine",
         "simple_threshold_indicator",
         "thermal_fan_control",
         "thermal_protection_controller",

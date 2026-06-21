@@ -1,0 +1,94 @@
+flowchart LR
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_start_running{"startCommand == true?"}
+  action_start_running["State RUNNING<br/>Output busy = true<br/>Output complete = false"]
+  input_startCommand["Input Port: startCommand"]
+  input_startCommand --> decision_start_running
+  decision_start_running -->|"true / start_running"| action_start_running
+  decision_finish_done{"finishCommand == true?"}
+  action_finish_done["State DONE<br/>Output busy = false<br/>Output complete = true"]
+  input_finishCommand["Input Port: finishCommand"]
+  input_finishCommand --> decision_finish_done
+  decision_finish_done -->|"true / finish_done"| action_finish_done
+  decision_reset_idle{"resetCommand == true?"}
+  action_reset_idle["State IDLE<br/>Output busy = false<br/>Output complete = false"]
+  input_resetCommand["Input Port: resetCommand"]
+  input_resetCommand --> decision_reset_idle
+  decision_reset_idle -->|"true / reset_idle"| action_reset_idle
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
+  ToyCommandSource_startCommand["ToyCommandSource.startCommand"]
+  ToyStateController_startCommand["ToyStateController.startCommand"]
+  %% Trace: SM-001
+  %% ToyCommandSource_startCommand --> ToyStateController_startCommand
+  ToyCommandSource_startCommand -->|"start request"| ToyStateController_startCommand
+  ToyCommandSource_finishCommand["ToyCommandSource.finishCommand"]
+  ToyStateController_finishCommand["ToyStateController.finishCommand"]
+  %% Trace: SM-002
+  %% ToyCommandSource_finishCommand --> ToyStateController_finishCommand
+  ToyCommandSource_finishCommand -->|"finish request"| ToyStateController_finishCommand
+  ToyCommandSource_resetCommand["ToyCommandSource.resetCommand"]
+  ToyStateController_resetCommand["ToyStateController.resetCommand"]
+  %% Trace: SM-003
+  %% ToyCommandSource_resetCommand --> ToyStateController_resetCommand
+  ToyCommandSource_resetCommand -->|"reset request"| ToyStateController_resetCommand
+  ToyStateController_busy["ToyStateController.busy"]
+  ToyStateMachine_busy["ToyStateMachine.busy"]
+  %% Trace: SM-001, SM-002, SM-003
+  %% ToyStateController_busy --> ToyStateMachine_busy
+  ToyStateController_busy -->|"busy command"| ToyStateMachine_busy
+  ToyStateController_complete["ToyStateController.complete"]
+  ToyStateMachine_complete["ToyStateMachine.complete"]
+  %% Trace: SM-002, SM-003
+  %% ToyStateController_complete --> ToyStateMachine_complete
+  ToyStateController_complete -->|"completion command"| ToyStateMachine_complete
+  ToyStateMachine_busy["ToyStateMachine.busy"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SM-004
+  %% ToyStateMachine_busy --> ScenarioReport_observedBehavior
+  ToyStateMachine_busy -->|"reported busy output"| ScenarioReport_observedBehavior
+  ToyStateMachine_complete["ToyStateMachine.complete"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SM-004
+  %% ToyStateMachine_complete --> ScenarioReport_observedBehavior
+  ToyStateMachine_complete -->|"reported complete output"| ScenarioReport_observedBehavior
+  function_ToyStateController["ToyStateController<br/>Own the IDLE/RUNNING/DONE lifecycle and map state transitions to busy and complete outputs"]
+  %% Function Trace: SM-001, SM-002, SM-003, SM-004
+  state["state"]
+  function_ToyStateController -->|"owns"| state
+  busy["busy"]
+  function_ToyStateController -->|"owns"| busy
+  complete["complete"]
+  function_ToyStateController -->|"owns"| complete
+  rule_start_running{"priority 10<br/>rule start_running<br/>owner ToyStateController<br/>from IDLE"}
+  %% Trace: SM-001, SM-004
+  %% Scenarios: full_cycle
+  state["state"]
+  rule_start_running -->|"startCommand == true"| state
+  busy["busy"]
+  rule_start_running -->|"startCommand == true"| busy
+  complete["complete"]
+  rule_start_running -->|"startCommand == true"| complete
+  rule_finish_done{"priority 20<br/>rule finish_done<br/>owner ToyStateController<br/>from RUNNING"}
+  %% Trace: SM-002, SM-004
+  %% Scenarios: full_cycle
+  state["state"]
+  rule_finish_done -->|"finishCommand == true"| state
+  busy["busy"]
+  rule_finish_done -->|"finishCommand == true"| busy
+  complete["complete"]
+  rule_finish_done -->|"finishCommand == true"| complete
+  rule_reset_idle{"priority 30<br/>rule reset_idle<br/>owner ToyStateController<br/>from DONE"}
+  %% Trace: SM-003, SM-004
+  %% Scenarios: full_cycle
+  state["state"]
+  rule_reset_idle -->|"resetCommand == true"| state
+  busy["busy"]
+  rule_reset_idle -->|"resetCommand == true"| busy
+  complete["complete"]
+  rule_reset_idle -->|"resetCommand == true"| complete
+  ToyCommandSource["ToyCommandSource<br/>virtual_ic"]
+  %% Trace: SM-001, SM-002, SM-003
+  ToyStateMachine["ToyStateMachine<br/>hal"]
+  %% Trace: SM-001, SM-002, SM-003, SM-004

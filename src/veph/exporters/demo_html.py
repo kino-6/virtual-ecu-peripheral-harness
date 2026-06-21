@@ -79,6 +79,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             f"        <div><strong>{len(model.harness_devices)}</strong><span>harness boundaries</span></div>",
             "      </div>",
             "    </section>",
+            _ir_design_overview_svg(model),
             _ir_semantic_mbd_svg(model),
             _ir_functional_decomposition_svg(model),
             '    <section class="panel">',
@@ -158,6 +159,54 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
 
 def flow_or_empty(rows: str, colspan: int = 4) -> str:
     return rows if rows else f'          <tr><td colspan="{colspan}">None</td></tr>'
+
+
+def _ir_design_overview_svg(model: MbdModelIR) -> str:
+    functions = model.functions[:1]
+    inputs = [port for port in model.ports.values() if port.direction == "in"]
+    outputs = [port for port in model.ports.values() if port.direction == "out"]
+    if not functions or not inputs or not outputs:
+        return ""
+    function = functions[0]
+    source = next((device.name for device in model.harness_devices if device.role == "source"), "ScenarioInput")
+    report = next((flow.target for flow in model.flows if flow.target.startswith("ScenarioReport.")), "ScenarioReport.observedBehavior")
+    input_positions = _stack_positions(len(inputs), 52, 74)
+    output_positions = _stack_positions(len(outputs), 88, 94)
+    height = max(300, max(input_positions[-1], output_positions[-1]) + 96)
+    parts = [
+        '    <section class="panel">',
+        "      <h2>Design Overview Diagram</h2>",
+        "      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. This view intentionally matches the specification-level design overview before detailed control-rule review.</p>",
+        f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Design overview generated from MBD source">',
+        *(_svg_defs("irDesignArrow")),
+        *(_semantic_svg_node([source], 42, height // 2 - 35, 190, "scenario source")),
+        *(_semantic_svg_node([function.name], 536, height // 2 - 35, 230, "function")),
+        *(_semantic_svg_node([report], 1036, height // 2 - 35, 130, "report")),
+    ]
+    source_center_y = height // 2
+    function_center_y = height // 2
+    report_center_y = height // 2
+    for port, y in zip(inputs, input_positions):
+        center_y = y + 35
+        parts.extend(_semantic_svg_node(["Input Port", port.name], 266, y, 210, "model input"))
+        parts.append(f'        <line x1="232" y1="{source_center_y}" x2="266" y2="{center_y}" class="ir-arrow"></line>')
+        parts.append(
+            f'        <text x="249" y="{(source_center_y + center_y) / 2 - 8:.0f}" text-anchor="middle" class="edge-note">{escape(port.name)}</text>'
+        )
+        parts.append(f'        <line x1="476" y1="{center_y}" x2="536" y2="{function_center_y}" class="ir-arrow"></line>')
+    for port, y in zip(outputs, output_positions):
+        center_y = y + 35
+        parts.extend(_semantic_svg_node([f"Output {port.name}"], 806, y, 190, "model output"))
+        parts.append(f'        <line x1="766" y1="{function_center_y}" x2="806" y2="{center_y}" class="ir-arrow"></line>')
+        parts.append(f'        <line x1="996" y1="{center_y}" x2="1036" y2="{report_center_y}" class="ir-arrow"></line>')
+    parts.extend(["      </svg>", "    </section>"])
+    return "\n".join(parts)
+
+
+def _stack_positions(count: int, first_y: int, gap: int) -> list[int]:
+    if count <= 1:
+        return [118]
+    return [first_y + index * gap for index in range(count)]
 
 
 def _ir_semantic_mbd_svg(model: MbdModelIR) -> str:

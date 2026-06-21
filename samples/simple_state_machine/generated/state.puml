@@ -1,0 +1,16 @@
+@startuml
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToyStateMachine State Preview
+[*] --> IDLE
+IDLE --> RUNNING : startCommand == true
+RUNNING --> DONE : finishCommand == true
+DONE --> IDLE : resetCommand == true
+' Function ToyStateController: owns IDLE, RUNNING, DONE, busy, complete trace SM-001, SM-002, SM-003, SM-004
+' Control start_running: owner ToyStateController priority 10 from IDLE
+' Trace start_running: SM-001, SM-004
+' Control finish_done: owner ToyStateController priority 20 from RUNNING
+' Trace finish_done: SM-002, SM-004
+' Control reset_idle: owner ToyStateController priority 30 from DONE
+' Trace reset_idle: SM-003, SM-004
+@enduml

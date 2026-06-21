@@ -1,0 +1,21 @@
+id: simple_state_machine
+title: Simple State Machine
+kind: minimal-mbd
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  full_cycle: scenarios/full_cycle.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+reports:
+  full_cycle: reports/full_cycle.md

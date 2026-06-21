@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="IDLE">
+  <!-- Generated state-machine handoff from samples/simple_state_machine/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: SM-001, SM-002, SM-003, SM-004 -->
+  <!-- priority 10 start_running owner ToyStateController from IDLE when startCommand == true trace SM-001, SM-004 scenarios full_cycle -->
+  <!-- priority 20 finish_done owner ToyStateController from RUNNING when finishCommand == true trace SM-002, SM-004 scenarios full_cycle -->
+  <!-- priority 30 reset_idle owner ToyStateController from DONE when resetCommand == true trace SM-003, SM-004 scenarios full_cycle -->
+  <!-- function ToyStateController owns IDLE, RUNNING, DONE, busy, complete trace SM-001, SM-002, SM-003, SM-004 -->
+  <state id="IDLE">
+    <transition event="startCommand == true" target="RUNNING" />
+  </state>
+  <state id="RUNNING">
+    <transition event="finishCommand == true" target="DONE" />
+  </state>
+  <state id="DONE">
+    <transition event="resetCommand == true" target="IDLE" />
+  </state>
+</scxml>

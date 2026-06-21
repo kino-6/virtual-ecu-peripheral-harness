@@ -1,0 +1,20 @@
+name: simple_state_machine_full_cycle
+model: ToyStateMachine
+steps:
+  - atMs: 0
+    setInput:
+      name: startCommand
+      value: true
+  - atMs: 10
+    setInput:
+      name: finishCommand
+      value: true
+  - atMs: 20
+    setInput:
+      name: resetCommand
+      value: true
+expect:
+  finalState: IDLE
+  outputs:
+    busy: false
+    complete: false

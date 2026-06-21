@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ToyThresholdIndicator Markup-to-MBD Demo</title>
+  <title>ToyStateMachine Markup-to-MBD Demo</title>
   <style>
 :root {
       color-scheme: light;
@@ -228,13 +228,13 @@
     <section class="hero">
       <div class="hero-copy">
         <p>Author in text. Verify in MBD tools.</p>
-        <h1>ToyThresholdIndicator Markup-to-MBD Demo</h1>
+        <h1>ToyStateMachine Markup-to-MBD Demo</h1>
         <span>Generated from Mermaid-like Markdown markup. This is a preview, not the verification backend.</span>
       </div>
       <div class="hero-facts" aria-label="model facts">
-        <div><strong>2</strong><span>ports</span></div>
+        <div><strong>5</strong><span>ports</span></div>
         <div><strong>1</strong><span>functions</span></div>
-        <div><strong>2</strong><span>control rules</span></div>
+        <div><strong>3</strong><span>control rules</span></div>
         <div><strong>2</strong><span>harness boundaries</span></div>
       </div>
     </section>
@@ -248,72 +248,48 @@
           </marker>
         </defs>
         <rect x="42" y="115" width="190" height="70" rx="8" class="node"></rect>
-        <text x="137" y="145" text-anchor="middle" class="node-title small">ToyInputSource</text>
+        <text x="137" y="145" text-anchor="middle" class="node-title small">ToyCommandSource</text>
         <text x="137" y="177" text-anchor="middle" class="node-note">scenario source</text>
         <rect x="536" y="115" width="230" height="70" rx="8" class="node"></rect>
-        <text x="651" y="145" text-anchor="middle" class="node-title small">ThresholdCompare</text>
+        <text x="651" y="145" text-anchor="middle" class="node-title small">ToyStateController</text>
         <text x="651" y="177" text-anchor="middle" class="node-note">function</text>
         <rect x="1036" y="115" width="130" height="70" rx="8" class="node"></rect>
         <text x="1101" y="145" text-anchor="middle" class="node-title small">ScenarioReport.observed...</text>
         <text x="1101" y="177" text-anchor="middle" class="node-note">report</text>
-        <rect x="266" y="118" width="210" height="70" rx="8" class="node"></rect>
-        <text x="371" y="143" text-anchor="middle" class="node-title small">Input Port</text>
-        <text x="371" y="161" text-anchor="middle" class="node-title small">sampleValue</text>
-        <text x="371" y="180" text-anchor="middle" class="node-note">model input</text>
-        <line x1="232" y1="150" x2="266" y2="153" class="ir-arrow"></line>
-        <text x="249" y="144" text-anchor="middle" class="edge-note">sampleValue</text>
-        <line x1="476" y1="153" x2="536" y2="150" class="ir-arrow"></line>
-        <rect x="806" y="118" width="190" height="70" rx="8" class="node"></rect>
-        <text x="901" y="148" text-anchor="middle" class="node-title small">Output active</text>
-        <text x="901" y="180" text-anchor="middle" class="node-note">model output</text>
-        <line x1="766" y1="150" x2="806" y2="153" class="ir-arrow"></line>
-        <line x1="996" y1="153" x2="1036" y2="150" class="ir-arrow"></line>
+        <rect x="266" y="52" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="77" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="95" text-anchor="middle" class="node-title small">startCommand</text>
+        <text x="371" y="114" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="87" class="ir-arrow"></line>
+        <text x="249" y="110" text-anchor="middle" class="edge-note">startCommand</text>
+        <line x1="476" y1="87" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="266" y="126" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="151" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="169" text-anchor="middle" class="node-title small">finishCommand</text>
+        <text x="371" y="188" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="161" class="ir-arrow"></line>
+        <text x="249" y="148" text-anchor="middle" class="edge-note">finishCommand</text>
+        <line x1="476" y1="161" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="266" y="200" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="225" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="243" text-anchor="middle" class="node-title small">resetCommand</text>
+        <text x="371" y="262" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="235" class="ir-arrow"></line>
+        <text x="249" y="184" text-anchor="middle" class="edge-note">resetCommand</text>
+        <line x1="476" y1="235" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="806" y="88" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="118" text-anchor="middle" class="node-title small">Output busy</text>
+        <text x="901" y="150" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="150" x2="806" y2="123" class="ir-arrow"></line>
+        <line x1="996" y1="123" x2="1036" y2="150" class="ir-arrow"></line>
+        <rect x="806" y="182" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="212" text-anchor="middle" class="node-title small">Output complete</text>
+        <text x="901" y="244" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="150" x2="806" y2="217" class="ir-arrow"></line>
+        <line x1="996" y1="217" x2="1036" y2="150" class="ir-arrow"></line>
       </svg>
     </section>
-    <section class="panel">
-      <h2>Semantic MBD Block Diagram</h2>
-      <p>Generated from parsed ports, parameters, control expressions, actions, and flows. This is the review model; the Markdown source is only the authoring input.</p>
-      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Semantic MBD block diagram generated from parsed model semantics">
-        <defs>
-          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
-          </marker>
-        </defs>
-        <rect x="42" y="118" width="190" height="70" rx="8" class="node"></rect>
-        <text x="137" y="148" text-anchor="middle" class="node-title small">ToyInputSource</text>
-        <text x="137" y="180" text-anchor="middle" class="node-note">scenario source</text>
-        <rect x="266" y="118" width="210" height="70" rx="8" class="node"></rect>
-        <text x="371" y="143" text-anchor="middle" class="node-title small">Input Port</text>
-        <text x="371" y="161" text-anchor="middle" class="node-title small">sampleValue</text>
-        <text x="371" y="180" text-anchor="middle" class="node-note">model input</text>
-        <rect x="266" y="36" width="210" height="70" rx="8" class="node"></rect>
-        <text x="371" y="61" text-anchor="middle" class="node-title small">Parameter</text>
-        <text x="371" y="79" text-anchor="middle" class="node-title small">limit</text>
-        <text x="371" y="98" text-anchor="middle" class="node-note">model parameter</text>
-        <polygon points="650,108 735,153 650,198 565,153" class="rule-condition"></polygon>
-        <text x="650" y="148" text-anchor="middle" class="node-title small">sampleValue &gt;= limit?</text>
-        <rect x="796" y="72" width="226" height="70" rx="8" class="node"></rect>
-        <text x="909" y="102" text-anchor="middle" class="node-title small">Output active = true</text>
-        <text x="909" y="134" text-anchor="middle" class="node-note">true</text>
-        <rect x="796" y="184" width="226" height="70" rx="8" class="node"></rect>
-        <text x="909" y="214" text-anchor="middle" class="node-title small">Output active = false</text>
-        <text x="909" y="246" text-anchor="middle" class="node-note">false</text>
-        <rect x="1036" y="118" width="130" height="70" rx="8" class="node"></rect>
-        <text x="1101" y="143" text-anchor="middle" class="node-title small">ScenarioReport</text>
-        <text x="1101" y="161" text-anchor="middle" class="node-title small">observedBehavior</text>
-        <text x="1101" y="180" text-anchor="middle" class="node-note">observed</text>
-        <line x1="232" y1="153" x2="266" y2="153" class="ir-arrow"></line>
-        <text x="249" y="144" text-anchor="middle" class="edge-note">sampleValue</text>
-        <line x1="476" y1="153" x2="565" y2="153" class="ir-arrow"></line>
-        <line x1="476" y1="71" x2="596" y2="126" class="ir-arrow"></line>
-        <line x1="735" y1="153" x2="796" y2="107" class="ir-arrow"></line>
-        <text x="774" y="117" text-anchor="middle" class="edge-note">true</text>
-        <line x1="735" y1="153" x2="796" y2="219" class="ir-arrow"></line>
-        <text x="774" y="203" text-anchor="middle" class="edge-note">false</text>
-        <line x1="1022" y1="107" x2="1036" y2="153" class="ir-arrow"></line>
-        <line x1="1022" y1="219" x2="1036" y2="153" class="ir-arrow"></line>
-      </svg>
-    </section>
+
     <section class="panel">
       <h2>Functional Architecture</h2>
       <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>
@@ -324,23 +300,23 @@
           </marker>
         </defs>
         <rect x="42" y="44" width="300" height="58" rx="8" class="node"></rect>
-        <text x="58" y="66" class="node-title small">ThresholdCompare</text>
-        <text x="58" y="87" class="node-note">owns active, ACTIVE, IDLE</text>
+        <text x="58" y="66" class="node-title small">ToyStateController</text>
+        <text x="58" y="87" class="node-note">owns IDLE, RUNNING, DONE, busy, complete</text>
         <line x1="342" y1="73" x2="396" y2="73" class="ir-arrow"></line>
         <rect x="396" y="44" width="316" height="58" rx="8" class="rule-condition"></rect>
-        <text x="412" y="68" class="node-note">in sampleValue, limit</text>
-        <text x="412" y="88" class="node-note">out active, state</text>
+        <text x="412" y="68" class="node-note">in startCommand, finishCommand, resetCom...</text>
+        <text x="412" y="88" class="node-note">out state, busy, complete</text>
         <line x1="712" y1="73" x2="766" y2="73" class="ir-arrow"></line>
         <rect x="766" y="44" width="350" height="58" rx="8" class="rule-action"></rect>
-        <text x="782" y="68" class="node-note">trace SIMPLE-001, SIMPLE-002, SIMPLE-003</text>
-        <text x="782" y="88" class="edge-note">Compare sampleValue against limit and own the active ...</text>
+        <text x="782" y="68" class="node-note">trace SM-001, SM-002, SM-003, SM-004</text>
+        <text x="782" y="88" class="edge-note">Own the IDLE/RUNNING/DONE lifecycle and map state tra...</text>
       </svg>
     </section>
     <section class="panel">
       <h2>Functional Decomposition</h2>
       <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
       <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td>ThresholdCompare</td><td>Compare sampleValue against limit and own the active decision</td><td>active, ACTIVE, IDLE</td><td>sampleValue, limit</td><td>active, state</td><td>SIMPLE-001, SIMPLE-002, SIMPLE-003</td><td>above_limit</td></tr>
+          <tr><td>ToyStateController</td><td>Own the IDLE/RUNNING/DONE lifecycle and map state transitions to busy and complete outputs</td><td>IDLE, RUNNING, DONE, busy, complete</td><td>startCommand, finishCommand, resetCommand</td><td>state, busy, complete</td><td>SM-001, SM-002, SM-003, SM-004</td><td>full_cycle</td></tr>
       </tbody></table>
     </section>
     <section class="panel">
@@ -349,9 +325,10 @@
       <table>
         <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
         <tbody>
-          <tr><td><code>SIMPLE-001</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyInputSource.sampleValue-&gt;ThresholdCompare.sampleValue, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
-          <tr><td><code>SIMPLE-002</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:clear, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
-          <tr><td><code>SIMPLE-003</code></td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td><td>above_limit</td></tr>
+          <tr><td><code>SM-001</code></td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.startCommand-&gt;ToyStateController.startCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, control:start_running, harness:ToyCommandSource, harness:ToyStateMachine</td><td>full_cycle</td></tr>
+          <tr><td><code>SM-002</code></td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.finishCommand-&gt;ToyStateController.finishCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, flow:ToyStateController.complete-&gt;ToyStateMachine.complete, control:finish_done, harness:ToyCommandSource, harness:ToyStateMachine</td><td>full_cycle</td></tr>
+          <tr><td><code>SM-003</code></td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.resetCommand-&gt;ToyStateController.resetCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, flow:ToyStateController.complete-&gt;ToyStateMachine.complete, control:reset_idle, harness:ToyCommandSource, harness:ToyStateMachine</td><td>full_cycle</td></tr>
+          <tr><td><code>SM-004</code></td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyStateMachine.busy-&gt;ScenarioReport.observedBehavior, flow:ToyStateMachine.complete-&gt;ScenarioReport.observedBehavior, control:start_running, control:finish_done, control:reset_idle, harness:ToyStateMachine</td><td>full_cycle</td></tr>
         </tbody>
       </table>
     </section>
@@ -378,38 +355,56 @@
     <section class="panel">
       <h2>MBD Data Flow Diagram</h2>
       <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
-      <svg class="diagram" viewBox="0 0 1180 380" role="img" aria-label="MBD data flow generated from mbd-flow">
+      <svg class="diagram" viewBox="0 0 1180 590" role="img" aria-label="MBD data flow generated from mbd-flow">
         <defs>
           <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
           </marker>
         </defs>
         <path d="M 266 73 C 441 73, 441 73, 616 73" class="ir-flow-line"></path>
-        <text x="441" y="65" text-anchor="middle" class="signal-label">scenario input</text>
-        <path d="M 556 73 C 586 73, 586 143, 616 143" class="ir-flow-line"></path>
-        <text x="586" y="100" text-anchor="middle" class="signal-label">threshold parameter</text>
-        <path d="M 846 213 C 731 213, 731 283, 616 283" class="ir-flow-line"></path>
-        <text x="731" y="240" text-anchor="middle" class="signal-label">comparison result</text>
-        <path d="M 846 283 C 876 283, 876 73, 906 73" class="ir-flow-line"></path>
-        <text x="876" y="170" text-anchor="middle" class="signal-label">reported output</text>
+        <text x="441" y="65" text-anchor="middle" class="signal-label">start request</text>
+        <path d="M 266 143 C 441 143, 441 143, 616 143" class="ir-flow-line"></path>
+        <text x="441" y="135" text-anchor="middle" class="signal-label">finish request</text>
+        <path d="M 266 213 C 441 213, 441 213, 616 213" class="ir-flow-line"></path>
+        <text x="441" y="205" text-anchor="middle" class="signal-label">reset request</text>
+        <path d="M 846 283 C 731 283, 731 353, 616 353" class="ir-flow-line"></path>
+        <text x="731" y="310" text-anchor="middle" class="signal-label">busy command</text>
+        <path d="M 846 423 C 731 423, 731 493, 616 493" class="ir-flow-line"></path>
+        <text x="731" y="450" text-anchor="middle" class="signal-label">completion command</text>
+        <path d="M 846 353 C 876 353, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="205" text-anchor="middle" class="signal-label">reported busy output</text>
+        <path d="M 846 493 C 876 493, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="275" text-anchor="middle" class="signal-label">reported complete output</text>
         <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
-        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyInputSource.sampleValue</text>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyCommandSource.startCommand</text>
         <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Source</text>
-        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
-        <text x="441" y="68" text-anchor="middle" class="node-title small">ToyThresholdIndicator.limit</text>
-        <text x="441" y="88" text-anchor="middle" class="node-note">Parameter</text>
+        <rect x="36" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="138" text-anchor="middle" class="node-title small">ToyCommandSource.finishCommand</text>
+        <text x="151" y="158" text-anchor="middle" class="node-note">Virtual Source</text>
+        <rect x="36" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="208" text-anchor="middle" class="node-title small">ToyCommandSource.resetCommand</text>
+        <text x="151" y="228" text-anchor="middle" class="node-note">Virtual Source</text>
         <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="68" text-anchor="middle" class="node-title small">ThresholdCompare.sampleValue</text>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyStateController.startCommand</text>
         <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
         <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="138" text-anchor="middle" class="node-title small">ThresholdCompare.limit</text>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyStateController.finishCommand</text>
         <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
         <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="208" text-anchor="middle" class="node-title small">ThresholdCompare.active</text>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyStateController.resetCommand</text>
         <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
         <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
-        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyThresholdIndicator.active</text>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyStateController.busy</text>
         <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="326" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="348" text-anchor="middle" class="node-title small">ToyStateMachine.busy</text>
+        <text x="731" y="368" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="396" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="418" text-anchor="middle" class="node-title small">ToyStateController.complete</text>
+        <text x="731" y="438" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="466" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="488" text-anchor="middle" class="node-title small">ToyStateMachine.complete</text>
+        <text x="731" y="508" text-anchor="middle" class="node-note">Controller</text>
         <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
         <text x="1021" y="68" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
         <text x="1021" y="88" text-anchor="middle" class="node-note">Report</text>
@@ -425,13 +420,17 @@
           </marker>
         </defs>
         <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
-        <text x="291" y="86" text-anchor="middle" class="edge-note">sampleValue &gt;= limit trace SIMPLE-001</text>
-        <path d="M 431 128 C 291 128, 291 128, 151 128" class="ir-state-line"></path>
-        <text x="291" y="118" text-anchor="middle" class="edge-note">sampleValue &lt; limit trace SIMPLE-002</text>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">startCommand == true</text>
+        <path d="M 536 96 C 571 96, 571 96, 606 96" class="ir-state-line"></path>
+        <text x="571" y="86" text-anchor="middle" class="edge-note">finishCommand == true</text>
+        <path d="M 711 128 C 431 128, 431 128, 151 128" class="ir-state-line"></path>
+        <text x="431" y="118" text-anchor="middle" class="edge-note">resetCommand == true</text>
         <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
         <text x="151" y="103" text-anchor="middle" class="state-label">IDLE</text>
         <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
-        <text x="431" y="103" text-anchor="middle" class="state-label">ACTIVE</text>
+        <text x="431" y="103" text-anchor="middle" class="state-label">RUNNING</text>
+        <rect x="606" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="711" y="103" text-anchor="middle" class="state-label">DONE</text>
       </svg>
     </section>
     <section class="panel">
@@ -450,7 +449,7 @@
         <text x="386" y="148" text-anchor="middle" class="node-title">Virtual Sensor</text>
         <text x="386" y="170" text-anchor="middle" class="node-note">virtual IC</text>
         <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
-        <text x="630" y="148" text-anchor="middle" class="node-title">ToyThresholdIndicator</text>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyStateMachine</text>
         <text x="630" y="170" text-anchor="middle" class="node-note">HAL controller</text>
         <rect x="784" y="72" width="200" height="70" rx="8" class="node"></rect>
         <text x="884" y="102" text-anchor="middle" class="node-title">Virtual Actuator</text>
@@ -468,9 +467,10 @@
       <h2>Requirements Trace Matrix</h2>
       <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
       <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
-          <tr><td>SIMPLE-001</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyInputSource.sampleValue-&gt;ThresholdCompare.sampleValue, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:activate, harness:ToyInputSource, harness:ToyThresholdIndicator</td></tr>
-          <tr><td>SIMPLE-002</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.limit-&gt;ThresholdCompare.limit, flow:ThresholdCompare.active-&gt;ToyThresholdIndicator.active, control:clear, harness:ToyThresholdIndicator</td></tr>
-          <tr><td>SIMPLE-003</td><td>component:ToyThresholdIndicator, function:ThresholdCompare, flow:ToyThresholdIndicator.active-&gt;ScenarioReport.observedBehavior, control:activate, control:clear, harness:ToyThresholdIndicator</td></tr>
+          <tr><td>SM-001</td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.startCommand-&gt;ToyStateController.startCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, control:start_running, harness:ToyCommandSource, harness:ToyStateMachine</td></tr>
+          <tr><td>SM-002</td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.finishCommand-&gt;ToyStateController.finishCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, flow:ToyStateController.complete-&gt;ToyStateMachine.complete, control:finish_done, harness:ToyCommandSource, harness:ToyStateMachine</td></tr>
+          <tr><td>SM-003</td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyCommandSource.resetCommand-&gt;ToyStateController.resetCommand, flow:ToyStateController.busy-&gt;ToyStateMachine.busy, flow:ToyStateController.complete-&gt;ToyStateMachine.complete, control:reset_idle, harness:ToyCommandSource, harness:ToyStateMachine</td></tr>
+          <tr><td>SM-004</td><td>component:ToyStateMachine, function:ToyStateController, flow:ToyStateMachine.busy-&gt;ScenarioReport.observedBehavior, flow:ToyStateMachine.complete-&gt;ScenarioReport.observedBehavior, control:start_running, control:finish_done, control:reset_idle, harness:ToyStateMachine</td></tr>
       </tbody></table>
     </section>
     <section class="panel">
@@ -490,16 +490,20 @@
       <section class="panel">
         <h2>Ports</h2>
         <table><thead><tr><th>Dir</th><th>Name</th><th>Type</th><th>Default</th></tr></thead><tbody>
-          <tr><td>in</td><td>sampleValue</td><td>count</td><td>0</td></tr>
-          <tr><td>out</td><td>active</td><td>bool</td><td>false</td></tr>
+          <tr><td>in</td><td>startCommand</td><td>bool</td><td>false</td></tr>
+          <tr><td>in</td><td>finishCommand</td><td>bool</td><td>false</td></tr>
+          <tr><td>in</td><td>resetCommand</td><td>bool</td><td>false</td></tr>
+          <tr><td>out</td><td>busy</td><td>bool</td><td>false</td></tr>
+          <tr><td>out</td><td>complete</td><td>bool</td><td>false</td></tr>
         </tbody></table>
       </section>
       <section class="panel">
         <h2>State Handoff</h2>
         <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>
         <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>
-          <tr><td>IDLE</td><td>ACTIVE</td><td>sampleValue &gt;= limit trace SIMPLE-001</td></tr>
-          <tr><td>ACTIVE</td><td>IDLE</td><td>sampleValue &lt; limit trace SIMPLE-002</td></tr>
+          <tr><td>IDLE</td><td>RUNNING</td><td>startCommand == true</td></tr>
+          <tr><td>RUNNING</td><td>DONE</td><td>finishCommand == true</td></tr>
+          <tr><td>DONE</td><td>IDLE</td><td>resetCommand == true</td></tr>
         </tbody></table>
       </section>
     </section>
@@ -508,25 +512,29 @@
         <h2>Control Decision Table</h2>
         <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
         <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
-          <tr><td>10</td><td>activate</td><td>ThresholdCompare</td><td>*</td><td>sampleValue &gt;= limit</td><td>state=ACTIVE, active=true</td><td>SIMPLE-001, SIMPLE-003</td><td>above_limit</td></tr>
-          <tr><td>20</td><td>clear</td><td>ThresholdCompare</td><td>*</td><td>sampleValue &lt; limit</td><td>state=IDLE, active=false</td><td>SIMPLE-002, SIMPLE-003</td><td></td></tr>
+          <tr><td>10</td><td>start_running</td><td>ToyStateController</td><td>IDLE</td><td>startCommand == true</td><td>state=RUNNING, busy=true, complete=false</td><td>SM-001, SM-004</td><td>full_cycle</td></tr>
+          <tr><td>20</td><td>finish_done</td><td>ToyStateController</td><td>RUNNING</td><td>finishCommand == true</td><td>state=DONE, busy=false, complete=true</td><td>SM-002, SM-004</td><td>full_cycle</td></tr>
+          <tr><td>30</td><td>reset_idle</td><td>ToyStateController</td><td>DONE</td><td>resetCommand == true</td><td>state=IDLE, busy=false, complete=false</td><td>SM-003, SM-004</td><td>full_cycle</td></tr>
         </tbody></table>
       </section>
       <section class="panel">
         <h2>Harness Boundary</h2>
         <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>
-          <tr><td>ToyInputSource</td><td>source</td><td>virtual_ic</td><td>SIMPLE-001</td></tr>
-          <tr><td>ToyThresholdIndicator</td><td>controller</td><td>hal</td><td>SIMPLE-001, SIMPLE-002, SIMPLE-003</td></tr>
+          <tr><td>ToyCommandSource</td><td>source</td><td>virtual_ic</td><td>SM-001, SM-002, SM-003</td></tr>
+          <tr><td>ToyStateMachine</td><td>controller</td><td>hal</td><td>SM-001, SM-002, SM-003, SM-004</td></tr>
         </tbody></table>
       </section>
     </section>
     <section class="panel">
       <h2>Flow Handoff</h2>
       <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
-          <tr><td>ToyInputSource.sampleValue</td><td>ThresholdCompare.sampleValue</td><td>scenario input</td><td>SIMPLE-001</td></tr>
-          <tr><td>ToyThresholdIndicator.limit</td><td>ThresholdCompare.limit</td><td>threshold parameter</td><td>SIMPLE-001, SIMPLE-002</td></tr>
-          <tr><td>ThresholdCompare.active</td><td>ToyThresholdIndicator.active</td><td>comparison result</td><td>SIMPLE-001, SIMPLE-002</td></tr>
-          <tr><td>ToyThresholdIndicator.active</td><td>ScenarioReport.observedBehavior</td><td>reported output</td><td>SIMPLE-003</td></tr>
+          <tr><td>ToyCommandSource.startCommand</td><td>ToyStateController.startCommand</td><td>start request</td><td>SM-001</td></tr>
+          <tr><td>ToyCommandSource.finishCommand</td><td>ToyStateController.finishCommand</td><td>finish request</td><td>SM-002</td></tr>
+          <tr><td>ToyCommandSource.resetCommand</td><td>ToyStateController.resetCommand</td><td>reset request</td><td>SM-003</td></tr>
+          <tr><td>ToyStateController.busy</td><td>ToyStateMachine.busy</td><td>busy command</td><td>SM-001, SM-002, SM-003</td></tr>
+          <tr><td>ToyStateController.complete</td><td>ToyStateMachine.complete</td><td>completion command</td><td>SM-002, SM-003</td></tr>
+          <tr><td>ToyStateMachine.busy</td><td>ScenarioReport.observedBehavior</td><td>reported busy output</td><td>SM-004</td></tr>
+          <tr><td>ToyStateMachine.complete</td><td>ScenarioReport.observedBehavior</td><td>reported complete output</td><td>SM-004</td></tr>
       </tbody></table>
     </section>
     <section class="panel policy">

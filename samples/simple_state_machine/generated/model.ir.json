@@ -1,0 +1,399 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "8"
+    },
+    "name": "ToyStateMachine",
+    "parameters": {},
+    "trace": [
+      "SM-001",
+      "SM-002",
+      "SM-003",
+      "SM-004"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "busy": "true",
+        "complete": "false",
+        "state": "RUNNING"
+      },
+      "condition": "startCommand == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "startCommand",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "startCommand == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "startCommand == true",
+          "value": true
+        },
+        "source": "startCommand == true",
+        "value": null
+      },
+      "name": "start_running",
+      "owner": "ToyStateController",
+      "priority": 10,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "state_scope": "IDLE",
+      "trace": [
+        "SM-001",
+        "SM-004"
+      ]
+    },
+    {
+      "actions": {
+        "busy": "false",
+        "complete": "true",
+        "state": "DONE"
+      },
+      "condition": "finishCommand == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "finishCommand",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "finishCommand == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "finishCommand == true",
+          "value": true
+        },
+        "source": "finishCommand == true",
+        "value": null
+      },
+      "name": "finish_done",
+      "owner": "ToyStateController",
+      "priority": 20,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "state_scope": "RUNNING",
+      "trace": [
+        "SM-002",
+        "SM-004"
+      ]
+    },
+    {
+      "actions": {
+        "busy": "false",
+        "complete": "false",
+        "state": "IDLE"
+      },
+      "condition": "resetCommand == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "resetCommand",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "resetCommand == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "resetCommand == true",
+          "value": true
+        },
+        "source": "resetCommand == true",
+        "value": null
+      },
+      "name": "reset_idle",
+      "owner": "ToyStateController",
+      "priority": 30,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "state_scope": "DONE",
+      "trace": [
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "start request",
+      "source": "ToyCommandSource.startCommand",
+      "target": "ToyStateController.startCommand",
+      "trace": [
+        "SM-001"
+      ]
+    },
+    {
+      "label": "finish request",
+      "source": "ToyCommandSource.finishCommand",
+      "target": "ToyStateController.finishCommand",
+      "trace": [
+        "SM-002"
+      ]
+    },
+    {
+      "label": "reset request",
+      "source": "ToyCommandSource.resetCommand",
+      "target": "ToyStateController.resetCommand",
+      "trace": [
+        "SM-003"
+      ]
+    },
+    {
+      "label": "busy command",
+      "source": "ToyStateController.busy",
+      "target": "ToyStateMachine.busy",
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003"
+      ]
+    },
+    {
+      "label": "completion command",
+      "source": "ToyStateController.complete",
+      "target": "ToyStateMachine.complete",
+      "trace": [
+        "SM-002",
+        "SM-003"
+      ]
+    },
+    {
+      "label": "reported busy output",
+      "source": "ToyStateMachine.busy",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "SM-004"
+      ]
+    },
+    {
+      "label": "reported complete output",
+      "source": "ToyStateMachine.complete",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "SM-004"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        "startCommand",
+        "finishCommand",
+        "resetCommand"
+      ],
+      "name": "ToyStateController",
+      "outputs": [
+        "state",
+        "busy",
+        "complete"
+      ],
+      "owns": [
+        "IDLE",
+        "RUNNING",
+        "DONE",
+        "busy",
+        "complete"
+      ],
+      "responsibility": "Own the IDLE/RUNNING/DONE lifecycle and map state transitions to busy and complete outputs",
+      "scenarios": [
+        "full_cycle"
+      ],
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyCommandSource",
+      "role": "source",
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyStateMachine",
+      "role": "controller",
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "SM-001",
+      "SM-002",
+      "SM-003",
+      "SM-004"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_state_machine/model.mbd.md"
+  },
+  "ports": {
+    "busy": {
+      "default": "false",
+      "direction": "out",
+      "name": "busy",
+      "type": "bool"
+    },
+    "complete": {
+      "default": "false",
+      "direction": "out",
+      "name": "complete",
+      "type": "bool"
+    },
+    "finishCommand": {
+      "default": "false",
+      "direction": "in",
+      "name": "finishCommand",
+      "type": "bool"
+    },
+    "resetCommand": {
+      "default": "false",
+      "direction": "in",
+      "name": "resetCommand",
+      "type": "bool"
+    },
+    "startCommand": {
+      "default": "false",
+      "direction": "in",
+      "name": "startCommand",
+      "type": "bool"
+    }
+  },
+  "registers": {
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "busy": {
+          "bit": 0,
+          "bits": "0",
+          "name": "busy",
+          "reset": "0"
+        },
+        "complete": {
+          "bit": 1,
+          "bits": "1",
+          "name": "complete",
+          "reset": "0"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyStateMachine\ntrace SM-001 SM-002 SM-003 SM-004\nbus virtual mode=preview wordBits=8\n\nport in startCommand: bool = false\nport in finishCommand: bool = false\nport in resetCommand: bool = false\nport out busy: bool = false\nport out complete: bool = false",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 0 busy reset=0\n  bit 1 complete reset=0",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "IDLE --> RUNNING: startCommand == true\nRUNNING --> DONE: finishCommand == true\nDONE --> IDLE: resetCommand == true",
+      "language": "mbd-state"
+    },
+    {
+      "body": "function ToyStateController: responsibility=Own the IDLE/RUNNING/DONE lifecycle and map state transitions to busy and complete outputs; owns=IDLE,RUNNING,DONE,busy,complete; inputs=startCommand,finishCommand,resetCommand; outputs=state,busy,complete; trace=SM-001,SM-002,SM-003,SM-004; scenarios=full_cycle",
+      "language": "mbd-decomposition"
+    },
+    {
+      "body": "ToyCommandSource.startCommand -> ToyStateController.startCommand: start request trace SM-001\nToyCommandSource.finishCommand -> ToyStateController.finishCommand: finish request trace SM-002\nToyCommandSource.resetCommand -> ToyStateController.resetCommand: reset request trace SM-003\nToyStateController.busy -> ToyStateMachine.busy: busy command trace SM-001 SM-002 SM-003\nToyStateController.complete -> ToyStateMachine.complete: completion command trace SM-002 SM-003\nToyStateMachine.busy -> ScenarioReport.observedBehavior: reported busy output trace SM-004\nToyStateMachine.complete -> ScenarioReport.observedBehavior: reported complete output trace SM-004",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "priority 10 rule start_running: owner ToyStateController from IDLE when startCommand == true then state=RUNNING, busy=true, complete=false trace SM-001 SM-004 scenarios full_cycle\npriority 20 rule finish_done: owner ToyStateController from RUNNING when finishCommand == true then state=DONE, busy=false, complete=true trace SM-002 SM-004 scenarios full_cycle\npriority 30 rule reset_idle: owner ToyStateController from DONE when resetCommand == true then state=IDLE, busy=false, complete=false trace SM-003 SM-004 scenarios full_cycle",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToyCommandSource role=source boundary=virtual_ic trace SM-001 SM-002 SM-003\necu ToyStateMachine role=controller boundary=hal trace SM-001 SM-002 SM-003 SM-004",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_state_machine/model.mbd.md",
+  "title": "Simple State Machine",
+  "transitions": [
+    {
+      "condition": "startCommand == true",
+      "source": "IDLE",
+      "target": "RUNNING"
+    },
+    {
+      "condition": "finishCommand == true",
+      "source": "RUNNING",
+      "target": "DONE"
+    },
+    {
+      "condition": "resetCommand == true",
+      "source": "DONE",
+      "target": "IDLE"
+    }
+  ]
+}

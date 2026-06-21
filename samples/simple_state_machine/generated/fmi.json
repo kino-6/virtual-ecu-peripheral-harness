@@ -1,0 +1,168 @@
+{
+  "component": "ToyStateMachine",
+  "controlRules": [
+    {
+      "actions": {
+        "busy": "true",
+        "complete": "false",
+        "state": "RUNNING"
+      },
+      "condition": "startCommand == true",
+      "name": "start_running",
+      "owner": "ToyStateController",
+      "priority": 10,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "stateScope": "IDLE",
+      "trace": [
+        "SM-001",
+        "SM-004"
+      ]
+    },
+    {
+      "actions": {
+        "busy": "false",
+        "complete": "true",
+        "state": "DONE"
+      },
+      "condition": "finishCommand == true",
+      "name": "finish_done",
+      "owner": "ToyStateController",
+      "priority": 20,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "stateScope": "RUNNING",
+      "trace": [
+        "SM-002",
+        "SM-004"
+      ]
+    },
+    {
+      "actions": {
+        "busy": "false",
+        "complete": "false",
+        "state": "IDLE"
+      },
+      "condition": "resetCommand == true",
+      "name": "reset_idle",
+      "owner": "ToyStateController",
+      "priority": 30,
+      "scenarios": [
+        "full_cycle"
+      ],
+      "stateScope": "DONE",
+      "trace": [
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "startCommand",
+        "finishCommand",
+        "resetCommand"
+      ],
+      "name": "ToyStateController",
+      "outputs": [
+        "state",
+        "busy",
+        "complete"
+      ],
+      "owns": [
+        "IDLE",
+        "RUNNING",
+        "DONE",
+        "busy",
+        "complete"
+      ],
+      "responsibility": "Own the IDLE/RUNNING/DONE lifecycle and map state transitions to busy and complete outputs",
+      "scenarios": [
+        "full_cycle"
+      ],
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyCommandSource",
+      "role": "source",
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyStateMachine",
+      "role": "controller",
+      "trace": [
+        "SM-001",
+        "SM-002",
+        "SM-003",
+        "SM-004"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "false",
+      "name": "startCommand",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "finishCommand",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "resetCommand",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "false",
+      "name": "busy",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "complete",
+      "type": "bool"
+    }
+  ],
+  "parameters": [],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "SM-001",
+    "SM-002",
+    "SM-003",
+    "SM-004"
+  ],
+  "source": "samples/simple_state_machine/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "IDLE",
+    "RUNNING",
+    "DONE"
+  ]
+}

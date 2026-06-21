@@ -11,11 +11,25 @@ Archived task history:
 
 ## Current Goal
 
-Add a very small sample that produces an intentionally simple MBD artifact for
-reviewing the sample-workspace workflow without thermal-control complexity.
+Add a very small state-machine sample that demonstrates reviewable MBD state
+behavior without thermal-control complexity.
 
 ## Quality Gates
 
+- [x] New state-machine sample is fictional, sample-local, and independent of
+      thermal-control assumptions.
+- [x] Spec documents the intended state behavior with Mermaid stateDiagram and
+      a simple review-oriented Design Overview.
+- [x] MBD authoring source has explicit states, state-scoped control rules,
+      functional allocation, flows, harness boundary, and requirement trace.
+- [x] Generated PlantUML, SCXML, Mermaid, Modelica, Simulink `.m`, HTML demo,
+      IR, FMI metadata, and preview report are reproducible from sample source.
+- [x] Demo HTML includes a design-overview diagram that matches the
+      specification-level Mermaid Design Overview before detailed rule tables.
+- [x] Preview scenario proves the full state cycle and report sections separate
+      model inputs, scenario steps, observed behavior, expected behavior, and
+      pass/fail result.
+- [x] Tests prove the sample remains small and deterministic.
 - [x] Common HTML review output has no hardcoded thermal-protection
       requirement expectations.
 - [x] Common preview reports derive observations, command outputs, trace
@@ -52,6 +66,29 @@ reviewing the sample-workspace workflow without thermal-control complexity.
 Verification:
 
 - [x] Focused exporter/runtime/codegen tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
+## Phase 21: Minimal State Machine Sample
+
+- [x] Add `samples/simple_state_machine/` with `sample.yml`, `spec.md`,
+      `model.mbd.md`, one scenario, one preview report, and generated artifacts.
+- [x] Model exactly three states: `IDLE`, `RUNNING`, and `DONE`.
+- [x] Model exactly three state-scoped transitions: start, finish, and reset.
+- [x] Generate sample-local Markdown, Mermaid, PlantUML, SCXML, Modelica,
+      Simulink `.m`, FMI metadata, demo HTML, IR, and preview report.
+- [x] Align demo HTML with `spec.md` by showing `ToyCommandSource` inputs,
+      `ToyStateController`, `busy`/`complete` outputs, and
+      `ScenarioReport.observedBehavior` at the top-level design view.
+- [x] Add tests proving the state-machine sample is intentionally small,
+      deterministic, and preview-executable.
+
+Verification:
+
+- [x] `python -m veph list-samples` includes `simple_state_machine`.
+- [x] `python -m veph export-sample simple_state_machine` succeeds.
+- [x] `python -m veph run-preview --model samples/simple_state_machine/model.mbd.md --scenario samples/simple_state_machine/scenarios/full_cycle.yml --report samples/simple_state_machine/reports/full_cycle.md` succeeds.
+- [x] Focused state-machine sample tests pass.
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 

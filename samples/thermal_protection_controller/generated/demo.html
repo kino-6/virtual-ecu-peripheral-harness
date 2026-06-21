@@ -238,6 +238,74 @@
         <div><strong>4</strong><span>harness boundaries</span></div>
       </div>
     </section>
+    <section class="panel">
+      <h2>Design Overview Diagram</h2>
+      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. This view intentionally matches the specification-level design overview before detailed control-rule review.</p>
+      <svg class="diagram" viewBox="0 0 1180 466" role="img" aria-label="Design overview generated from MBD source">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="198" width="190" height="70" rx="8" class="node"></rect>
+        <text x="137" y="228" text-anchor="middle" class="node-title small">ScenarioInput</text>
+        <text x="137" y="260" text-anchor="middle" class="node-note">scenario source</text>
+        <rect x="536" y="198" width="230" height="70" rx="8" class="node"></rect>
+        <text x="651" y="228" text-anchor="middle" class="node-title small">SensorInterface</text>
+        <text x="651" y="260" text-anchor="middle" class="node-note">function</text>
+        <rect x="1036" y="198" width="130" height="70" rx="8" class="node"></rect>
+        <text x="1101" y="228" text-anchor="middle" class="node-title small">ScenarioReport.observed...</text>
+        <text x="1101" y="260" text-anchor="middle" class="node-note">report</text>
+        <rect x="266" y="52" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="77" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="95" text-anchor="middle" class="node-title small">temperatureC</text>
+        <text x="371" y="114" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="233" x2="266" y2="87" class="ir-arrow"></line>
+        <text x="249" y="152" text-anchor="middle" class="edge-note">temperatureC</text>
+        <line x1="476" y1="87" x2="536" y2="233" class="ir-arrow"></line>
+        <rect x="266" y="126" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="151" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="169" text-anchor="middle" class="node-title small">temperatureValid</text>
+        <text x="371" y="188" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="233" x2="266" y2="161" class="ir-arrow"></line>
+        <text x="249" y="189" text-anchor="middle" class="edge-note">temperatureValid</text>
+        <line x1="476" y1="161" x2="536" y2="233" class="ir-arrow"></line>
+        <rect x="266" y="200" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="225" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="243" text-anchor="middle" class="node-title small">invalidDebounced</text>
+        <text x="371" y="262" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="233" x2="266" y2="235" class="ir-arrow"></line>
+        <text x="249" y="226" text-anchor="middle" class="edge-note">invalidDebounced</text>
+        <line x1="476" y1="235" x2="536" y2="233" class="ir-arrow"></line>
+        <rect x="266" y="274" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="299" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="317" text-anchor="middle" class="node-title small">recoveryRequest</text>
+        <text x="371" y="336" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="233" x2="266" y2="309" class="ir-arrow"></line>
+        <text x="249" y="263" text-anchor="middle" class="edge-note">recoveryRequest</text>
+        <line x1="476" y1="309" x2="536" y2="233" class="ir-arrow"></line>
+        <rect x="806" y="88" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="118" text-anchor="middle" class="node-title small">Output fanDuty</text>
+        <text x="901" y="150" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="233" x2="806" y2="123" class="ir-arrow"></line>
+        <line x1="996" y1="123" x2="1036" y2="233" class="ir-arrow"></line>
+        <rect x="806" y="182" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="212" text-anchor="middle" class="node-title small">Output deratingCommand</text>
+        <text x="901" y="244" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="233" x2="806" y2="217" class="ir-arrow"></line>
+        <line x1="996" y1="217" x2="1036" y2="233" class="ir-arrow"></line>
+        <rect x="806" y="276" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="306" text-anchor="middle" class="node-title small">Output diagnosticFault</text>
+        <text x="901" y="338" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="233" x2="806" y2="311" class="ir-arrow"></line>
+        <line x1="996" y1="311" x2="1036" y2="233" class="ir-arrow"></line>
+        <rect x="806" y="370" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="400" text-anchor="middle" class="node-title small">Output safeCommandActive</text>
+        <text x="901" y="432" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="233" x2="806" y2="405" class="ir-arrow"></line>
+        <line x1="996" y1="405" x2="1036" y2="233" class="ir-arrow"></line>
+      </svg>
+    </section>
 
     <section class="panel">
       <h2>Functional Architecture</h2>
