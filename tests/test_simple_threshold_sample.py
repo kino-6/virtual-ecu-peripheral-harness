@@ -73,6 +73,10 @@ def test_simple_threshold_generated_artifacts_are_deterministic():
     for path, regenerated in expected_outputs.items():
         assert path.read_text(encoding="utf-8") == regenerated
 
+    viewer = expected_outputs[sample.paths.generated["specMbdViewer"]]
+    assert "One-Minute Review" in viewer
+    assert "Matched edges" not in viewer
+
 
 def test_simple_threshold_generated_visuals_match_spec_design():
     sample = load_sample("simple_threshold_indicator", ROOT)

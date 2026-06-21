@@ -456,11 +456,13 @@ def test_export_sample_writes_converted_mbd_and_review_viewer():
     assert compare_spec_to_mbd(sample.paths.spec, converted).passed is True
     html = viewer.read_text(encoding="utf-8")
     assert "Spec Mermaid To MBD Review" in html
+    assert "One-Minute Review" in html
     assert "python -m veph render-spec-mbd" in html
     assert "Alignment: PASS" in html
     assert "Spec Mermaid Semantic Graph" in html
     assert "Converted MBD Semantic Graph" in html
     assert "Interactive Review" in html
+    assert "Matched edge details are omitted from this compact HTML view." in html
     assert 'data-input="sampleValue"' in html
     assert 'data-parameter="limit"' in html
     assert 'data-result="branch"' in html
@@ -484,8 +486,10 @@ def test_spec_mbd_viewer_renders_alignment_evidence():
     assert "ToyInputSource" in html
     assert "sampleValue &gt;= limit?" in html
     assert "Interactive Review" in html
+    assert "One-Minute Review" in html
     assert "active-path" in html
     assert "data-node-role=\"decision\"" in html
     assert "data-result=\"output\"" in html
     assert "Missing MBD nodes" in html
+    assert "Matched edges" not in html
     assert "None" in html

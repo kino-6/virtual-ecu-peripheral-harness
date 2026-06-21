@@ -88,6 +88,29 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 
+## Phase 43: Compact Spec-MBD Viewer HTML
+
+Acceptance gates:
+
+- [x] `spec_mbd_viewer.html` for non-state simple samples starts with a
+      one-minute review summary before interactive or graph evidence.
+- [x] Semantic graph sections remain visual but no longer duplicate every edge
+      as dense tables in the first review path.
+- [x] Alignment evidence emphasizes PASS/FAIL, matched counts, and Missing/Extra
+      gaps; long matched-edge dumps are omitted from the HTML.
+- [x] Constant/value evidence for switch-style samples remains visible enough
+      for review.
+- [x] Tests reject reintroducing dense matched-edge lists into
+      `spec_mbd_viewer.html`.
+
+Verification:
+
+- [x] Regenerate `simple_threshold_indicator` and `simple_switch_selector`
+      artifacts from source.
+- [x] Focused threshold/switch/spec-MBD viewer tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Current Size Baseline
 
 - [x] `src/veph/exporters/demo_html.py`: 2438 lines.
