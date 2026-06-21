@@ -4,6 +4,46 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from veph.spec_dataflow import (
+    ArithmeticBlockSpec,
+    arithmetic_expressions,
+    arithmetic_specs,
+    block_output_signal,
+    output_expression,
+    targets_for_node,
+)
+from veph.spec_mbd_labels import (
+    constant_name as _constant_name,
+    constant_value as _constant_value,
+    input_name as _input_name,
+    is_arithmetic as _is_arithmetic,
+    is_constant as _is_constant,
+    is_input as _is_input,
+    is_output as _is_output,
+    is_output_port as _is_output_port,
+    is_parameter as _is_parameter,
+    is_report as _is_report,
+    node_port_type as _node_port_type,
+    output_action as _output_action,
+    output_port_name as _output_port_name,
+    parameter_name as _parameter_name,
+)
+from veph.spec_state_model import (
+    AdvancedStateSpec,
+    StateActionSpec,
+    StateTraceIntent,
+    StateTransitionSpec,
+    initial_state,
+    parse_spec_advanced_state_semantics,
+    parse_spec_state_actions,
+    parse_spec_state_diagram,
+    report_requirement as state_report_requirement,
+    rule_name,
+    state_trace_intents,
+    trace_for_input,
+    trace_for_output,
+    trace_for_transition,
+)
 from veph.spec_mbd_alignment import (
     MermaidEdge,
     MermaidFlowchart,
@@ -11,13 +51,6 @@ from veph.spec_mbd_alignment import (
     SpecMbdAlignmentError,
     parse_spec_design_overview_flowchart,
 )
-
-
-@dataclass(frozen=True)
-class StateTransitionSpec:
-    source: str
-    target: str
-    condition: str
 
 
 @dataclass(frozen=True)
@@ -30,44 +63,6 @@ class DecisionSpec:
     true_output: MermaidNode
     false_output: MermaidNode
     report_node: MermaidNode
-
-
-@dataclass(frozen=True)
-class StateTraceIntent:
-    requirement: str
-    source: str
-    target: str
-    actions: tuple[tuple[str, str], ...]
-
-
-@dataclass(frozen=True)
-class StateActionSpec:
-    state: str
-    phase: str
-    actions: tuple[tuple[str, str], ...]
-
-
-@dataclass(frozen=True)
-class AdvancedStateSpec:
-    kind: str
-    detail: str
-
-
-@dataclass(frozen=True)
-class ArithmeticBlockSpec:
-    node: MermaidNode
-    operator: str
-    output_signal: str
-    input_signals: tuple[str, ...]
-
-
-OUTPUT_RE = re.compile(r"^Output\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.+)$")
-OUTPUT_PORT_RE = re.compile(r"^Output\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)(?P<vector>\[\d+\])?$")
-INPUT_RE = re.compile(r"^Input Port:\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)(?P<vector>\[\d+\])?$")
-PARAMETER_RE = re.compile(r"^Parameter:\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)$")
-CONSTANT_RE = re.compile(r"^Constant:\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.+)$")
-STATE_FENCE_RE = re.compile(r"```mermaid\n(?P<body>.*?)```", re.DOTALL)
-ARITHMETIC_OPERATORS = {"Gain", "Sum", "Product", "Saturation", "Lookup1D"}
 
 
 def generate_mbd_from_spec(
@@ -85,7 +80,7 @@ def generate_mbd_from_spec(
     requirements = _requirement_ids(spec)
     decisions = _decision_specs(flowchart)
     if not decisions:
-        arithmetic_blocks = _arithmetic_specs(flowchart)
+        arithmetic_blocks = arithmetic_specs(flowchart)
         if arithmetic_blocks:
             return _generate_arithmetic_dataflow_mbd_from_spec(
                 spec,
@@ -274,9 +269,9 @@ def _generate_arithmetic_dataflow_mbd_from_spec(
         raise SpecMbdAlignmentError(f"arithmetic dataflow spec has no Input Port nodes in {spec}")
     if not output_nodes:
         raise SpecMbdAlignmentError(f"arithmetic dataflow spec has no Output nodes in {spec}")
-    block_expressions = _arithmetic_expressions(flowchart, blocks)
+    block_expressions = arithmetic_expressions(flowchart, blocks)
     output_expressions = {
-        _output_port_name(node): _output_expression(flowchart, node, block_expressions)
+        _output_port_name(node): output_expression(flowchart, node, block_expressions)
         for node in output_nodes
     }
     input_names = [_input_name(node) for node in input_nodes]
@@ -329,7 +324,7 @@ def _generate_arithmetic_dataflow_mbd_from_spec(
     for node in input_nodes:
         name = _input_name(node)
         source = _source_for_input(flowchart, node.id)
-        for target in _targets_for_node(flowchart, node.id):
+        for target in targets_for_node(flowchart, node.id):
             if _is_arithmetic(flowchart.nodes[target]):
                 _append_unique(
                     lines,
@@ -338,7 +333,7 @@ def _generate_arithmetic_dataflow_mbd_from_spec(
                 )
     for node in parameter_nodes:
         name = _parameter_name(node)
-        for target in _targets_for_node(flowchart, node.id):
+        for target in targets_for_node(flowchart, node.id):
             if _is_arithmetic(flowchart.nodes[target]):
                 _append_unique(
                     lines,
@@ -347,7 +342,7 @@ def _generate_arithmetic_dataflow_mbd_from_spec(
                 )
     for node in constant_nodes:
         name = _constant_name(node)
-        for target in _targets_for_node(flowchart, node.id):
+        for target in targets_for_node(flowchart, node.id):
             if _is_arithmetic(flowchart.nodes[target]):
                 _append_unique(
                     lines,
@@ -358,7 +353,7 @@ def _generate_arithmetic_dataflow_mbd_from_spec(
         source_node = flowchart.nodes[edge.source_id]
         target_node = flowchart.nodes[edge.target_id]
         if _is_arithmetic(source_node) and _is_arithmetic(target_node):
-            signal = edge.label or _block_output_signal(blocks, source_node.id)
+            signal = edge.label or block_output_signal(blocks, source_node.id)
             _append_unique(
                 lines,
                 emitted_flows,
@@ -414,12 +409,12 @@ def _generate_state_machine_mbd_from_spec(
     if not output_nodes:
         raise SpecMbdAlignmentError(f"state-machine spec has no Output nodes in {spec}")
     function_name = _state_machine_function_name(flowchart, input_nodes, output_nodes)
-    trace_intents = _state_trace_intents(spec)
+    trace_intents = state_trace_intents(spec)
     state_actions = parse_spec_state_actions(spec)
     advanced_states = parse_spec_advanced_state_semantics(spec)
     output_names = _ordered_unique(_output_port_name(node) for node in output_nodes)
     trace_all = " ".join(requirements)
-    report_requirement = _report_requirement(requirements, trace_intents)
+    report_requirement = state_report_requirement(requirements, trace_intents)
 
     lines = [
         *_generated_header(spec, "Spec Mermaid Design Overview and stateDiagram-v2"),
@@ -475,7 +470,7 @@ def _generate_state_machine_mbd_from_spec(
     for node in input_nodes:
         name = _input_name(node)
         source = _source_for_input(flowchart, node.id)
-        trace = _trace_for_input(name, trace_intents, transitions)
+        trace = trace_for_input(name, trace_intents, transitions)
         _append_unique(
             lines,
             emitted_flows,
@@ -490,7 +485,7 @@ def _generate_state_machine_mbd_from_spec(
         )
     for node in output_nodes:
         name = _output_port_name(node)
-        trace = _trace_for_output(requirements, name, trace_intents)
+        trace = trace_for_output(requirements, name, trace_intents)
         _append_unique(
             lines,
             emitted_flows,
@@ -507,7 +502,7 @@ def _generate_state_machine_mbd_from_spec(
     for transition in transitions:
         if transition.source == "[*]":
             continue
-        trace = _trace_for_transition(trace_intents, transition)
+        trace = trace_for_transition(trace_intents, transition)
         actions = [("state", transition.target)]
         if trace is not None:
             actions.extend(trace.actions)
@@ -517,7 +512,7 @@ def _generate_state_machine_mbd_from_spec(
         if report_requirement:
             trace_refs.append(report_requirement)
         lines.append(
-            f"priority {priority} rule {_rule_name(transition)}: owner {function_name} from {transition.source} "
+            f"priority {priority} rule {rule_name(transition)}: owner {function_name} from {transition.source} "
             f"when {transition.condition} then {_format_actions(actions)}{_trace_suffix(_ordered_unique(trace_refs))}"
             f"{' scenarios ' + scenario if scenario else ''}"
         )
@@ -557,7 +552,7 @@ def _state_machine_spec_review_section(
         text = requirement_texts.get(requirement, "")
         if text:
             lines.append(f"intent {requirement} | {text}")
-    initial = _initial_state(transitions)
+    initial = initial_state(transitions)
     if initial:
         lines.append(f"spec-initial {initial}")
     for transition in transitions:
@@ -583,114 +578,6 @@ def _state_machine_spec_review_section(
         ]
     )
     return lines
-
-
-def parse_spec_state_diagram(path: str | Path) -> list[StateTransitionSpec]:
-    spec_path = Path(path)
-    for body in _mermaid_bodies(spec_path):
-        lines = [line.strip() for line in body.splitlines() if line.strip()]
-        if not lines or lines[0] != "stateDiagram-v2":
-            continue
-        transitions: list[StateTransitionSpec] = []
-        for line in lines[1:]:
-            if _parse_state_action_line(line) is not None:
-                continue
-            if _advanced_state_line_kind(line) is not None:
-                continue
-            match = re.match(r"(?P<source>\S+)\s+-->\s+(?P<target>[^:]+)(?::\s*(?P<condition>.+))?", line)
-            if not match:
-                raise SpecMbdAlignmentError(f"unsupported stateDiagram line in {spec_path}: {line}")
-            transitions.append(
-                StateTransitionSpec(
-                    source=match.group("source").strip(),
-                    target=match.group("target").strip(),
-                    condition=(match.group("condition") or "initial").strip(),
-                )
-            )
-        return transitions
-    return []
-
-
-def parse_spec_advanced_state_semantics(path: str | Path) -> list[AdvancedStateSpec]:
-    spec_path = Path(path)
-    notes: list[AdvancedStateSpec] = []
-    for body in _mermaid_bodies(spec_path):
-        lines = [line.strip() for line in body.splitlines() if line.strip()]
-        if not lines or lines[0] != "stateDiagram-v2":
-            continue
-        for line in lines[1:]:
-            kind = _advanced_state_line_kind(line)
-            if kind is not None:
-                notes.append(AdvancedStateSpec(kind=kind, detail=line))
-                continue
-            transition = re.match(r"(?P<source>\S+)\s+-->\s+(?P<target>[^:]+)(?::\s*(?P<condition>.+))?", line)
-            if transition and (transition.group("source") == "[H]" or transition.group("target") == "[H]"):
-                notes.append(AdvancedStateSpec(kind="history", detail=line))
-            if transition and (transition.group("condition") or "").startswith("after "):
-                notes.append(AdvancedStateSpec(kind="temporal", detail=line))
-        return _dedupe_advanced_notes(notes)
-    return []
-
-
-def _advanced_state_line_kind(line: str) -> str | None:
-    if re.match(r"state\s+[A-Za-z_][A-Za-z0-9_]*\s*\{", line):
-        return "hierarchy"
-    if line == "}":
-        return "hierarchy"
-    if line == "--":
-        return "parallel"
-    return None
-
-
-def _dedupe_advanced_notes(notes: list[AdvancedStateSpec]) -> list[AdvancedStateSpec]:
-    result: list[AdvancedStateSpec] = []
-    seen: set[tuple[str, str]] = set()
-    for note in notes:
-        key = (note.kind, note.detail)
-        if key in seen:
-            continue
-        seen.add(key)
-        result.append(note)
-    return result
-
-
-def parse_spec_state_actions(path: str | Path) -> list[StateActionSpec]:
-    spec_path = Path(path)
-    actions: list[StateActionSpec] = []
-    for body in _mermaid_bodies(spec_path):
-        lines = [line.strip() for line in body.splitlines() if line.strip()]
-        if not lines or lines[0] != "stateDiagram-v2":
-            continue
-        for line in lines[1:]:
-            parsed = _parse_state_action_line(line)
-            if parsed is not None:
-                actions.append(parsed)
-        return actions
-    return []
-
-
-def _parse_state_action_line(line: str) -> StateActionSpec | None:
-    match = re.match(
-        r"(?P<state>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?P<phase>entry|during|exit)\s+(?P<actions>.+)",
-        line,
-    )
-    if match is None:
-        return None
-    return StateActionSpec(
-        state=match.group("state"),
-        phase=match.group("phase"),
-        actions=tuple(_parse_state_action_pairs(match.group("actions"))),
-    )
-
-
-def _parse_state_action_pairs(text: str) -> list[tuple[str, str]]:
-    pairs: list[tuple[str, str]] = []
-    for item in text.split(","):
-        name, separator, value = item.strip().partition("=")
-        if separator != "=" or not name.strip() or not value.strip():
-            raise SpecMbdAlignmentError(f"invalid state action: {item}")
-        pairs.append((name.strip(), value.strip()))
-    return pairs
 
 
 def _generated_header(spec: Path, source_description: str) -> list[str]:
@@ -752,153 +639,6 @@ def _decision_specs(flowchart: MermaidFlowchart) -> list[DecisionSpec]:
     return specs
 
 
-def _arithmetic_specs(flowchart: MermaidFlowchart) -> list[ArithmeticBlockSpec]:
-    specs: list[ArithmeticBlockSpec] = []
-    for node in flowchart.nodes.values():
-        if not _is_arithmetic(node):
-            continue
-        incoming = [edge for edge in flowchart.edges if edge.target_id == node.id]
-        input_signals = tuple(_signal_for_edge_source(flowchart, edge) for edge in incoming)
-        output_signal = _arithmetic_output_signal(flowchart, node.id)
-        specs.append(
-            ArithmeticBlockSpec(
-                node=node,
-                operator=_operator_label(node),
-                output_signal=output_signal,
-                input_signals=input_signals,
-            )
-        )
-    return specs
-
-
-def _arithmetic_expressions(
-    flowchart: MermaidFlowchart,
-    blocks: list[ArithmeticBlockSpec],
-) -> dict[str, str]:
-    expressions: dict[str, str] = {}
-    pending = list(blocks)
-    while pending:
-        progressed = False
-        for block in list(pending):
-            terms: list[str] = []
-            for edge in [edge for edge in flowchart.edges if edge.target_id == block.node.id]:
-                source = flowchart.nodes[edge.source_id]
-                if _is_arithmetic(source):
-                    signal = edge.label or _block_output_signal(blocks, source.id)
-                    if signal not in expressions:
-                        break
-                    terms.append(expressions[signal])
-                else:
-                    terms.append(_signal_for_edge_source(flowchart, edge))
-            else:
-                expressions[block.output_signal] = _format_arithmetic_expression(block.operator, terms)
-                pending.remove(block)
-                progressed = True
-        if not progressed:
-            unresolved = ", ".join(block.node.id for block in pending)
-            raise SpecMbdAlignmentError(f"arithmetic dataflow has unresolved or cyclic blocks: {unresolved}")
-    return expressions
-
-
-def _format_arithmetic_expression(operator: str, terms: list[str]) -> str:
-    if len(terms) < 2:
-        raise SpecMbdAlignmentError(f"{operator} block requires at least two input signals")
-    if operator == "Sum":
-        return " + ".join(_parenthesize_term(term) for term in terms)
-    if operator in {"Gain", "Product"}:
-        return " * ".join(_parenthesize_term(term) for term in terms)
-    if operator == "Saturation":
-        value = next((term for term in terms if "limit" not in term.lower()), terms[0])
-        lower = next((term for term in terms if any(key in term.lower() for key in ["lower", "min"])), "")
-        upper = next((term for term in terms if any(key in term.lower() for key in ["upper", "max"])), "")
-        if not lower or not upper:
-            raise SpecMbdAlignmentError("Saturation block requires lower/min and upper/max signals")
-        return f"clamp({value}, {lower}, {upper})"
-    if operator == "Lookup1D":
-        table = next((term for term in terms if "table" in term.lower()), "")
-        value = next((term for term in terms if term != table), "")
-        if not table or not value:
-            raise SpecMbdAlignmentError("Lookup1D block requires a value signal and table signal")
-        return f"lookup1d({value}, {table})"
-    raise SpecMbdAlignmentError(f"unsupported arithmetic operator: {operator}")
-
-
-def _parenthesize_term(term: str) -> str:
-    if " + " in term or " - " in term:
-        return f"({term})"
-    return term
-
-
-def _output_expression(
-    flowchart: MermaidFlowchart,
-    output_node: MermaidNode,
-    block_expressions: dict[str, str],
-) -> str:
-    incoming = [edge for edge in flowchart.edges if edge.target_id == output_node.id]
-    if len(incoming) != 1:
-        raise SpecMbdAlignmentError(f"output node must have exactly one arithmetic source: {output_node.label}")
-    source = flowchart.nodes[incoming[0].source_id]
-    if not _is_arithmetic(source):
-        return _signal_for_edge_source(flowchart, incoming[0])
-    signal = incoming[0].label or _output_port_name(output_node)
-    if signal in block_expressions:
-        return block_expressions[signal]
-    produced = next(
-        (value for key, value in block_expressions.items() if key == _output_port_name(output_node)),
-        "",
-    )
-    if produced:
-        return produced
-    candidates = list(block_expressions.values())
-    if len(candidates) == 1:
-        return candidates[0]
-    output_name = _output_port_name(output_node)
-    for edge in flowchart.edges:
-        if edge.source_id == source.id:
-            signal = edge.label or output_name
-            if signal in block_expressions:
-                return block_expressions[signal]
-    raise SpecMbdAlignmentError(f"could not derive expression for output {output_node.label}")
-
-
-def _arithmetic_output_signal(flowchart: MermaidFlowchart, node_id: str) -> str:
-    outgoing = [edge for edge in flowchart.edges if edge.source_id == node_id]
-    if len(outgoing) != 1:
-        raise SpecMbdAlignmentError(f"arithmetic block {node_id} must have exactly one outgoing signal")
-    target = flowchart.nodes[outgoing[0].target_id]
-    if outgoing[0].label:
-        return outgoing[0].label
-    if _is_output_port(target):
-        return _output_port_name(target)
-    raise SpecMbdAlignmentError(f"arithmetic block {node_id} outgoing edge must label its signal")
-
-
-def _block_output_signal(blocks: list[ArithmeticBlockSpec], node_id: str) -> str:
-    for block in blocks:
-        if block.node.id == node_id:
-            return block.output_signal
-    raise SpecMbdAlignmentError(f"unknown arithmetic block: {node_id}")
-
-
-def _signal_for_edge_source(flowchart: MermaidFlowchart, edge: MermaidEdge) -> str:
-    source = flowchart.nodes[edge.source_id]
-    if edge.label:
-        return edge.label
-    if _is_input(source):
-        return _input_name(source)
-    if _is_parameter(source):
-        return _parameter_name(source)
-    if _is_constant(source):
-        return _constant_name(source)
-    if _is_arithmetic(source):
-        return _arithmetic_output_signal(flowchart, source.id)
-    raise SpecMbdAlignmentError(f"edge into arithmetic block lacks a signal label from {source.label}")
-
-
-def _targets_for_node(flowchart: MermaidFlowchart, node_id: str) -> list[str]:
-    return [edge.target_id for edge in flowchart.edges if edge.source_id == node_id]
-
-
 def _branch_output(flowchart: MermaidFlowchart, edges: list[MermaidEdge], label: str) -> MermaidNode:
     for edge in edges:
         if edge.label == label and _is_output(flowchart.nodes[edge.target_id]):
@@ -958,73 +698,6 @@ def _state_machine_function_name(
     return candidates[0]
 
 
-def _is_input(node: MermaidNode) -> bool:
-    return INPUT_RE.match(node.label) is not None
-
-
-def _is_parameter(node: MermaidNode) -> bool:
-    return PARAMETER_RE.match(node.label) is not None
-
-
-def _is_constant(node: MermaidNode) -> bool:
-    return CONSTANT_RE.match(node.label) is not None
-
-
-def _is_arithmetic(node: MermaidNode) -> bool:
-    return _operator_label(node) in ARITHMETIC_OPERATORS
-
-
-def _operator_label(node: MermaidNode) -> str:
-    return node.label.rsplit("/", 1)[-1]
-
-
-def _is_output(node: MermaidNode) -> bool:
-    return OUTPUT_RE.match(node.label) is not None
-
-
-def _is_output_port(node: MermaidNode) -> bool:
-    return OUTPUT_PORT_RE.match(node.label) is not None
-
-
-def _is_report(node: MermaidNode) -> bool:
-    return node.label.startswith("ScenarioReport.")
-
-
-def _input_name(node: MermaidNode) -> str:
-    match = INPUT_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not an input port node: {node.label}")
-    return match.group("name")
-
-
-def _output_port_name(node: MermaidNode) -> str:
-    match = OUTPUT_PORT_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not an output port node: {node.label}")
-    return match.group("name")
-
-
-def _parameter_name(node: MermaidNode) -> str:
-    match = PARAMETER_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not a parameter node: {node.label}")
-    return match.group("name")
-
-
-def _constant_name(node: MermaidNode) -> str:
-    match = CONSTANT_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not a constant node: {node.label}")
-    return match.group("name")
-
-
-def _constant_value(node: MermaidNode) -> str:
-    match = CONSTANT_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not a constant node: {node.label}")
-    return match.group("value").strip()
-
-
 def _parameter_default(
     decisions: list[DecisionSpec],
     parameter_defaults: dict[str, str],
@@ -1056,70 +729,6 @@ def _dataflow_parameter_default(
     return "0"
 
 
-def _port_type(default: str) -> str:
-    return "bool" if default in {"true", "false"} else "count"
-
-
-def _node_port_type(node: MermaidNode, default: str) -> str:
-    vector = _vector_suffix(node)
-    return f"{_port_type(default)}{vector}"
-
-
-def _vector_suffix(node: MermaidNode) -> str:
-    for pattern in (INPUT_RE, OUTPUT_PORT_RE):
-        match = pattern.match(node.label)
-        if match is not None:
-            return match.group("vector") or ""
-    return ""
-
-
-def _state_trace_intents(path: Path) -> list[StateTraceIntent]:
-    intents: list[StateTraceIntent] = []
-    text = path.read_text(encoding="utf-8")
-    for match in re.finditer(r"^-\s+`(?P<req>[^`]+)`:\s*(?P<body>.+)$", text, re.MULTILINE):
-        body = match.group("body")
-        transition_match = re.search(
-            r"`?(?P<source>[A-Za-z_][A-Za-z0-9_]*)\s+-->\s+(?P<target>[A-Za-z_][A-Za-z0-9_]*)`?",
-            body,
-        )
-        if transition_match is None:
-            continue
-        actions = tuple(
-            (action.group("name"), action.group("value"))
-            for action in re.finditer(
-                r"`?(?P<name>[A-Za-z_][A-Za-z0-9_]*)=(?P<value>true|false|[A-Za-z_][A-Za-z0-9_]*)`?",
-                body,
-            )
-        )
-        intents.append(
-            StateTraceIntent(
-                requirement=match.group("req"),
-                source=transition_match.group("source"),
-                target=transition_match.group("target"),
-                actions=actions,
-            )
-        )
-    return intents
-
-
-def _trace_for_transition(
-    intents: list[StateTraceIntent],
-    transition: StateTransitionSpec,
-) -> StateTraceIntent | None:
-    for intent in intents:
-        if intent.source == transition.source and intent.target == transition.target:
-            return intent
-    return None
-
-
-def _report_requirement(requirements: list[str], intents: list[StateTraceIntent]) -> str:
-    intent_requirements = {intent.requirement for intent in intents}
-    for requirement in requirements:
-        if requirement not in intent_requirements:
-            return requirement
-    return requirements[-1] if requirements else ""
-
-
 def _requirement_texts(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     current: str | None = None
@@ -1142,40 +751,6 @@ def _requirement_texts(path: Path) -> dict[str, str]:
     return values
 
 
-def _initial_state(transitions: list[StateTransitionSpec]) -> str:
-    for transition in transitions:
-        if transition.source == "[*]":
-            return transition.target
-    return ""
-
-
-def _trace_for_input(
-    input_name: str,
-    intents: list[StateTraceIntent],
-    transitions: list[StateTransitionSpec],
-) -> list[str]:
-    matched: list[str] = []
-    for transition in transitions:
-        if re.search(rf"\b{re.escape(input_name)}\b", transition.condition):
-            intent = _trace_for_transition(intents, transition)
-            if intent is not None:
-                matched.append(intent.requirement)
-    return _ordered_unique(matched)
-
-
-def _trace_for_output(
-    requirements: list[str],
-    output_name: str,
-    intents: list[StateTraceIntent],
-) -> list[str]:
-    matched = [
-        intent.requirement
-        for intent in intents
-        if any(name == output_name for name, _ in intent.actions)
-    ]
-    return _ordered_unique(matched) or requirements[:1]
-
-
 def _trace_for_parameter(requirements: list[str], parameter_name: str) -> list[str]:
     if "on" in parameter_name.lower():
         return requirements[:1]
@@ -1184,19 +759,8 @@ def _trace_for_parameter(requirements: list[str], parameter_name: str) -> list[s
     return requirements[:2]
 
 
-def _rule_name(transition: StateTransitionSpec) -> str:
-    return f"{transition.source.lower()}_to_{transition.target.lower()}"
-
-
 def _format_actions(actions: list[tuple[str, str]]) -> str:
     return ", ".join(f"{name}={value}" for name, value in actions)
-
-
-def _output_action(node: MermaidNode) -> tuple[str, str]:
-    match = OUTPUT_RE.match(node.label)
-    if match is None:
-        raise SpecMbdAlignmentError(f"not an output action node: {node.label}")
-    return match.group("name"), match.group("value").strip()
 
 
 def _function_name(decision: DecisionSpec) -> str:
@@ -1355,8 +919,3 @@ def _display_path(path: Path) -> str:
 def _requirement_ids(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     return _ordered_unique(re.findall(r"^-\s+`([^`]+)`:", text, re.MULTILINE))
-
-
-def _mermaid_bodies(path: Path) -> list[str]:
-    text = path.read_text(encoding="utf-8")
-    return [match.group("body").strip() for match in STATE_FENCE_RE.finditer(text)]
