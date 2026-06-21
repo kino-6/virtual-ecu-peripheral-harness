@@ -41,6 +41,30 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 
+## Phase 41: Simple Relay Process Rehearsal
+
+Acceptance gates:
+
+- [x] Use `simple_relay_hysteresis` as the process rehearsal sample without
+      inventing new requirements, thresholds, states, or Harness behavior.
+- [x] Confirm spec-to-source alignment from `spec.md` to `model.mbd.md`.
+- [x] Regenerate handoff/review artifacts from `model.mbd.md`.
+- [x] Run the Harness preview scenario and confirm the report separates model
+      inputs, scenario steps, Harness boundary evidence, observed behavior,
+      expected behavior, and pass/fail.
+- [x] Run the MBD review reject loop: spec compliance, transition-system
+      review, traceability, Harness evidence boundary, and generated artifact
+      boundary.
+
+Verification:
+
+- [x] `python -m veph validate-spec-mbd --spec samples/simple_relay_hysteresis/spec.md --mbd samples/simple_relay_hysteresis/model.mbd.md --out /tmp/simple_relay_alignment.md` passes.
+- [x] `python -m veph export-sample simple_relay_hysteresis` succeeds.
+- [x] `python -m veph run-preview --model samples/simple_relay_hysteresis/model.mbd.md --scenario samples/simple_relay_hysteresis/scenarios/hysteresis_cycle.yml --report samples/simple_relay_hysteresis/reports/hysteresis_cycle.md` passes.
+- [x] Focused simple relay tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Current Size Baseline
 
 - [x] `src/veph/exporters/demo_html.py`: 2438 lines.
