@@ -37,6 +37,10 @@ coverage contract.
       expression evaluation.
 - [x] `src/veph/spec_mbd_conversion.py`: 613 lines after extracting common text
       helpers, graph helpers, and state-machine MBD generation.
+- [x] `src/veph/spec_mbd_conversion.py`: 102 lines after extracting decision
+      and arithmetic/dataflow MBD generation.
+- [x] `src/veph/spec_mbd_alignment.py`: 252 lines after extracting MBD semantic
+      graph builders.
 
 ## Refactoring Quality Gates
 
@@ -87,9 +91,9 @@ Verification:
 
 ## Phase 37: Spec-To-MBD Generator Decomposition
 
-- [ ] Split decision/control-rule generation out of `spec_mbd_conversion.py`.
+- [x] Split decision/control-rule generation out of `spec_mbd_conversion.py`.
 - [x] Split state-machine MBD generation out of `spec_mbd_conversion.py`.
-- [ ] Split arithmetic/dataflow MBD generation out of `spec_mbd_conversion.py`
+- [x] Split arithmetic/dataflow MBD generation out of `spec_mbd_conversion.py`
       while keeping parser helpers in `spec_dataflow.py`.
 - [x] Keep `generate_mbd_from_spec()` as the stable public entry point.
 
@@ -97,30 +101,32 @@ Verification:
 
 - [x] `tests/test_spec_mbd_conversion.py` passes.
 - [x] Spec/MBD alignment tests pass.
-- [ ] `spec_mbd_conversion.py` becomes an orchestration layer rather than the
+- [x] `spec_mbd_conversion.py` becomes an orchestration layer rather than the
       owner of every generation detail.
 
 ## Phase 38: Parser And Alignment Cleanup
 
-- [ ] Split expression parsing out of `markup_parser.py` only if it reduces
-      cognitive load without weakening parser diagnostics.
-- [ ] Split semantic graph builders in `spec_mbd_alignment.py` by concern:
+- [x] Reviewed expression parsing in `markup_parser.py` and kept it local
+      because splitting it now would add indirection without improving parser
+      diagnostics.
+- [x] Split semantic graph builders in `spec_mbd_alignment.py` by concern:
       decision graphs, generic flow graphs, and state/dataflow graph support.
-- [ ] Add narrow tests for any extracted parser/alignment helper if existing
+- [x] Add narrow tests for any extracted parser/alignment helper if existing
       tests do not already cover it directly.
 
 Verification:
 
-- [ ] Parser tests pass.
-- [ ] Spec/MBD alignment tests pass.
-- [ ] Unsupported syntax diagnostics remain actionable.
+- [x] Parser tests pass.
+- [x] Spec/MBD alignment tests pass.
+- [x] Unsupported syntax diagnostics remain actionable.
 
 ## Phase 39: Final Refactor Verification And Checkpoint
 
-- [ ] Regenerate affected sample artifacts only through existing CLI commands.
-- [ ] Run focused tests for exporters, preview runtime, parser, conversion, and
+- [x] Confirm no generated sample artifacts required refresh; determinism tests
+      stayed green without direct generated-file edits.
+- [x] Run focused tests for exporters, preview runtime, parser, conversion, and
       sample determinism.
-- [ ] Run full `pytest`.
-- [ ] Run `git diff --check`.
-- [ ] Review module sizes and record the new baseline in this file.
-- [ ] Commit, push, and merge after the refactor is green.
+- [x] Run full `pytest`.
+- [x] Run `git diff --check`.
+- [x] Review module sizes and record the new baseline in this file.
+- [x] Commit, push, and merge after the refactor is green.
