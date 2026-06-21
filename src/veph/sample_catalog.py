@@ -51,6 +51,14 @@ def list_samples(repo_root: str | Path | None = None) -> list[Sample]:
     ]
 
 
+def find_sample_by_spec(spec_path: str | Path, repo_root: str | Path | None = None) -> Sample | None:
+    target = Path(spec_path).resolve()
+    for sample in list_samples(repo_root):
+        if sample.paths.spec is not None and sample.paths.spec.resolve() == target:
+            return sample
+    return None
+
+
 def load_sample(sample_id: str, repo_root: str | Path | None = None) -> Sample:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     sample_root = root / "samples" / sample_id

@@ -26,7 +26,7 @@ from veph.requirements_support import (
     validate_traceability,
 )
 from veph.samples.requirements_scaffolds import SampleScaffoldError, generate_sample_mbd_scaffold
-from veph.sample_catalog import SampleCatalogError, list_samples, load_sample
+from veph.sample_catalog import SampleCatalogError, find_sample_by_spec, list_samples, load_sample
 from veph.scenario_runner import ScenarioError, run_scenario_file
 from veph.spec_mbd_alignment import SpecMbdAlignmentError, compare_spec_to_mbd, compare_spec_to_mbd_model
 from veph.spec_mbd_conversion import generate_mbd_from_spec
@@ -188,6 +188,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     generate_mbd_spec.set_defaults(func=_generate_mbd_from_spec)
 
+    render_spec_mbd = subparsers.add_parser(
+        "render-spec-mbd",
+        help="render Spec.md Mermaid to MBD review viewer using sample metadata when available",
+    )
+    render_spec_mbd.add_argument("spec")
+    render_spec_mbd.add_argument("--component", help="component name when spec is not in a sample manifest")
+    render_spec_mbd.add_argument("--out", help="viewer output path; defaults to sample generated/spec_mbd_viewer.html")
+    render_spec_mbd.add_argument("--mbd-out", help="converted MBD output path; defaults to sample generated/from_spec.model.mbd.md")
+    render_spec_mbd.add_argument("--scenario", default="")
+    render_spec_mbd.add_argument("--parameter-default", action="append", default=[])
+    render_spec_mbd.add_argument("--input-default", action="append", default=[])
+    render_spec_mbd.add_argument("--output-default", action="append", default=[])
+    render_spec_mbd.set_defaults(func=_render_spec_mbd)
+
     for name, command in EXPORT_COMMANDS.items():
         _add_export(subparsers, name, command)
     return parser
@@ -338,6 +352,45 @@ def _generate_mbd_from_spec(args: argparse.Namespace) -> None:
     _write_text(args.out, mbd_text)
 
 
+def _render_spec_mbd(args: argparse.Namespace) -> None:
+    spec_path = Path(args.spec)
+    sample = find_sample_by_spec(spec_path)
+    config = sample.spec_mbd if sample is not None else {}
+    component = args.component or config.get("component")
+    if not isinstance(component, str) or not component:
+        raise OSError("component is required; pass --component or use a spec listed in sample.yml specMbd")
+    parameter_defaults = {
+        **_string_mapping(config.get("parameterDefaults")),
+        **_parse_default_args(args.parameter_default),
+    }
+    input_defaults = {
+        **_string_mapping(config.get("inputDefaults")),
+        **_parse_default_args(args.input_default),
+    }
+    output_defaults = {
+        **_string_mapping(config.get("outputDefaults")),
+        **_parse_default_args(args.output_default),
+    }
+    scenario = args.scenario or str(config.get("scenario") or "")
+    mbd_text = generate_mbd_from_spec(
+        spec_path,
+        component_name=component,
+        parameter_defaults=parameter_defaults,
+        input_defaults=input_defaults,
+        output_defaults=output_defaults,
+        scenario=scenario,
+    )
+    mbd_out = Path(args.mbd_out) if args.mbd_out else _default_converted_mbd_path(sample, spec_path)
+    model = parse_markup(mbd_text, mbd_out)
+    report = compare_spec_to_mbd_model(spec_path, model, mbd_out)
+    if not report.passed:
+        raise OSError("converted MBD does not match Spec Mermaid semantics")
+    viewer = export_spec_mbd_viewer(spec_path, model, report)
+    viewer_out = Path(args.out) if args.out else _default_spec_mbd_viewer_path(sample, spec_path)
+    _write_text(mbd_out, mbd_text)
+    _write_text(viewer_out, viewer)
+
+
 def _export(args: argparse.Namespace, exporter: Callable) -> None:
     source = args.source or args.model
     if not source:
@@ -387,6 +440,18 @@ def _string_mapping(value: object) -> dict[str, str]:
     if not isinstance(value, dict):
         raise OSError("specMbd defaults must be mappings")
     return {str(key): str(item) for key, item in value.items()}
+
+
+def _default_converted_mbd_path(sample, spec_path: Path) -> Path:
+    if sample is not None:
+        return sample.paths.generated.get("convertedMbd", sample.paths.generated_dir / "from_spec.model.mbd.md")
+    return spec_path.with_name("from_spec.model.mbd.md")
+
+
+def _default_spec_mbd_viewer_path(sample, spec_path: Path) -> Path:
+    if sample is not None:
+        return sample.paths.generated.get("specMbdViewer", sample.paths.generated_dir / "spec_mbd_viewer.html")
+    return spec_path.with_name("spec_mbd_viewer.html")
 
 
 def _load_authoring_source(source: str):

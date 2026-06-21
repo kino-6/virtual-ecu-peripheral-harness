@@ -59,6 +59,29 @@ def test_generate_mbd_from_spec_cli_writes_authoring_source(tmp_path):
     assert compare_spec_to_mbd_model(sample.paths.spec, generated, out).passed is True
 
 
+def test_render_spec_mbd_cli_uses_sample_metadata_from_spec_path(tmp_path):
+    sample = load_sample("simple_threshold_indicator", ROOT)
+    viewer = tmp_path / "viewer.html"
+    converted = tmp_path / "from_spec.model.mbd.md"
+
+    exit_code = main(
+        [
+            "render-spec-mbd",
+            str(sample.paths.spec),
+            "--out",
+            str(viewer),
+            "--mbd-out",
+            str(converted),
+        ]
+    )
+
+    assert exit_code == 0
+    assert viewer.exists()
+    assert converted.exists()
+    assert parse_markup_file(converted).component.name == "ToyThresholdIndicator"
+    assert "Alignment: PASS" in viewer.read_text(encoding="utf-8")
+
+
 def test_export_sample_writes_converted_mbd_and_review_viewer():
     sample = load_sample("simple_threshold_indicator", ROOT)
 
