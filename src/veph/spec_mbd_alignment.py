@@ -4,7 +4,14 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from veph.ir import ControlRuleIR, ExpressionIR, FlowIR, MbdModelIR
+from veph.control_semantics import (
+    find_threshold_pair,
+    primary_condition_terms,
+    primary_output_action,
+    report_for_signal,
+    source_for_signal,
+)
+from veph.ir import ControlRuleIR, MbdModelIR
 from veph.markup_parser import parse_markup_file
 
 
@@ -209,18 +216,18 @@ def parse_mermaid_flowchart_model(body: str, source_path: Path | None = None) ->
 
 
 def semantic_graph_from_mbd(model: MbdModelIR) -> SemanticGraph:
-    pair = _find_threshold_pair(model.controls)
+    pair = find_threshold_pair(model.controls)
     if pair is None:
         raise SpecMbdAlignmentError(
             "MBD semantic graph currently supports one complementary threshold control pair"
         )
     true_rule, false_rule = pair
-    primary_input, primary_parameter = _primary_condition_terms(model, true_rule.condition_expr)
-    source = _source_for_signal(model.flows, primary_input) or "ScenarioInput"
-    output_name = _primary_output_action(model, true_rule) or _primary_output_action(model, false_rule)
+    primary_input, primary_parameter = primary_condition_terms(model, true_rule.condition_expr)
+    source = source_for_signal(model.flows, primary_input) or "ScenarioInput"
+    output_name = primary_output_action(model, true_rule) or primary_output_action(model, false_rule)
     if not output_name:
         raise SpecMbdAlignmentError("MBD semantic graph could not find an output port action")
-    report = _report_for_signal(model.flows, output_name) or "ScenarioReport.observedBehavior"
+    report = report_for_signal(model.flows, output_name) or "ScenarioReport.observedBehavior"
     condition = f"{true_rule.condition}?"
     true_output = _output_action_label(model, true_rule)
     false_output = _output_action_label(model, false_rule)
@@ -283,101 +290,6 @@ def _require_known_node(
         return
     location = f" in {source_path}" if source_path is not None else ""
     raise SpecMbdAlignmentError(f"Mermaid edge references undefined node {node_id!r}{location}: {line}")
-
-
-def _find_threshold_pair(controls: list[ControlRuleIR]) -> tuple[ControlRuleIR, ControlRuleIR] | None:
-    for first in controls:
-        first_key = _comparison_key(first.condition_expr)
-        if first_key is None:
-            continue
-        for second in controls:
-            if first is second:
-                continue
-            second_key = _comparison_key(second.condition_expr)
-            if second_key is None:
-                continue
-            left, right, operator = first_key
-            if (left, right) == second_key[:2] and _is_complement(operator, second_key[2]):
-                return (first, second) if first.priority <= second.priority else (second, first)
-    return None
-
-
-def _comparison_key(expression: ExpressionIR) -> tuple[str, str, str] | None:
-    if expression.kind != "comparison" or expression.left is None or expression.right is None:
-        return None
-    left = _expression_name(expression.left)
-    right = _expression_name(expression.right)
-    if not left or not right:
-        return None
-    return left, right, expression.operator
-
-
-def _expression_name(expression: ExpressionIR) -> str:
-    if expression.kind == "variable":
-        return expression.name
-    if expression.kind in {"number", "boolean"}:
-        return str(expression.value).lower()
-    return ""
-
-
-def _is_complement(first: str, second: str) -> bool:
-    return (first, second) in {
-        (">=", "<"),
-        ("<", ">="),
-        (">", "<="),
-        ("<=", ">"),
-        ("==", "!="),
-        ("!=", "=="),
-    }
-
-
-def _primary_condition_terms(model: MbdModelIR, expression: ExpressionIR) -> tuple[str, str]:
-    variables = _expression_variables(expression)
-    primary_input = next((name for name in variables if name in model.ports), "")
-    primary_parameter = next((name for name in variables if name in model.component.parameters), "")
-    return primary_input, primary_parameter
-
-
-def _expression_variables(expression: ExpressionIR) -> list[str]:
-    if expression.kind == "variable":
-        return [expression.name]
-    variables: list[str] = []
-    if expression.left is not None:
-        variables.extend(_expression_variables(expression.left))
-    if expression.right is not None:
-        variables.extend(_expression_variables(expression.right))
-    for operand in expression.operands:
-        variables.extend(_expression_variables(operand))
-    return list(dict.fromkeys(variables))
-
-
-def _source_for_signal(flows: list[FlowIR], signal: str) -> str:
-    if not signal:
-        return ""
-    for flow in flows:
-        target_signal = flow.target.rsplit(".", 1)[-1]
-        source_root = flow.source.split(".", 1)[0]
-        if target_signal == signal and source_root != "ScenarioReport":
-            return source_root
-    return ""
-
-
-def _report_for_signal(flows: list[FlowIR], signal: str) -> str:
-    if not signal:
-        return ""
-    for flow in flows:
-        source_signal = flow.source.rsplit(".", 1)[-1]
-        if source_signal == signal and flow.target.startswith("ScenarioReport."):
-            return flow.target
-    return ""
-
-
-def _primary_output_action(model: MbdModelIR, control: ControlRuleIR) -> str:
-    for name in control.actions:
-        port = model.ports.get(name)
-        if port is not None and port.direction == "out":
-            return name
-    return ""
 
 
 def _output_action_label(model: MbdModelIR, control: ControlRuleIR) -> str:
