@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spec Mermaid To MBD Review</title>
   <style>
-    :root { color-scheme: light; --ink: #172026; --muted: #526066; --line: #c9d6d3; --accent: #2f5d62; --paper: #f7faf9; }
+    :root { color-scheme: light; --ink: #172026; --muted: #526066; --line: #c9d6d3; --accent: #2f5d62; --active: #0b7f59; --inactive: #b7c8c4; --paper: #f7faf9; }
     body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     .shell { width: min(100% - 32px, 1180px); margin: 0 auto; padding: 24px 0 48px; }
     .hero, .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
@@ -17,8 +17,25 @@
     .diagram { width: 100%; min-height: 260px; background: #fbfdfc; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0 14px; }
     .node { fill: #fff; stroke: var(--accent); stroke-width: 1.4; }
     .node-title { font-weight: 700; font-size: 11px; fill: var(--ink); }
+    .node-title.small { font-size: 10px; }
     .node-note, .edge-label { font-size: 10px; fill: var(--muted); }
     .edge { fill: none; stroke: var(--accent); stroke-width: 1.5; marker-end: url(#arrow); }
+    .interactive-grid { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(240px, 360px); gap: 20px; align-items: stretch; margin-bottom: 14px; }
+    .control-stack { display: grid; gap: 12px; }
+    .number-control { display: grid; grid-template-columns: 1fr 180px 92px; gap: 10px; align-items: center; }
+    .number-control span { color: var(--muted); font-weight: 700; }
+    input[type='range'] { width: 100%; }
+    input[type='number'] { box-sizing: border-box; width: 92px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }
+    .review-result { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdfc; }
+    .review-result p { margin: 0; }
+    .review-result span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .review-result strong { display: block; margin-top: 2px; font-size: 15px; }
+    .rule-condition { fill: #fff; stroke: var(--accent); stroke-width: 1.4; }
+    .interactive-edge { stroke: var(--inactive); stroke-width: 1.8; marker-end: url(#interactiveArrow); }
+    .active-path { stroke: var(--active) !important; fill: var(--active) !important; opacity: 1; }
+    .inactive-path { opacity: .35; }
+    .active-node { stroke: var(--active); stroke-width: 2.4; }
+    @media (max-width: 760px) { .interactive-grid, .number-control { grid-template-columns: 1fr; } .review-result { grid-template-columns: 1fr; } .diagram { min-height: 220px; } }
     table { width: 100%; border-collapse: collapse; }
     th, td { border-top: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
     th { color: var(--muted); font-size: 12px; }
@@ -33,6 +50,69 @@
         <h1>ToyThresholdIndicator</h1>
         <span>Alignment: PASS</span>
       </div>
+    </section>
+    <section class="panel interactive-panel" data-interactive-review>
+      <h2>Interactive Review</h2>
+      <div class="interactive-grid">
+        <div class="control-stack">
+          <label class="number-control">
+            <span>Model input <code>sampleValue</code></span>
+            <input type="range" min="0" max="100" step="1" value="0" data-input="sampleValue" data-control-kind="range">
+            <input type="number" step="1" value="0" data-input="sampleValue" data-control-kind="number">
+          </label>
+          <label class="number-control">
+            <span>Parameter <code>limit</code></span>
+            <input type="range" min="0" max="100" step="1" value="10" data-parameter="limit" data-control-kind="range">
+            <input type="number" step="1" value="10" data-parameter="limit" data-control-kind="number">
+          </label>
+        </div>
+        <div class="review-result" aria-live="polite">
+          <p><span>Condition</span><strong>sampleValue &gt;= limit</strong></p>
+          <p><span>Branch</span><strong data-result="branch">-</strong></p>
+          <p><span>State</span><strong data-result="state">IDLE</strong></p>
+          <p><span>Output</span><strong data-result="output">active = -</strong></p>
+        </div>
+      </div>
+      <svg class="diagram interactive-diagram" viewBox="0 0 1180 310" role="img" aria-label="interactive MBD behavior preview">
+        <defs>
+          <marker id="interactiveArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="190" height="70" rx="8" class="node" data-node-role="source"></rect>
+        <text x="137" y="152" text-anchor="middle" class="node-title small">ToyInputSource</text>
+        <text x="137" y="180" text-anchor="middle" class="node-note">source</text>
+        <rect x="266" y="118" width="210" height="70" rx="8" class="node" data-node-role="input"></rect>
+        <text x="371" y="143" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="161" text-anchor="middle" class="node-title small">sampleValue</text>
+        <text x="371" y="180" text-anchor="middle" class="node-note">model input</text>
+        <rect x="266" y="36" width="210" height="70" rx="8" class="node" data-node-role="parameter"></rect>
+        <text x="371" y="61" text-anchor="middle" class="node-title small">Parameter</text>
+        <text x="371" y="79" text-anchor="middle" class="node-title small">limit</text>
+        <text x="371" y="98" text-anchor="middle" class="node-note">model parameter</text>
+        <polygon points="650,108 735,153 650,198 565,153" class="rule-condition" data-node-role="decision"></polygon>
+        <text x="650" y="148" text-anchor="middle" class="node-title small">sampleValue &gt;= limit?</text>
+        <rect x="796" y="72" width="226" height="70" rx="8" class="node" data-node-role="true-output"></rect>
+        <text x="909" y="97" text-anchor="middle" class="node-title small">Output active = true</text>
+        <text x="909" y="115" text-anchor="middle" class="node-title small">State ACTIVE</text>
+        <text x="909" y="134" text-anchor="middle" class="node-note">condition true</text>
+        <rect x="796" y="184" width="226" height="70" rx="8" class="node" data-node-role="false-output"></rect>
+        <text x="909" y="209" text-anchor="middle" class="node-title small">Output active = false</text>
+        <text x="909" y="227" text-anchor="middle" class="node-title small">State IDLE</text>
+        <text x="909" y="246" text-anchor="middle" class="node-note">condition false</text>
+        <rect x="1036" y="118" width="130" height="70" rx="8" class="node" data-node-role="report"></rect>
+        <text x="1101" y="152" text-anchor="middle" class="node-title small">ScenarioReport.observed...</text>
+        <text x="1101" y="180" text-anchor="middle" class="node-note">observed</text>
+        <line x1="232" y1="153" x2="266" y2="153" class="interactive-edge active-path"></line>
+        <line x1="476" y1="153" x2="565" y2="153" class="interactive-edge active-path"></line>
+        <line x1="476" y1="71" x2="596" y2="126" class="interactive-edge active-path"></line>
+        <line x1="735" y1="153" x2="796" y2="107" class="interactive-edge" data-branch="true"></line>
+        <text x="774" y="117" text-anchor="middle" class="edge-note" data-branch="true">true</text>
+        <line x1="735" y1="153" x2="796" y2="219" class="interactive-edge" data-branch="false"></line>
+        <text x="774" y="203" text-anchor="middle" class="edge-note" data-branch="false">false</text>
+        <line x1="1022" y1="107" x2="1036" y2="153" class="interactive-edge" data-branch="true"></line>
+        <line x1="1022" y1="219" x2="1036" y2="153" class="interactive-edge" data-branch="false"></line>
+      </svg>
     </section>
     <section class="panel">
       <h2>Spec Mermaid Semantic Graph</h2>
@@ -181,5 +261,51 @@
       </ul>
     </section>
   </main>
+  <script>
+    (() => {
+      const operator = '>=';
+      const inputName = 'sampleValue';
+      const parameterName = 'limit';
+      const outputName = 'active';
+      const trueOutput = 'true';
+      const falseOutput = 'false';
+      const trueState = 'ACTIVE';
+      const falseState = 'IDLE';
+      const inputControls = document.querySelectorAll(`[data-input="${inputName}"]`);
+      const parameterControls = document.querySelectorAll(`[data-parameter="${parameterName}"]`);
+      const branchResult = document.querySelector('[data-result="branch"]');
+      const stateResult = document.querySelector('[data-result="state"]');
+      const outputResult = document.querySelector('[data-result="output"]');
+      const evaluateComparison = (left, right) => {
+        if (operator === '>=') return left >= right;
+        if (operator === '>') return left > right;
+        if (operator === '<=') return left <= right;
+        if (operator === '<') return left < right;
+        if (operator === '==') return left === right;
+        if (operator === '!=') return left !== right;
+        return false;
+      };
+      const sync = (controls, value) => controls.forEach((control) => { control.value = value; });
+      const update = (source) => {
+        if (source && source.matches('[data-input]')) sync(inputControls, source.value);
+        if (source && source.matches('[data-parameter]')) sync(parameterControls, source.value);
+        const inputValue = Number(inputControls[0].value);
+        const parameterValue = Number(parameterControls[0].value);
+        const matched = evaluateComparison(inputValue, parameterValue);
+        const branch = matched ? 'true' : 'false';
+        branchResult.textContent = branch;
+        stateResult.textContent = matched ? trueState : falseState;
+        outputResult.textContent = `${outputName} = ${matched ? trueOutput : falseOutput}`;
+        document.querySelectorAll('[data-branch]').forEach((element) => {
+          element.classList.toggle('active-path', element.dataset.branch === branch);
+          element.classList.toggle('inactive-path', element.dataset.branch !== branch);
+        });
+        document.querySelectorAll('[data-node-role="true-output"]').forEach((element) => element.classList.toggle('active-node', matched));
+        document.querySelectorAll('[data-node-role="false-output"]').forEach((element) => element.classList.toggle('active-node', !matched));
+      };
+      [...inputControls, ...parameterControls].forEach((control) => control.addEventListener('input', () => update(control)));
+      update();
+    })();
+  </script>
 </body>
 </html>

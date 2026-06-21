@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from html import escape
 from pathlib import Path
 
-from veph.ir import MbdModelIR
+from veph.ir import ControlRuleIR, ExpressionIR, FlowIR, MbdModelIR
 from veph.spec_mbd_alignment import (
     SemanticGraph,
     SpecMbdAlignmentReport,
@@ -19,6 +20,7 @@ def export_spec_mbd_viewer(
 ) -> str:
     spec_graph = parse_spec_design_overview(spec_path)
     mbd_graph = semantic_graph_from_mbd(converted_model)
+    interactive_context = _interactive_context(converted_model)
     return "\n".join(
         [
             "<!doctype html>",
@@ -40,13 +42,216 @@ def export_spec_mbd_viewer(
             f"        <span>Alignment: {'PASS' if report.passed else 'FAIL'}</span>",
             "      </div>",
             "    </section>",
+            _interactive_panel(interactive_context),
             _graph_panel("Spec Mermaid Semantic Graph", spec_graph),
             _graph_panel("Converted MBD Semantic Graph", mbd_graph),
             _alignment_panel(report),
             "  </main>",
+            _interactive_script(interactive_context),
             "</body>",
             "</html>",
             "",
+        ]
+    )
+
+
+@dataclass(frozen=True)
+class InteractiveReviewContext:
+    input_name: str
+    input_default: str
+    parameter_name: str
+    parameter_default: str
+    operator: str
+    condition_label: str
+    output_name: str
+    true_output: str
+    false_output: str
+    true_state: str
+    false_state: str
+    source: str
+    report: str
+
+
+def _interactive_context(model: MbdModelIR) -> InteractiveReviewContext | None:
+    threshold_pair = _find_threshold_pair(model.controls)
+    if threshold_pair is None:
+        return None
+    true_rule, false_rule = threshold_pair
+    comparison = true_rule.condition_expr
+    if comparison.kind != "comparison":
+        return None
+    input_name, parameter_name = _primary_condition_terms(model, comparison)
+    if not input_name or not parameter_name:
+        return None
+    output_name = _primary_output_action(model, true_rule) or _primary_output_action(model, false_rule)
+    if not output_name:
+        return None
+    return InteractiveReviewContext(
+        input_name=input_name,
+        input_default=model.ports[input_name].default or "0",
+        parameter_name=parameter_name,
+        parameter_default=model.component.parameters[parameter_name].default or "0",
+        operator=comparison.operator,
+        condition_label=true_rule.condition,
+        output_name=output_name,
+        true_output=true_rule.actions.get(output_name, ""),
+        false_output=false_rule.actions.get(output_name, ""),
+        true_state=true_rule.actions.get("state", ""),
+        false_state=false_rule.actions.get("state", ""),
+        source=_source_for_signal(model.flows, input_name) or "ScenarioInput",
+        report=_report_for_signal(model.flows, output_name) or "ScenarioReport.observedBehavior",
+    )
+
+
+def _interactive_panel(context: InteractiveReviewContext | None) -> str:
+    if context is None:
+        return "\n".join(
+            [
+                '    <section class="panel interactive-panel">',
+                "      <h2>Interactive Review</h2>",
+                "      <p>This model is outside the executable preview subset for this viewer. Use the static alignment evidence below.</p>",
+                "    </section>",
+            ]
+        )
+    return "\n".join(
+        [
+            '    <section class="panel interactive-panel" data-interactive-review>',
+            "      <h2>Interactive Review</h2>",
+            "      <div class=\"interactive-grid\">",
+            "        <div class=\"control-stack\">",
+            _number_control("Model input", context.input_name, context.input_default, "input"),
+            _number_control("Parameter", context.parameter_name, context.parameter_default, "parameter"),
+            "        </div>",
+            "        <div class=\"review-result\" aria-live=\"polite\">",
+            f"          <p><span>Condition</span><strong>{escape(context.condition_label)}</strong></p>",
+            f"          <p><span>Branch</span><strong data-result=\"branch\">-</strong></p>",
+            f"          <p><span>State</span><strong data-result=\"state\">{escape(context.false_state or '-')}</strong></p>",
+            f"          <p><span>Output</span><strong data-result=\"output\">{escape(context.output_name)} = -</strong></p>",
+            "        </div>",
+            "      </div>",
+            _interactive_svg(context),
+            "    </section>",
+        ]
+    )
+
+
+def _number_control(label: str, name: str, default: str, role: str) -> str:
+    escaped_name = escape(name)
+    escaped_default = escape(default)
+    data_attr = f'data-{role}="{escape(name, quote=True)}"'
+    return "\n".join(
+        [
+            "          <label class=\"number-control\">",
+            f"            <span>{escape(label)} <code>{escaped_name}</code></span>",
+            f"            <input type=\"range\" min=\"0\" max=\"100\" step=\"1\" value=\"{escaped_default}\" {data_attr} data-control-kind=\"range\">",
+            f"            <input type=\"number\" step=\"1\" value=\"{escaped_default}\" {data_attr} data-control-kind=\"number\">",
+            "          </label>",
+        ]
+    )
+
+
+def _interactive_svg(context: InteractiveReviewContext) -> str:
+    condition = context.condition_label + "?"
+    return "\n".join(
+        [
+            '      <svg class="diagram interactive-diagram" viewBox="0 0 1180 310" role="img" aria-label="interactive MBD behavior preview">',
+            "        <defs>",
+            '          <marker id="interactiveArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">',
+            '            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>',
+            "          </marker>",
+            "        </defs>",
+            *_interactive_svg_node([context.source], 42, 118, 190, "source", "source"),
+            *_interactive_svg_node(["Input Port", context.input_name], 266, 118, 210, "model input", "input"),
+            *_interactive_svg_node(["Parameter", context.parameter_name], 266, 36, 210, "model parameter", "parameter"),
+            '        <polygon points="650,108 735,153 650,198 565,153" class="rule-condition" data-node-role="decision"></polygon>',
+            f'        <text x="650" y="148" text-anchor="middle" class="node-title small">{escape(_shorten(condition, 30))}</text>',
+            *_interactive_svg_node([f"Output {context.output_name} = {context.true_output}", f"State {context.true_state}"], 796, 72, 226, "condition true", "true-output"),
+            *_interactive_svg_node([f"Output {context.output_name} = {context.false_output}", f"State {context.false_state}"], 796, 184, 226, "condition false", "false-output"),
+            *_interactive_svg_node([context.report], 1036, 118, 130, "observed", "report"),
+            '        <line x1="232" y1="153" x2="266" y2="153" class="interactive-edge active-path"></line>',
+            '        <line x1="476" y1="153" x2="565" y2="153" class="interactive-edge active-path"></line>',
+            '        <line x1="476" y1="71" x2="596" y2="126" class="interactive-edge active-path"></line>',
+            '        <line x1="735" y1="153" x2="796" y2="107" class="interactive-edge" data-branch="true"></line>',
+            '        <text x="774" y="117" text-anchor="middle" class="edge-note" data-branch="true">true</text>',
+            '        <line x1="735" y1="153" x2="796" y2="219" class="interactive-edge" data-branch="false"></line>',
+            '        <text x="774" y="203" text-anchor="middle" class="edge-note" data-branch="false">false</text>',
+            '        <line x1="1022" y1="107" x2="1036" y2="153" class="interactive-edge" data-branch="true"></line>',
+            '        <line x1="1022" y1="219" x2="1036" y2="153" class="interactive-edge" data-branch="false"></line>',
+            "      </svg>",
+        ]
+    )
+
+
+def _interactive_svg_node(lines: list[str], x: int, y: int, width: int, note: str, role: str) -> list[str]:
+    center = x + width // 2
+    title_lines = lines[:2] or [""]
+    if len(title_lines) == 1:
+        title_svg = [
+            f'        <text x="{center}" y="{y + 34}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[0], 24))}</text>'
+        ]
+    else:
+        title_svg = [
+            f'        <text x="{center}" y="{y + 25}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[0], 24))}</text>',
+            f'        <text x="{center}" y="{y + 43}" text-anchor="middle" class="node-title small">{escape(_shorten(title_lines[1], 24))}</text>',
+        ]
+    return [
+        f'        <rect x="{x}" y="{y}" width="{width}" height="70" rx="8" class="node" data-node-role="{escape(role)}"></rect>',
+        *title_svg,
+        f'        <text x="{center}" y="{y + 62}" text-anchor="middle" class="node-note">{escape(note)}</text>',
+    ]
+
+
+def _interactive_script(context: InteractiveReviewContext | None) -> str:
+    if context is None:
+        return ""
+    return "\n".join(
+        [
+            "  <script>",
+            "    (() => {",
+            f"      const operator = {context.operator!r};",
+            f"      const inputName = {context.input_name!r};",
+            f"      const parameterName = {context.parameter_name!r};",
+            f"      const outputName = {context.output_name!r};",
+            f"      const trueOutput = {context.true_output!r};",
+            f"      const falseOutput = {context.false_output!r};",
+            f"      const trueState = {context.true_state!r};",
+            f"      const falseState = {context.false_state!r};",
+            "      const inputControls = document.querySelectorAll(`[data-input=\"${inputName}\"]`);",
+            "      const parameterControls = document.querySelectorAll(`[data-parameter=\"${parameterName}\"]`);",
+            "      const branchResult = document.querySelector('[data-result=\"branch\"]');",
+            "      const stateResult = document.querySelector('[data-result=\"state\"]');",
+            "      const outputResult = document.querySelector('[data-result=\"output\"]');",
+            "      const evaluateComparison = (left, right) => {",
+            "        if (operator === '>=') return left >= right;",
+            "        if (operator === '>') return left > right;",
+            "        if (operator === '<=') return left <= right;",
+            "        if (operator === '<') return left < right;",
+            "        if (operator === '==') return left === right;",
+            "        if (operator === '!=') return left !== right;",
+            "        return false;",
+            "      };",
+            "      const sync = (controls, value) => controls.forEach((control) => { control.value = value; });",
+            "      const update = (source) => {",
+            "        if (source && source.matches('[data-input]')) sync(inputControls, source.value);",
+            "        if (source && source.matches('[data-parameter]')) sync(parameterControls, source.value);",
+            "        const inputValue = Number(inputControls[0].value);",
+            "        const parameterValue = Number(parameterControls[0].value);",
+            "        const matched = evaluateComparison(inputValue, parameterValue);",
+            "        const branch = matched ? 'true' : 'false';",
+            "        branchResult.textContent = branch;",
+            "        stateResult.textContent = matched ? trueState : falseState;",
+            "        outputResult.textContent = `${outputName} = ${matched ? trueOutput : falseOutput}`;",
+            "        document.querySelectorAll('[data-branch]').forEach((element) => {",
+            "          element.classList.toggle('active-path', element.dataset.branch === branch);",
+            "          element.classList.toggle('inactive-path', element.dataset.branch !== branch);",
+            "        });",
+            "        document.querySelectorAll('[data-node-role=\"true-output\"]').forEach((element) => element.classList.toggle('active-node', matched));",
+            "        document.querySelectorAll('[data-node-role=\"false-output\"]').forEach((element) => element.classList.toggle('active-node', !matched));",
+            "      };",
+            "      [...inputControls, ...parameterControls].forEach((control) => control.addEventListener('input', () => update(control)));",
+            "      update();",
+            "    })();",
+            "  </script>",
         ]
     )
 
@@ -210,10 +415,105 @@ def _shorten(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "..."
 
 
+def _find_threshold_pair(controls: list[ControlRuleIR]) -> tuple[ControlRuleIR, ControlRuleIR] | None:
+    for first in controls:
+        first_key = _comparison_key(first.condition_expr)
+        if first_key is None:
+            continue
+        for second in controls:
+            if first is second:
+                continue
+            second_key = _comparison_key(second.condition_expr)
+            if second_key is None:
+                continue
+            left, right, operator = first_key
+            if (left, right) == second_key[:2] and _is_complement(operator, second_key[2]):
+                return (first, second) if first.priority <= second.priority else (second, first)
+    return None
+
+
+def _comparison_key(expression: ExpressionIR) -> tuple[str, str, str] | None:
+    if expression.kind != "comparison" or expression.left is None or expression.right is None:
+        return None
+    left = _expression_name(expression.left)
+    right = _expression_name(expression.right)
+    if not left or not right:
+        return None
+    return left, right, expression.operator
+
+
+def _expression_name(expression: ExpressionIR) -> str:
+    if expression.kind == "variable":
+        return expression.name
+    if expression.kind in {"number", "boolean"}:
+        return str(expression.value).lower()
+    return ""
+
+
+def _is_complement(first: str, second: str) -> bool:
+    return (first, second) in {
+        (">=", "<"),
+        ("<", ">="),
+        (">", "<="),
+        ("<=", ">"),
+        ("==", "!="),
+        ("!=", "=="),
+    }
+
+
+def _primary_condition_terms(model: MbdModelIR, expression: ExpressionIR) -> tuple[str, str]:
+    variables = _expression_variables(expression)
+    primary_input = next((name for name in variables if name in model.ports), "")
+    primary_parameter = next((name for name in variables if name in model.component.parameters), "")
+    return primary_input, primary_parameter
+
+
+def _expression_variables(expression: ExpressionIR) -> list[str]:
+    if expression.kind == "variable":
+        return [expression.name]
+    variables: list[str] = []
+    if expression.left is not None:
+        variables.extend(_expression_variables(expression.left))
+    if expression.right is not None:
+        variables.extend(_expression_variables(expression.right))
+    for operand in expression.operands:
+        variables.extend(_expression_variables(operand))
+    return list(dict.fromkeys(variables))
+
+
+def _source_for_signal(flows: list[FlowIR], signal: str) -> str:
+    if not signal:
+        return ""
+    for flow in flows:
+        target_signal = flow.target.rsplit(".", 1)[-1]
+        source_root = flow.source.split(".", 1)[0]
+        if target_signal == signal and source_root != "ScenarioReport":
+            return source_root
+    return ""
+
+
+def _report_for_signal(flows: list[FlowIR], signal: str) -> str:
+    if not signal:
+        return ""
+    for flow in flows:
+        source_signal = flow.source.rsplit(".", 1)[-1]
+        if source_signal == signal and flow.target.startswith("ScenarioReport."):
+            return flow.target
+    return ""
+
+
+def _primary_output_action(model: MbdModelIR, control: ControlRuleIR) -> str:
+    for name in control.actions:
+        port = model.ports.get(name)
+        if port is not None and port.direction == "out":
+            return name
+    return ""
+
+
 def _css() -> str:
     return "\n".join(
         [
-            "    :root { color-scheme: light; --ink: #172026; --muted: #526066; --line: #c9d6d3; --accent: #2f5d62; --paper: #f7faf9; }",
+            "    :root { color-scheme: light; --ink: #172026; --muted: #526066; --line: #c9d6d3; --accent: #2f5d62; --active: #0b7f59; --inactive: #b7c8c4; --paper: #f7faf9; }",
             '    body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
             "    .shell { width: min(100% - 32px, 1180px); margin: 0 auto; padding: 24px 0 48px; }",
             "    .hero, .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 20px; margin-bottom: 16px; }",
@@ -225,8 +525,25 @@ def _css() -> str:
             "    .diagram { width: 100%; min-height: 260px; background: #fbfdfc; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0 14px; }",
             "    .node { fill: #fff; stroke: var(--accent); stroke-width: 1.4; }",
             "    .node-title { font-weight: 700; font-size: 11px; fill: var(--ink); }",
+            "    .node-title.small { font-size: 10px; }",
             "    .node-note, .edge-label { font-size: 10px; fill: var(--muted); }",
             "    .edge { fill: none; stroke: var(--accent); stroke-width: 1.5; marker-end: url(#arrow); }",
+            "    .interactive-grid { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(240px, 360px); gap: 20px; align-items: stretch; margin-bottom: 14px; }",
+            "    .control-stack { display: grid; gap: 12px; }",
+            "    .number-control { display: grid; grid-template-columns: 1fr 180px 92px; gap: 10px; align-items: center; }",
+            "    .number-control span { color: var(--muted); font-weight: 700; }",
+            "    input[type='range'] { width: 100%; }",
+            "    input[type='number'] { box-sizing: border-box; width: 92px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }",
+            "    .review-result { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdfc; }",
+            "    .review-result p { margin: 0; }",
+            "    .review-result span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }",
+            "    .review-result strong { display: block; margin-top: 2px; font-size: 15px; }",
+            "    .rule-condition { fill: #fff; stroke: var(--accent); stroke-width: 1.4; }",
+            "    .interactive-edge { stroke: var(--inactive); stroke-width: 1.8; marker-end: url(#interactiveArrow); }",
+            "    .active-path { stroke: var(--active) !important; fill: var(--active) !important; opacity: 1; }",
+            "    .inactive-path { opacity: .35; }",
+            "    .active-node { stroke: var(--active); stroke-width: 2.4; }",
+            "    @media (max-width: 760px) { .interactive-grid, .number-control { grid-template-columns: 1fr; } .review-result { grid-template-columns: 1fr; } .diagram { min-height: 220px; } }",
             "    table { width: 100%; border-collapse: collapse; }",
             "    th, td { border-top: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }",
             "    th { color: var(--muted); font-size: 12px; }",

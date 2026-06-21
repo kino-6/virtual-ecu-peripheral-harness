@@ -107,6 +107,9 @@ Verification:
       and fails with actionable diagnostics for unsupported Mermaid syntax.
 - [x] Add a review viewer that shows the original Spec Mermaid semantics and
       converted MBD semantics side-by-side with node/edge alignment evidence.
+- [x] Add an interactive review panel for the supported simple threshold subset
+      so reviewers can vary model inputs/parameters and see the active branch,
+      state, and output.
 - [x] Wire the simple sample to generate a converted MBD artifact and viewer
       from `spec.md`.
 - [x] Add tests proving conversion output is deterministic, parseable, and

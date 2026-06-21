@@ -98,6 +98,10 @@ def test_export_sample_writes_converted_mbd_and_review_viewer():
     assert "Alignment: PASS" in html
     assert "Spec Mermaid Semantic Graph" in html
     assert "Converted MBD Semantic Graph" in html
+    assert "Interactive Review" in html
+    assert 'data-input="sampleValue"' in html
+    assert 'data-parameter="limit"' in html
+    assert 'data-result="branch"' in html
     assert "Output active = true" in html
 
 
@@ -117,5 +121,9 @@ def test_spec_mbd_viewer_renders_alignment_evidence():
     assert "<svg" in html
     assert "ToyInputSource" in html
     assert "sampleValue &gt;= limit?" in html
+    assert "Interactive Review" in html
+    assert "active-path" in html
+    assert "data-node-role=\"decision\"" in html
+    assert "data-result=\"output\"" in html
     assert "Missing MBD nodes" in html
     assert "None" in html
