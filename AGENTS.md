@@ -52,6 +52,11 @@ source, not the primary deliverable. The artifact must help a human answer:
 decisions, outputs, state/control behavior, traceability, scenario/report
 evidence, and harness boundaries before tool-specific artifacts.
 
+If the user says "demo", treat that as a request for an MBD review artifact,
+not a casual visual demo, unless they explicitly ask for one. The first review path
+should support a 30-second to 1-minute initial accept/reject decision against
+the human-readable spec, not a tour of generated files.
+
 ## Requirements And Process Policy
 
 Start substantial validation work from `Requirements.md`, then move to markup,
@@ -91,6 +96,21 @@ reviewer should see the path in about 30 seconds: requirement, expected
 behavior, MBD element, harness/scenario, observed behavior, expected behavior,
 and pass/fail. If not, update `Tasks.md` with the failed gate and iterate.
 Use `docs/mbd_review_principles.md` as the lightweight review checklist.
+
+## Harness Evidence Boundary
+
+Harness is a preview evidence layer. It supplies scenario stimulus, fictional
+virtual IC boundaries, HAL boundaries, observed behavior, and report evidence.
+Harness does not own control decisions, state transitions, output decisions,
+thresholds, recovery rules, or product behavior. Those belong in the
+human-readable spec, `samples/<sample-id>/model.mbd.md`, `mbd-control`, and
+functional decomposition.
+
+Do not hide missing MBD semantics in scenario YAML, Python preview code, or
+virtual IC behavior. If the Harness needs an assumption that is absent from the
+spec or MBD source, mark it as an open question or preview limitation in the
+review artifact. Separate what the Harness preview observed from what external
+MBD/product-test infrastructure must still verify.
 
 ## Verification Policy
 

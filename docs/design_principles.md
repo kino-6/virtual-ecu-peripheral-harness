@@ -62,6 +62,19 @@ the main verification path or a custom MBD semantic universe.
 
 Scenario YAML, if used, is test input only. It is not the MBD source of truth.
 
+## Harness Evidence Boundary
+
+Harness is a preview evidence layer. It exists to expose scenario stimulus,
+fictional virtual IC boundaries, HAL boundaries, observed behavior, expected
+behavior, and pass/fail report evidence before external MBD/product-test
+handoff.
+
+Control decisions, state transitions, and output decisions belong to MBD source,
+`mbd-control`, and functional decomposition. Scenario YAML, Python preview
+helpers, and virtual IC fixtures must not add missing thresholds, recovery
+rules, or state behavior for convenience. Missing behavior should become an
+open review question or a preview limitation, not hidden Harness logic.
+
 ## YAML And IR Policy
 
 The internal IR should stay pragmatic and tool-facing. It is a snapshot that

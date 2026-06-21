@@ -13,9 +13,33 @@ Archived task history:
 
 ## Current Goal
 
-Reduce long Python implementation modules while preserving behavior, generated
-artifact determinism, and the 34/34 repository-defined Mermaid-to-MBD MVP
-coverage contract.
+Make the spec-first review direction explicit and enforceable: `demo.html`
+remains a compatibility filename for an MBD review artifact, and Harness
+evidence remains a preview-only evidence layer rather than a substitute MBD
+verification backend.
+
+## Phase 40: Spec-First Demo And Harness Direction
+
+Acceptance gates:
+
+- [x] `AGENTS.md`, README, review principles, and local Skills state that
+      "demo" means MBD review artifact, not a casual visual demo.
+- [x] Harness guidance says the Harness supplies scenario stimulus, virtual IC
+      and HAL boundary evidence, observed behavior, and report evidence only.
+- [x] Harness guidance says control decisions, state transitions, and output
+      decisions belong to MBD source, `mbd-control`, and functional
+      decomposition, not scenario YAML or Harness shortcuts.
+- [x] HTML review artifacts expose Harness as preview evidence and separate
+      it from external MBD/product-test verification.
+- [x] Tests reject regressions that blur demo, Harness, preview-only, and
+      external verification boundaries.
+
+Verification:
+
+- [x] Focused philosophy/exporter/sample tests pass.
+- [x] Affected generated artifacts are regenerated from sample source.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Current Size Baseline
 

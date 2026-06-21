@@ -8,6 +8,9 @@ description: Project-local workflow for reviewing MBD demos, markup, visualizati
 Use this skill before declaring an MBD demo, visualization, trace report, or
 generated handoff artifact ready for human review.
 
+In this repository, `demo.html` is an MBD review artifact compatibility name,
+not a casual visual demo.
+
 ## Source Checklist
 
 Use `docs/mbd_review_principles.md` as the project checklist. Apply it in the
@@ -66,7 +69,20 @@ Review in independent lanes before merging the result:
      expected behavior, and pass/fail.
    - Reject pass/fail without expected behavior or requirement linkage.
 
-7. **Generated artifact boundary lane**
+7. **Harness evidence lane**
+   - Treat Harness as a preview evidence layer, not an MBD verification backend.
+   - Confirm Harness evidence shows scenario stimulus, virtual IC boundaries,
+     HAL boundaries, observed behavior, expected behavior, report evidence, and
+     pass/fail.
+   - Confirm control decisions, state transitions, output decisions, thresholds,
+     recovery rules, and product behavior are owned by the spec, MBD source,
+     `mbd-control`, and functional decomposition.
+   - Reject harness shortcuts where scenario YAML, Python preview code, virtual
+     IC fixtures, or generated preview C compensate for missing MBD semantics.
+   - Separate what Harness preview observed from what external MBD/product-test
+     infrastructure must still verify.
+
+8. **Generated artifact boundary lane**
    - Confirm Simulink `.m`, Modelica `.mo`, SCXML, Mermaid, PlantUML, FMI
      metadata, and preview C are regenerated outputs from `.mbd.md`.
    - Reject manual synchronization or production/certification wording.
@@ -98,10 +114,12 @@ Reject the artifact before showing it to the user when any of these are true:
 - Dense trace details, generated element lists, or tool-handoff explanations
   appear before the concise review verdict. Put those details behind a
   secondary section or omit them from the human-first review artifact.
+- Harness PASS is presented as formal MBD verification, or scenario YAML owns
+  control behavior that is missing from the MBD source.
 
 ## Workflow
 
-1. Add or update `Tasks.md` gates for the seven lanes.
+1. Add or update `Tasks.md` gates for the eight lanes.
 2. Run each lane independently. Use parallel tool calls for file reads and
    generated artifact checks when possible.
 3. Summarize lane findings as PASS/REJECT with file references.

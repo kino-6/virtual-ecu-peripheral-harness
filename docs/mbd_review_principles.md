@@ -5,6 +5,9 @@ should still resemble professional Model-Based Design practice. These principles
 are adapted for a commercial-tool-free MVP and do not claim Simulink, ISO 26262,
 ASPICE, DO-178C, or tool-qualification compliance.
 
+`demo.html` is an MBD review artifact compatibility filename, not a casual
+visual demo.
+
 ## Review Order
 
 Review generated MBD artifacts in this order:
@@ -38,12 +41,33 @@ Review generated MBD artifacts in this order:
   rules, and unsupported timing assumptions shall be reviewable in one place.
 - Requirements-based scenario evidence: each scenario shall show model inputs,
   scenario steps, observed behavior, expected behavior, and pass/fail.
+- Harness evidence boundary: Harness is a preview evidence layer. It may show
+  scenario stimulus, virtual IC boundaries, HAL boundaries, observed behavior,
+  and report evidence, but it shall not own control decisions, state
+  transitions, output decisions, thresholds, recovery rules, or product
+  behavior. Scenario YAML must not add control behavior missing from the MBD
+  source.
 - Modeling standards and readability: keep names stable, diagrams readable,
   model elements small, and generated views simpler than the behavior under
   review.
 - Generated artifact boundary: Simulink `.m`, Modelica `.mo`, SCXML, Mermaid,
   PlantUML, FMI metadata, and preview C are generated outputs. Review source
   markup and regenerate artifacts instead of editing generated files.
+
+## Harness Evidence Lane
+
+The Harness evidence lane is a hard review gate for preview work.
+
+Review Harness evidence as supporting evidence, not as a verification backend.
+Accept Harness content only when it helps a reviewer connect model inputs,
+scenario steps, virtual IC or HAL boundary crossings, observed behavior,
+expected behavior, and pass/fail result back to concrete MBD elements and
+requirements.
+
+Reject Harness shortcuts when scenario YAML, Python preview code, virtual IC
+fixtures, or generated preview C compensate for missing MBD semantics. The
+review artifact should separate what Harness preview observed from what
+external MBD/product-test infrastructure must still verify.
 
 ## Self-Review Reject Examples
 
@@ -69,6 +93,9 @@ Reject a generated review artifact before showing it as ready when:
   questions without forcing long reading or repeated scrolling.
 - Dense trace lists, generated element paths, and tool-handoff explanations
   appear before the concise human review summary.
+- Harness PASS is presented as formal MBD verification, or Harness/scenario YAML
+  contains control decisions that are not present in the spec, `mbd-control`, or
+  functional decomposition.
 
 ## Source-Informed Rationale
 

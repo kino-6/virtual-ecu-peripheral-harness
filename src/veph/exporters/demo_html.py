@@ -123,6 +123,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             _ir_data_flow_svg(model),
             "" if has_spec_review else _ir_state_machine_review_package(model),
             "" if has_spec_review else _ir_state_machine_svg(model),
+            _ir_harness_evidence_boundary_panel(model),
             _ir_harness_boundary_svg(model),
             '    <section class="panel">',
             "      <h2>Requirements Trace Matrix</h2>",
@@ -761,9 +762,26 @@ def _ir_review_objective_panel(model: MbdModelIR) -> str:
             f"          <tr><td>Specification fidelity</td><td>{len(model.requirement_refs())} requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>",
             f"          <tr><td>Model behavior</td><td>{len(model.controls)} priority-ordered control rule(s); state machine is {escape(state_text)}.</td></tr>",
             f"          <tr><td>Scenario evidence</td><td>{scenario_count} declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>",
+            f"          <tr><td>Harness evidence</td><td>{len(model.harness_devices)} declared boundary item(s). Harness does not own control decisions; scenario YAML cannot add control behavior.</td></tr>",
             "          <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>",
             "        </tbody>",
             "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_harness_evidence_boundary_panel(model: MbdModelIR) -> str:
+    if not model.harness_devices:
+        return ""
+    harness_names = ", ".join(device.name for device in model.harness_devices)
+    return "\n".join(
+        [
+            '    <section class="panel policy">',
+            "      <h2>Harness Evidence Boundary</h2>",
+            "      <p>Harness is a preview evidence layer. It supplies scenario stimulus, declared virtual IC/HAL boundaries, observed behavior, and report evidence; it is not the MBD verification backend.</p>",
+            "      <p>Harness does not own control decisions, state transitions, output decisions, thresholds, recovery rules, or product behavior. Those decisions must come from the spec, MBD source, <code>mbd-control</code>, and functional decomposition; scenario YAML cannot add control behavior.</p>",
+            f"      <p>Declared Harness boundary items: <code>{escape(harness_names)}</code>. Preview reports show what this Harness observed; formal verification remains external MBD/product-test infrastructure.</p>",
             "    </section>",
         ]
     )
@@ -795,6 +813,11 @@ def _ir_review_evidence_map(model: MbdModelIR) -> str:
             "Scenario/report evidence",
             "scenario links on functions and controls",
             "Check expected-vs-observed behavior outside this static page in generated reports.",
+        ),
+        (
+            "Harness evidence",
+            f"{len(model.harness_devices)} declared boundary item(s)",
+            "Check that Harness is a preview evidence layer and scenario YAML cannot add control behavior.",
         ),
         (
             "Tool handoff",

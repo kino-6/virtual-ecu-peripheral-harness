@@ -248,6 +248,9 @@ def test_thermal_demo_html_visualizes_trace_control_and_harness():
     assert "sensorFault" in html
     assert "SYS-005" in html
     assert "generated Simulink, Modelica, SCXML" in html
+    assert "preview evidence layer" in html
+    assert "Harness does not own control decisions" in html
+    assert "external MBD/product-test infrastructure" in html
 
 
 def test_thermal_protection_demo_html_visualizes_complete_process_slice():
@@ -282,6 +285,9 @@ def test_thermal_protection_demo_html_visualizes_complete_process_slice():
     assert "MBD Data Flow Diagram" in html
     assert "State Machine Diagram" in html
     assert "Harness Boundary Diagram" in html
+    assert "Harness Evidence Boundary" in html
+    assert "scenario YAML cannot add control behavior" in html
+    assert "formal verification remains external" in html
     assert "ToyTempSensorIC.temperatureC" in html
     assert "HAL_LIMITER.set_derating" in html
     assert "faultLatch" in html

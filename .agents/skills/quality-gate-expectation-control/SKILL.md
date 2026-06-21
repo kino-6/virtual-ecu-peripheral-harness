@@ -9,6 +9,9 @@ Use this skill before implementation when the requested outcome may be judged by
 fitness, evidence quality, reviewability, or professional realism rather than by
 "tests pass" alone.
 
+In this repository, `demo.html` should usually be treated as an MBD review artifact,
+not a casual visual demo.
+
 ## Trigger Signals
 
 - The user says the current output is "not what I imagined", "too rough",
@@ -45,6 +48,8 @@ Reject and iterate when any of these are true:
 - The first review path is unclear. A reviewer should quickly see requirement,
   expected behavior, MBD element, harness/scenario, observed behavior, expected
   behavior, and pass/fail.
+- Harness is treated as more than a preview evidence layer. Control decisions, state transitions, and output decisions belong to MBD source, `mbd-control`,
+  and functional decomposition, not scenario YAML or Harness shortcuts.
 - The artifact hides demo assumptions or turns them into accepted product
   answers.
 - The visualization is more complex than the behavior being reviewed.
@@ -73,6 +78,8 @@ Ask concise questions when any answer would change the artifact shape:
   diagnostics, reporting, or harness behavior?
 - Which evidence is mandatory: trace matrix, step-by-step execution, generated
   code linkage, MBD handoff shape, or harness boundary proof?
+- What exactly should the Harness prove as preview evidence, and what must
+  remain external MBD/product-test verification?
 - What would make this unacceptable even if tests pass?
 
 Prefer 1-3 questions. Do not bury the user in a survey.
@@ -86,6 +93,8 @@ Add gates like these to `Tasks.md` before implementation:
 - [ ] Report/demo acceptance checks are listed before generation.
 - [ ] Evidence links requirements, model elements, generated code, scenario
       steps, observed behavior, expected behavior, and pass/fail.
+- [ ] Harness evidence is limited to scenario stimulus, virtual IC/HAL boundary
+      evidence, observed behavior, and report evidence.
 - [ ] Agent-side reject loop found no spec mismatch, broad trace, hidden
       assumption, unclear review path, or needless complexity.
 - [ ] Final response names what is still preview-only or weak.

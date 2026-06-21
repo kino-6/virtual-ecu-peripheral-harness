@@ -368,6 +368,7 @@
           <tr><td>Specification fidelity</td><td>0 requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>
           <tr><td>Model behavior</td><td>0 priority-ordered control rule(s); state machine is present.</td></tr>
           <tr><td>Scenario evidence</td><td>0 declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>
+          <tr><td>Harness evidence</td><td>0 declared boundary item(s). Harness does not own control decisions; scenario YAML cannot add control behavior.</td></tr>
           <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>
         </tbody>
       </table>
@@ -383,6 +384,7 @@
           <tr><td>Interface and data flow</td><td>3 port(s), 6 flow(s)</td><td>Check signal direction and harness/report boundaries.</td></tr>
           <tr><td>State/control semantics</td><td>4 transition(s), 0 control rule(s)</td><td>Check guard conditions, state scope, actions, priority, and unsupported assumptions.</td></tr>
           <tr><td>Scenario/report evidence</td><td>scenario links on functions and controls</td><td>Check expected-vs-observed behavior outside this static page in generated reports.</td></tr>
+          <tr><td>Harness evidence</td><td>0 declared boundary item(s)</td><td>Check that Harness is a preview evidence layer and scenario YAML cannot add control behavior.</td></tr>
           <tr><td>Tool handoff</td><td>Simulink, SCXML, Modelica, FMI metadata</td><td>Check that semantics are structurally exported where supported, not only preserved as comments.</td></tr>
         </tbody>
       </table>
@@ -654,6 +656,7 @@
         <text x="991" y="103" text-anchor="middle" class="state-label">FAULT_LATCHED</text>
       </svg>
     </section>
+
     <section class="panel">
       <h2>Harness Boundary Diagram</h2>
       <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>

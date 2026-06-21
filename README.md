@@ -70,6 +70,20 @@ intended verification backends.
 The Python code may parse markup, generate artifacts, and run lightweight smoke
 checks, but it must not be presented as the main verification path.
 
+## Harness Evidence Boundary
+
+Harness is a preview evidence layer. It provides scenario stimulus, fictional
+virtual IC boundaries, HAL boundaries, observed behavior, and report evidence
+for early review. Harness does not own control decisions, state transitions,
+output decisions, thresholds, recovery rules, or product behavior; those belong
+in the spec, Mermaid-like MBD source, `mbd-control`, and functional
+decomposition.
+
+Scenario YAML and Python preview code must not hide behavior that is missing
+from the MBD source. If the Harness needs an assumption, the generated review
+artifact should show it as an open question or preview limitation, and the
+formal verification path remains the external MBD/product-test infrastructure.
+
 ## Fictional Example
 
 The sample component is `ToyPowerMonitorIC`, a fictional SPI peripheral used to
@@ -123,6 +137,10 @@ The review artifact should lead with specification fidelity, model behavior,
 traceability, scenario/report evidence, and harness boundaries. Mermaid `.mmd`
 files are useful trace/debug sources, but they are not the primary visual review
 deliverable.
+
+The review artifact should also make the Harness role explicit: scenario and
+HAL evidence support review, but they do not replace MBD semantics or external
+tool verification.
 
 ## Sample Workspace Layout
 
