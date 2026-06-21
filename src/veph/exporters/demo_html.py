@@ -205,9 +205,9 @@ def _export_spec_review_html(model: MbdModelIR) -> str:
             '  <main class="shell compact-shell">',
             '    <section class="hero compact-hero">',
             '      <div class="hero-copy">',
-            "        <p>仕様から生成したMBDの確認資料</p>",
+            "        <p>Spec-first MBD review</p>",
             f"        <h1>{escape(model.component.name)} MBDレビュー</h1>",
-            "        <span>仕様意図、状態遷移、生成MBD、未解決QAだけを並べています。ツール別成果物は補助資料です。</span>",
+            "        <span>まず一致/差分/未決だけを確認します。詳細証跡は補助資料です。</span>",
             "      </div>",
             '      <div class="hero-facts" aria-label="model facts">',
             f"        <div><strong>{len(model.ports)}</strong><span>ポート</span></div>",
@@ -256,21 +256,23 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
     generated_initial = _ordered_states(model.transitions)[0] if model.transitions else ""
     initial_status = "一致" if initial == generated_initial else "要確認"
     scenario = ", ".join(f"{name} ({report})" for name, report in spec["scenarios"]) or "未定義"
+    review_status = _one_minute_status(initial_status, verification)
     return "\n".join(
         [
             '    <section class="panel spec-first-review">',
             "      <h2>仕様 vs 生成MBD</h2>",
             "      <div class=\"review-badges\">",
-            f"        <span>仕様: <strong>{escape(spec['source'])}</strong></span>",
+            f"        <span>判定: <strong>{escape(review_status)}</strong></span>",
             f"        <span>初期状態: <strong>{escape(initial)}</strong> / 生成 <strong>{escape(generated_initial)}</strong> ({escape(initial_status)})</span>",
             f"        <span>シナリオ証跡: <strong>{escape(scenario)}</strong></span>",
             "      </div>",
+            _one_minute_review_html(model, spec, verification, initial_status),
             _spec_verification_summary_html(verification),
             "      <h3>要求ごとの確認</h3>",
-            "      <table class=\"review-table\">",
-            "        <thead><tr><th>要求</th><th>仕様意図</th><th>生成MBDの証跡</th><th>シナリオ</th><th>判定</th></tr></thead>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>",
             "        <tbody>",
-            flow_or_empty(intent_rows, colspan=5),
+            flow_or_empty(intent_rows, colspan=4),
             "        </tbody>",
             "      </table>",
             "      <h3>状態図の比較</h3>",
@@ -286,10 +288,10 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
             ),
             "      </div>",
             "      <h3>遷移ごとの確認</h3>",
-            "      <table class=\"review-table\">",
-            "        <thead><tr><th>仕様の遷移</th><th>生成された遷移</th><th>生成された動作</th><th>トレース</th><th>判定</th></tr></thead>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>",
             "        <tbody>",
-            flow_or_empty(transition_rows, colspan=5),
+            flow_or_empty(transition_rows, colspan=4),
             "        </tbody>",
             "      </table>",
             "      <h3>未解決QA</h3>",
@@ -309,6 +311,53 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
             "    </section>",
         ]
     )
+
+
+def _one_minute_status(initial_status: str, verification: list[dict[str, object]]) -> str:
+    if initial_status != "一致":
+        return "要確認"
+    if not verification:
+        return "要確認"
+    if any(str(row.get("status", "")) != "PASS" for row in verification):
+        return "要確認"
+    return "PASS"
+
+
+def _one_minute_review_html(
+    model: MbdModelIR,
+    spec: dict[str, object],
+    verification: list[dict[str, object]],
+    initial_status: str,
+) -> str:
+    transition_count = len(
+        [transition for transition in spec["transitions"] if transition["source"] != "[*]"]  # type: ignore[index]
+    )
+    generated_count = len(model.transitions)
+    scenario_summary = _verification_compact_summary(verification)
+    open_count = len(spec["open_questions"])  # type: ignore[arg-type]
+    unsupported_count = len(spec["unsupported"])  # type: ignore[arg-type]
+    return "\n".join(
+        [
+            "      <h3>1分レビュー</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>観点</th><th>見るもの</th><th>結果</th></tr></thead>",
+            "        <tbody>",
+            f"          <tr><td>初期状態</td><td>仕様と生成MBD</td><td>{escape(initial_status)}</td></tr>",
+            f"          <tr><td>遷移</td><td>{transition_count}件の仕様遷移</td><td>生成 {generated_count}件</td></tr>",
+            f"          <tr><td>Harness</td><td>preview evidence</td><td>{escape(scenario_summary)}</td></tr>",
+            f"          <tr><td>未決</td><td>QA / 対象外</td><td>{open_count}件 / {unsupported_count}件</td></tr>",
+            "        </tbody>",
+            "      </table>",
+        ]
+    )
+
+
+def _verification_compact_summary(verification: list[dict[str, object]]) -> str:
+    if not verification:
+        return "未定義"
+    statuses = sorted({str(row.get("status", "未確認")) for row in verification})
+    steps = sum(int(str(row.get("steps") or "0")) for row in verification)
+    return f"{'/'.join(statuses)} / {steps} step"
 
 
 def _spec_review_data(model: MbdModelIR) -> dict[str, object] | None:
@@ -359,7 +408,7 @@ def _spec_review_footer(model: MbdModelIR) -> str:
         [
             '    <section class="panel policy">',
             "      <h2>確認範囲</h2>",
-            f"      <p>このHTMLは <code>{escape(model.source_path.name)}</code> から生成したレビュー資料です。Python実行はプレビュー用途で、正式な検証は生成されたSCXML、Simulink/Stateflow向け成果物、Modelica/FMI向け成果物を既存MBD環境へ渡して行います。</p>",
+            f"      <p><code>{escape(model.source_path.name)}</code> 由来のレビュー資料です。Python/Harnessはpreview-only、正式検証は外部MBD環境です。</p>",
             "    </section>",
         ]
     )
@@ -397,16 +446,16 @@ def _parse_trace_intent_line(text: str) -> dict[str, str]:
 def _spec_intent_row(model: MbdModelIR, spec: dict[str, object], item: dict[str, str]) -> str:
     requirement = item["requirement"]
     evidence_items = _ir_elements_for_ref(model, requirement)
-    evidence = _review_evidence_summary(evidence_items) or "Missing generated MBD evidence"
+    evidence = _review_evidence_summary(evidence_items) or "MBD証跡なし"
     scenario = ", ".join(_ir_scenarios_for_ref(model, requirement)) or "Missing scenario evidence"
-    status = "一致" if evidence != "Missing generated MBD evidence" and scenario != "Missing scenario evidence" else "要確認"
+    status = "一致" if evidence != "MBD証跡なし" and scenario != "Missing scenario evidence" else "要確認"
     intent = _ja_requirement_summary(spec, requirement) or item["text"]
+    mbd_and_scenario = f"{evidence} / {scenario}" if scenario != "Missing scenario evidence" else evidence
     return (
         "          <tr>"
         f"<td><code>{escape(requirement)}</code></td>"
         f"<td>{escape(intent)}</td>"
-        f"<td>{escape(evidence)}</td>"
-        f"<td>{escape(scenario)}</td>"
+        f"<td>{escape(mbd_and_scenario)}</td>"
         f"<td>{escape(status)}</td>"
         "</tr>"
     )
@@ -414,19 +463,13 @@ def _spec_intent_row(model: MbdModelIR, spec: dict[str, object], item: dict[str,
 
 def _review_evidence_summary(elements: list[str]) -> str:
     controls = [element.removeprefix("control:") for element in elements if element.startswith("control:")]
-    functions = [element.removeprefix("function:") for element in elements if element.startswith("function:")]
-    flows = [element for element in elements if element.startswith("flow:")]
-    harnesses = [element.removeprefix("harness:") for element in elements if element.startswith("harness:")]
-    parts: list[str] = []
     if controls:
-        parts.append(f"制御: {', '.join(controls)}")
-    if functions:
-        parts.append(f"機能: {', '.join(functions)}")
-    if flows:
-        parts.append(f"信号線: {len(flows)}件")
-    if harnesses:
-        parts.append(f"Harness: {', '.join(harnesses)}")
-    return " / ".join(parts)
+        return ", ".join(controls)
+    if any(element.startswith("function:") for element in elements):
+        return "MBD要素あり"
+    if elements:
+        return "補助証跡あり"
+    return ""
 
 
 def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, str]) -> str:
@@ -438,9 +481,8 @@ def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, s
         status = "一致" if target == generated_initial else "要確認"
         return (
             "          <tr>"
-            f"<td><code>[*] -> {escape(target)}</code> / {escape(condition)}</td>"
-            f"<td>生成初期状態: <code>{escape(generated_initial)}</code></td>"
-            "<td>初期状態</td>"
+            f"<td><code>[*] -> {escape(target)}</code></td>"
+            f"<td>生成初期状態 <code>{escape(generated_initial)}</code></td>"
             "<td>仕様構造</td>"
             f"<td>{escape(status)}</td>"
             "</tr>"
@@ -464,11 +506,11 @@ def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, s
     actions = _control_actions(rule)
     trace = ", ".join(rule.trace) if rule is not None and rule.trace else "Missing trace"
     status = "一致" if transition is not None and rule is not None and rule.trace else "要確認"
+    generated_summary = f"{generated} / {actions}" if transition is not None else generated
     return (
         "          <tr>"
         f"<td><code>{escape(source)} -> {escape(target)}</code> / {escape(condition)}</td>"
-        f"<td>{escape(generated)}</td>"
-        f"<td>{escape(actions)}</td>"
+        f"<td>{escape(generated_summary)}</td>"
         f"<td>{escape(trace)}</td>"
         f"<td>{escape(status)}</td>"
         "</tr>"

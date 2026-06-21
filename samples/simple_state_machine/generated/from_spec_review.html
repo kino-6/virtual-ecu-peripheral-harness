@@ -347,9 +347,9 @@
   <main class="shell compact-shell">
     <section class="hero compact-hero">
       <div class="hero-copy">
-        <p>仕様から生成したMBDの確認資料</p>
+        <p>Spec-first MBD review</p>
         <h1>ToyStateMachine MBDレビュー</h1>
-        <span>仕様意図、状態遷移、生成MBD、未解決QAだけを並べています。ツール別成果物は補助資料です。</span>
+        <span>まず一致/差分/未決だけを確認します。詳細証跡は補助資料です。</span>
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>5</strong><span>ポート</span></div>
@@ -361,13 +361,23 @@
     <section class="panel spec-first-review">
       <h2>仕様 vs 生成MBD</h2>
       <div class="review-badges">
-        <span>仕様: <strong>samples/simple_state_machine/spec.md</strong></span>
+        <span>判定: <strong>PASS</strong></span>
         <span>初期状態: <strong>IDLE</strong> / 生成 <strong>IDLE</strong> (一致)</span>
         <span>シナリオ証跡: <strong>full_cycle (reports/full_cycle.md)</strong></span>
       </div>
+      <h3>1分レビュー</h3>
+      <table class="review-table compact">
+        <thead><tr><th>観点</th><th>見るもの</th><th>結果</th></tr></thead>
+        <tbody>
+          <tr><td>初期状態</td><td>仕様と生成MBD</td><td>一致</td></tr>
+          <tr><td>遷移</td><td>3件の仕様遷移</td><td>生成 3件</td></tr>
+          <tr><td>Harness</td><td>preview evidence</td><td>PASS / 3 step</td></tr>
+          <tr><td>未決</td><td>QA / 対象外</td><td>1件 / 0件</td></tr>
+        </tbody>
+      </table>
       <section class="verification-summary">
         <h3>Harness検証結果</h3>
-        <p>Harness is a preview evidence layer. Harnessはscenario stimulus、virtual IC/HAL boundary、observed behavior、report evidenceを示します。制御判断はMBD source側の責務です。</p>
+        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
         <table class="review-table compact">
           <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>
           <tbody>
@@ -376,13 +386,13 @@
         </table>
       </section>
       <h3>要求ごとの確認</h3>
-      <table class="review-table">
-        <thead><tr><th>要求</th><th>仕様意図</th><th>生成MBDの証跡</th><th>シナリオ</th><th>判定</th></tr></thead>
+      <table class="review-table compact">
+        <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>
         <tbody>
-          <tr><td><code>SM-001</code></td><td>IDLE -&gt; RUNNING。出力/状態更新: busy=true, complete=false。</td><td>制御: idle_to_running / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
-          <tr><td><code>SM-002</code></td><td>RUNNING -&gt; DONE。出力/状態更新: busy=false, complete=true。</td><td>制御: running_to_done / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
-          <tr><td><code>SM-003</code></td><td>DONE -&gt; IDLE。出力/状態更新: busy=false, complete=false。</td><td>制御: done_to_idle / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
-          <tr><td><code>SM-004</code></td><td>レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。</td><td>制御: idle_to_running, running_to_done, done_to_idle / 機能: ToyStateController / 信号線: 2件 / Harness: ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-001</code></td><td>IDLE -&gt; RUNNING。出力/状態更新: busy=true, complete=false。</td><td>idle_to_running / full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-002</code></td><td>RUNNING -&gt; DONE。出力/状態更新: busy=false, complete=true。</td><td>running_to_done / full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-003</code></td><td>DONE -&gt; IDLE。出力/状態更新: busy=false, complete=false。</td><td>done_to_idle / full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-004</code></td><td>レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。</td><td>idle_to_running, running_to_done, done_to_idle / full_cycle</td><td>一致</td></tr>
         </tbody>
       </table>
       <h3>状態図の比較</h3>
@@ -439,13 +449,13 @@
         </div>
       </div>
       <h3>遷移ごとの確認</h3>
-      <table class="review-table">
-        <thead><tr><th>仕様の遷移</th><th>生成された遷移</th><th>生成された動作</th><th>トレース</th><th>判定</th></tr></thead>
+      <table class="review-table compact">
+        <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>
         <tbody>
-          <tr><td><code>[*] -> IDLE</code> / initial</td><td>生成初期状態: <code>IDLE</code></td><td>初期状態</td><td>仕様構造</td><td>一致</td></tr>
-          <tr><td><code>IDLE -> RUNNING</code> / startCommand == true</td><td>IDLE -&gt; RUNNING / startCommand == true</td><td>state=RUNNING, busy=true, complete=false</td><td>SM-001, SM-004</td><td>一致</td></tr>
-          <tr><td><code>RUNNING -> DONE</code> / finishCommand == true</td><td>RUNNING -&gt; DONE / finishCommand == true</td><td>state=DONE, busy=false, complete=true</td><td>SM-002, SM-004</td><td>一致</td></tr>
-          <tr><td><code>DONE -> IDLE</code> / resetCommand == true</td><td>DONE -&gt; IDLE / resetCommand == true</td><td>state=IDLE, busy=false, complete=false</td><td>SM-003, SM-004</td><td>一致</td></tr>
+          <tr><td><code>[*] -> IDLE</code></td><td>生成初期状態 <code>IDLE</code></td><td>仕様構造</td><td>一致</td></tr>
+          <tr><td><code>IDLE -> RUNNING</code> / startCommand == true</td><td>IDLE -&gt; RUNNING / startCommand == true / state=RUNNING, busy=true, complete=false</td><td>SM-001, SM-004</td><td>一致</td></tr>
+          <tr><td><code>RUNNING -> DONE</code> / finishCommand == true</td><td>RUNNING -&gt; DONE / finishCommand == true / state=DONE, busy=false, complete=true</td><td>SM-002, SM-004</td><td>一致</td></tr>
+          <tr><td><code>DONE -> IDLE</code> / resetCommand == true</td><td>DONE -&gt; IDLE / resetCommand == true / state=IDLE, busy=false, complete=false</td><td>SM-003, SM-004</td><td>一致</td></tr>
         </tbody>
       </table>
       <h3>未解決QA</h3>
@@ -465,7 +475,7 @@
     </section>
     <section class="panel policy">
       <h2>確認範囲</h2>
-      <p>このHTMLは <code>from_spec.model.mbd.md</code> から生成したレビュー資料です。Python実行はプレビュー用途で、正式な検証は生成されたSCXML、Simulink/Stateflow向け成果物、Modelica/FMI向け成果物を既存MBD環境へ渡して行います。</p>
+      <p><code>from_spec.model.mbd.md</code> 由来のレビュー資料です。Python/Harnessはpreview-only、正式検証は外部MBD環境です。</p>
     </section>
   </main>
 </body>

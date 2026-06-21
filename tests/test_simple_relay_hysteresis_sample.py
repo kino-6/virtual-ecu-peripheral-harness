@@ -120,12 +120,17 @@ def test_simple_relay_hysteresis_spec_generates_reviewable_mbd():
     assert "parameter onThreshold: count = 70" in generated
     assert "port in level: count = 0" in generated
     assert "仕様 vs 生成MBD" in review_html
+    assert "1分レビュー" in review_html
     assert "Harness検証結果" in review_html
     assert "<strong>PASS</strong>" in review_html
     assert "最終状態=OFF, active=False" in review_html
     assert "OFF -&gt; ON" in review_html
     assert "ON -&gt; OFF" in review_html
     assert "ガードが偽の場合" in review_html
+    assert "off_to_on" in review_html
+    assert "機能:" not in review_html
+    assert "信号線:" not in review_html
+    assert "Harness:" not in review_html
 
 
 def test_simple_relay_hysteresis_export_sample_cli_succeeds():

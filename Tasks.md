@@ -65,6 +65,29 @@ Verification:
 - [x] Full `pytest` passes.
 - [x] `git diff --check` passes.
 
+## Phase 42: Compact Spec Review HTML
+
+Acceptance gates:
+
+- [x] `from_spec_review.html` starts with a compact one-minute review path,
+      not dense evidence text.
+- [x] Requirement rows keep requirement, intended behavior, concise MBD/scenario
+      evidence, and status, but omit long flow/function/Harness evidence
+      strings from the first read.
+- [x] Transition rows keep initial state, guard, action, trace, and status in a
+      compact table.
+- [x] Harness wording stays present but short; detailed Harness evidence remains
+      in reports and the full review artifact.
+- [x] Tests reject reintroducing long generated evidence summaries into
+      spec-first review HTML.
+
+Verification:
+
+- [x] Regenerate affected sample review artifacts from source.
+- [x] Focused spec-review sample tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Current Size Baseline
 
 - [x] `src/veph/exporters/demo_html.py`: 2438 lines.

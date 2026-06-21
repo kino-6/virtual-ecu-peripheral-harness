@@ -32,7 +32,7 @@ def spec_verification_summary_html(rows: list[dict[str, object]]) -> str:
             [
                 '      <section class="verification-summary">',
                 "        <h3>Harness検証結果</h3>",
-                "        <p>Harness is a preview evidence layer. Harnessで観測した結果であり、正式検証は外部MBD/product-test infrastructureで行います。</p>",
+                "        <p>Harnessはpreview証跡です。正式検証は外部MBD環境で行います。</p>",
                 "        <p>検証シナリオは未定義です。</p>",
                 "      </section>",
             ]
@@ -42,7 +42,7 @@ def spec_verification_summary_html(rows: list[dict[str, object]]) -> str:
         [
             '      <section class="verification-summary">',
             "        <h3>Harness検証結果</h3>",
-            "        <p>Harness is a preview evidence layer. Harnessはscenario stimulus、virtual IC/HAL boundary、observed behavior、report evidenceを示します。制御判断はMBD source側の責務です。</p>",
+            "        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>",
             "        <table class=\"review-table compact\">",
             "          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>",
             "          <tbody>",

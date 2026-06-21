@@ -186,6 +186,7 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
         "complete": "false",
     }
     assert "仕様 vs 生成MBD" in review_html
+    assert "1分レビュー" in review_html
     assert "Harness検証結果" in review_html
     assert "<strong>PASS</strong>" in review_html
     assert "<td>IDLE</td><td>3</td>" in review_html
@@ -204,8 +205,11 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
     assert "対象外" in review_html
     assert "シナリオ" in review_html
     assert "reports/full_cycle.md" in review_html
-    assert "制御: idle_to_running" in review_html
+    assert "idle_to_running" in review_html
     assert "SM-001, SM-004" in review_html
+    assert "機能:" not in review_html
+    assert "信号線:" not in review_html
+    assert "Harness:" not in review_html
     assert "Review Evidence Map" not in review_html
     assert "Functional Decomposition" not in review_html
     assert "Virtual Sensor" not in review_html
