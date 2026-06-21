@@ -1,0 +1,68 @@
+flowchart LR
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_off_to_on{"level >= onThreshold?"}
+  action_off_to_on["State ON<br/>Output active = true"]
+  input_level["Input Port: level"]
+  input_level --> decision_off_to_on
+  parameter_onThreshold["Parameter: onThreshold"]
+  parameter_onThreshold --> decision_off_to_on
+  decision_off_to_on -->|"true / off_to_on"| action_off_to_on
+  decision_on_to_off{"level <= offThreshold?"}
+  action_on_to_off["State OFF<br/>Output active = false"]
+  input_level["Input Port: level"]
+  input_level --> decision_on_to_off
+  parameter_offThreshold["Parameter: offThreshold"]
+  parameter_offThreshold --> decision_on_to_off
+  decision_on_to_off -->|"true / on_to_off"| action_on_to_off
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
+  ToyLevelSource_level["ToyLevelSource.level"]
+  ToyRelayController_level["ToyRelayController.level"]
+  %% Trace: RLY-001, RLY-002, RLY-003, RLY-004
+  %% ToyLevelSource_level --> ToyRelayController_level
+  ToyLevelSource_level -->|"scenario input"| ToyRelayController_level
+  ToyRelayHysteresis_onThreshold["ToyRelayHysteresis.onThreshold"]
+  ToyRelayController_onThreshold["ToyRelayController.onThreshold"]
+  %% Trace: RLY-001, RLY-004
+  %% ToyRelayHysteresis_onThreshold --> ToyRelayController_onThreshold
+  ToyRelayHysteresis_onThreshold -->|"switch-on threshold"| ToyRelayController_onThreshold
+  ToyRelayHysteresis_offThreshold["ToyRelayHysteresis.offThreshold"]
+  ToyRelayController_offThreshold["ToyRelayController.offThreshold"]
+  %% Trace: RLY-002, RLY-004
+  %% ToyRelayHysteresis_offThreshold --> ToyRelayController_offThreshold
+  ToyRelayHysteresis_offThreshold -->|"switch-off threshold"| ToyRelayController_offThreshold
+  ToyRelayController_active["ToyRelayController.active"]
+  ToyRelayHysteresis_active["ToyRelayHysteresis.active"]
+  %% Trace: RLY-001, RLY-002, RLY-003
+  %% ToyRelayController_active --> ToyRelayHysteresis_active
+  ToyRelayController_active -->|"relay output"| ToyRelayHysteresis_active
+  ToyRelayHysteresis_active["ToyRelayHysteresis.active"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: RLY-005
+  %% ToyRelayHysteresis_active --> ScenarioReport_observedBehavior
+  ToyRelayHysteresis_active -->|"reported active output"| ScenarioReport_observedBehavior
+  function_ToyRelayController["ToyRelayController<br/>Own OFF/ON relay hysteresis and map threshold-crossing transitions to active output"]
+  %% Function Trace: RLY-001, RLY-002, RLY-003, RLY-004, RLY-005
+  state["state"]
+  function_ToyRelayController -->|"owns"| state
+  active["active"]
+  function_ToyRelayController -->|"owns"| active
+  rule_off_to_on{"priority 10<br/>rule off_to_on<br/>owner ToyRelayController<br/>from OFF"}
+  %% Trace: RLY-001, RLY-003, RLY-005
+  %% Scenarios: hysteresis_cycle
+  state["state"]
+  rule_off_to_on -->|"level >= onThreshold"| state
+  active["active"]
+  rule_off_to_on -->|"level >= onThreshold"| active
+  rule_on_to_off{"priority 20<br/>rule on_to_off<br/>owner ToyRelayController<br/>from ON"}
+  %% Trace: RLY-002, RLY-003, RLY-005
+  %% Scenarios: hysteresis_cycle
+  state["state"]
+  rule_on_to_off -->|"level <= offThreshold"| state
+  active["active"]
+  rule_on_to_off -->|"level <= offThreshold"| active
+  ToyLevelSource["ToyLevelSource<br/>virtual_ic"]
+  %% Trace: RLY-001, RLY-002, RLY-003, RLY-004
+  ToyRelayHysteresis["ToyRelayHysteresis<br/>hal"]
+  %% Trace: RLY-001, RLY-002, RLY-003, RLY-004, RLY-005

@@ -1,0 +1,145 @@
+{
+  "component": "ToyRelayHysteresis",
+  "controlRules": [
+    {
+      "actions": {
+        "active": "true",
+        "state": "ON"
+      },
+      "condition": "level >= onThreshold",
+      "name": "off_to_on",
+      "owner": "ToyRelayController",
+      "priority": 10,
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "stateScope": "OFF",
+      "trace": [
+        "RLY-001",
+        "RLY-003",
+        "RLY-005"
+      ]
+    },
+    {
+      "actions": {
+        "active": "false",
+        "state": "OFF"
+      },
+      "condition": "level <= offThreshold",
+      "name": "on_to_off",
+      "owner": "ToyRelayController",
+      "priority": 20,
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "stateScope": "ON",
+      "trace": [
+        "RLY-002",
+        "RLY-003",
+        "RLY-005"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "level",
+        "onThreshold",
+        "offThreshold"
+      ],
+      "name": "ToyRelayController",
+      "outputs": [
+        "state",
+        "active"
+      ],
+      "owns": [
+        "OFF",
+        "ON",
+        "active"
+      ],
+      "responsibility": "Own OFF/ON relay hysteresis and map threshold-crossing transitions to active output",
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004",
+        "RLY-005"
+      ]
+    }
+  ],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyLevelSource",
+      "role": "source",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyRelayHysteresis",
+      "role": "controller",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004",
+        "RLY-005"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "0",
+      "name": "level",
+      "type": "count"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "false",
+      "name": "active",
+      "type": "bool"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "70",
+      "name": "onThreshold",
+      "type": "count"
+    },
+    {
+      "default": "30",
+      "name": "offThreshold",
+      "type": "count"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "RLY-001",
+    "RLY-002",
+    "RLY-003",
+    "RLY-004",
+    "RLY-005"
+  ],
+  "source": "samples/simple_relay_hysteresis/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "OFF",
+    "ON"
+  ]
+}

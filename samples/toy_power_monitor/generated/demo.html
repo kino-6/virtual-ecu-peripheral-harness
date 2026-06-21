@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ToyPowerMonitorIC Markup-to-MBD Demo</title>
+  <title>ToyPowerMonitorIC MBD Review Artifact</title>
   <style>
 :root {
       color-scheme: light;
@@ -92,6 +92,125 @@
       padding: 22px;
       margin-bottom: 18px;
       overflow-x: auto;
+    }
+    .state-review {
+      border-color: #9fb2b7;
+      background: #fbfdfd;
+    }
+    .spec-first-review {
+      border-color: #7aa0a7;
+      background: #fbfdfd;
+    }
+    .review-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      min-width: 0;
+    }
+    .evidence-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .mini-state-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .initial-dot {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+    .review-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .review-badges span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 11px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .state-playback {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+      gap: 14px;
+      margin: 16px 0;
+      align-items: stretch;
+    }
+    .playback-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+    .playback-status span {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .playback-status strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .playback-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+    .playback-buttons button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .playback-buttons button:hover, .playback-buttons button.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .playback-buttons span, .playback-buttons small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .review-table.compact {
+      font-size: 13px;
+    }
+    .review-notes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .review-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
     }
     .grid {
       display: grid;
@@ -217,6 +336,7 @@
     .policy h2 { color: var(--warn); }
     @media (max-width: 840px) {
       .hero, .grid { grid-template-columns: 1fr; }
+      .state-playback, .review-notes, .review-compare { grid-template-columns: 1fr; }
       .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
       .hero-copy, .panel { padding: 16px; }
       h1 { font-size: 34px; }
@@ -227,9 +347,9 @@
   <main class="shell">
     <section class="hero">
       <div class="hero-copy">
-        <p>Author in text. Verify in MBD tools.</p>
-        <h1>ToyPowerMonitorIC Markup-to-MBD Demo</h1>
-        <span>Generated from Mermaid-like Markdown markup. This is a preview, not the verification backend.</span>
+        <p>Author in text. Review against the specification.</p>
+        <h1>ToyPowerMonitorIC MBD Review Artifact</h1>
+        <span>Generated from Mermaid-like Markdown markup. Use this page to ask whether the MBD matches the specification; external MBD tools remain the verification backend.</span>
       </div>
       <div class="hero-facts" aria-label="model facts">
         <div><strong>3</strong><span>ports</span></div>
@@ -237,6 +357,175 @@
         <div><strong>0</strong><span>control rules</span></div>
         <div><strong>0</strong><span>harness boundaries</span></div>
       </div>
+    </section>
+
+    <section class="panel review-gate">
+      <h2>Human Review Question</h2>
+      <p><strong>Does the generated MBD represent the specification as written?</strong> Review this artifact from top to bottom before opening tool-specific handoff files.</p>
+      <table>
+        <thead><tr><th>Concern</th><th>Generated evidence in this artifact</th></tr></thead>
+        <tbody>
+          <tr><td>Specification fidelity</td><td>0 requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>
+          <tr><td>Model behavior</td><td>0 priority-ordered control rule(s); state machine is present.</td></tr>
+          <tr><td>Scenario evidence</td><td>0 declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>
+          <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Review Evidence Map</h2>
+      <p>This page is organized around the reviewer question, not around file formats. Tool-specific artifacts are supporting evidence.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>Evidence source</th><th>What the reviewer checks</th></tr></thead>
+        <tbody>
+          <tr><td>Specification intent</td><td>sample spec / requirement IDs</td><td>Check that names, states, inputs, outputs, and expected behavior match the human-readable spec.</td></tr>
+          <tr><td>Functional decomposition</td><td>0 function(s)</td><td>Check responsibility allocation before inspecting detailed logic.</td></tr>
+          <tr><td>Interface and data flow</td><td>3 port(s), 6 flow(s)</td><td>Check signal direction and harness/report boundaries.</td></tr>
+          <tr><td>State/control semantics</td><td>4 transition(s), 0 control rule(s)</td><td>Check guard conditions, state scope, actions, priority, and unsupported assumptions.</td></tr>
+          <tr><td>Scenario/report evidence</td><td>scenario links on functions and controls</td><td>Check expected-vs-observed behavior outside this static page in generated reports.</td></tr>
+          <tr><td>Tool handoff</td><td>Simulink, SCXML, Modelica, FMI metadata</td><td>Check that semantics are structurally exported where supported, not only preserved as comments.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel state-review" data-state-machine-review>
+      <h2>State Machine Transition Review</h2>
+      <p>This is the state-machine review surface. Review the transition table first, then use the diagram as supporting evidence.</p>
+      <table class="review-table compact">
+        <thead><tr><th>Review basis</th><th>What this artifact exposes</th></tr></thead>
+        <tbody>
+          <tr><td>Finite modes and initial/default state</td><td>Initial state, state inventory, and outgoing transition coverage.</td></tr>
+          <tr><td>Trigger / guard / effect semantics</td><td>Each transition row separates guard/event text from state and output actions.</td></tr>
+          <tr><td>Transition-system completeness</td><td>Transition matrix and guard diagnostics expose missing else/self-hold assumptions and multiple outgoing transitions.</td></tr>
+          <tr><td>Executable handoff boundary</td><td>SCXML/Stateflow-oriented handoff is generated separately; this page is the human review surface.</td></tr>
+          <tr><td>Scenario-based validation</td><td>Interactive step buttons let reviewers walk the expected path and compare state/output effects.</td></tr>
+        </tbody>
+      </table>
+      <div class="review-badges">
+        <span>Initial state: <strong data-current-state>RESET</strong></span>
+        <span>4 states</span>
+        <span>4 transitions</span>
+        <span>0 control rules</span>
+      </div>
+      <div class="state-playback">
+        <div class="playback-status">
+          <span>Current outputs</span>
+          <strong data-current-outputs>ready=unset, fault=unset</strong>
+        </div>
+        <div class="playback-buttons">
+          <button type="button" data-step-index="0">RESET -&gt; INIT <span>powerOn</span><small>No matching control rule</small></button>
+          <button type="button" data-step-index="1">INIT -&gt; NORMAL <span>initSequenceOk</span><small>No matching control rule</small></button>
+          <button type="button" data-step-index="2">NORMAL -&gt; FAULT_LATCHED <span>voltage &lt; undervoltageThreshold</span><small>No matching control rule</small></button>
+          <button type="button" data-step-index="3">FAULT_LATCHED -&gt; RESET <span>clearFault</span><small>No matching control rule</small></button>
+          <button type="button" data-reset-state>Reset</button>
+        </div>
+      </div>
+      <h3>State Inventory</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Role</th><th>Incoming</th><th>Outgoing</th><th>Owned output effects</th><th>Review finding</th></tr></thead>
+        <tbody>
+          <tr><td><code>RESET</code></td><td>initial/default</td><td>1</td><td>1</td><td>none</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>INIT</code></td><td>reachable</td><td>1</td><td>1</td><td>none</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>NORMAL</code></td><td>reachable</td><td>1</td><td>1</td><td>none</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>FAULT_LATCHED</code></td><td>reachable</td><td>1</td><td>1</td><td>none</td><td>Declared path is reviewable.</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Table</h3>
+      <table class="review-table">
+        <thead><tr><th>Transition</th><th>Trigger / Guard</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>RESET -> INIT</code></td><td>powerOn</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>INIT -> NORMAL</code></td><td>initSequenceOk</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>NORMAL -> FAULT_LATCHED</code></td><td>voltage &lt; undervoltageThreshold</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>FAULT_LATCHED -> RESET</code></td><td>clearFault</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Matrix</h3>
+      <table class="review-table compact transition-matrix">
+        <thead><tr><th>Source \ Target</th><th>RESET</th><th>INIT</th><th>NORMAL</th><th>FAULT_LATCHED</th></tr></thead>
+        <tbody>
+          <tr><th>RESET</th><td>-</td><td>powerOn / No matching control rule</td><td>-</td><td>-</td></tr>
+          <tr><th>INIT</th><td>-</td><td>-</td><td>initSequenceOk / No matching control rule</td><td>-</td></tr>
+          <tr><th>NORMAL</th><td>-</td><td>-</td><td>-</td><td>voltage &lt; undervoltageThreshold / No matching control rule</td></tr>
+          <tr><th>FAULT_LATCHED</th><td>clearFault / No matching control rule</td><td>-</td><td>-</td><td>-</td></tr>
+        </tbody>
+      </table>
+      <h3>Guard Diagnostics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Outgoing guards</th><th>Determinism / completeness check</th><th>Required reviewer decision</th></tr></thead>
+        <tbody>
+          <tr><td><code>RESET</code></td><td>powerOn</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+          <tr><td><code>INIT</code></td><td>initSequenceOk</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+          <tr><td><code>NORMAL</code></td><td>voltage &lt; undervoltageThreshold</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+          <tr><td><code>FAULT_LATCHED</code></td><td>clearFault</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+        </tbody>
+      </table>
+      <h3>Action Semantics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Action class</th><th>Current support</th><th>Review implication</th></tr></thead>
+        <tbody>
+          <tr><td>Transition action</td><td>Supported through <code>mbd-control</code> actions on the selected transition.</td><td>State and output effects must appear in the transition row.</td></tr>
+          <tr><td>Entry / during / exit action</td><td>Unsupported in this preview subset.</td><td>Do not infer hidden Stateflow-style entry, during, or exit behavior.</td></tr>
+          <tr><td>Output timing</td><td>Outputs are reviewed as transition effects in the discrete scenario step.</td><td>Treat this as preview semantics; tool-backed timing verification is external.</td></tr>
+        </tbody>
+      </table>
+      <h3>Scenario Walk-Through</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Step</th><th>Expected source state</th><th>Input / event</th><th>Selected transition</th><th>Expected target state</th><th>Expected output effect</th><th>Trace</th><th>Scenario</th><th>Report evidence</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>RESET</code></td><td>powerOn</td><td>missing rule</td><td><code>INIT</code></td><td>No matching control rule</td><td>Missing trace</td><td>Missing scenario</td><td>Missing report link</td></tr>
+          <tr><td>2</td><td><code>INIT</code></td><td>initSequenceOk</td><td>missing rule</td><td><code>NORMAL</code></td><td>No matching control rule</td><td>Missing trace</td><td>Missing scenario</td><td>Missing report link</td></tr>
+          <tr><td>3</td><td><code>NORMAL</code></td><td>voltage &lt; undervoltageThreshold</td><td>missing rule</td><td><code>FAULT_LATCHED</code></td><td>No matching control rule</td><td>Missing trace</td><td>Missing scenario</td><td>Missing report link</td></tr>
+          <tr><td>4</td><td><code>FAULT_LATCHED</code></td><td>clearFault</td><td>missing rule</td><td><code>RESET</code></td><td>No matching control rule</td><td>Missing trace</td><td>Missing scenario</td><td>Missing report link</td></tr>
+        </tbody>
+      </table>
+      <h3>Compact State Summary</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Allowed guard(s)</th><th>Output effect after transition</th></tr></thead>
+        <tbody>
+          <tr><td>RESET</td><td>powerOn</td><td>No action evidence</td></tr>
+          <tr><td>INIT</td><td>initSequenceOk</td><td>No action evidence</td></tr>
+          <tr><td>NORMAL</td><td>voltage &lt; undervoltageThreshold</td><td>No action evidence</td></tr>
+          <tr><td>FAULT_LATCHED</td><td>clearFault</td><td>No action evidence</td></tr>
+        </tbody>
+      </table>
+      <div class="review-notes">
+        <p><strong>Review gates:</strong> every state has an explicit outgoing rule for the intended path; every transition has one owning control rule; every effect is visible as state/output actions; every behavior row has requirement and scenario evidence.</p>
+        <p><strong>Unsupported in this slice:</strong> hierarchy, parallel states, history, time events, entry/exit/do actions, backtracking flowcharts, and multiple enabled outgoing transitions from the same state.</p>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Pipeline</h2>
+      <p>The reviewer follows the generated chain from requirements to MBD IR, handoff artifacts, preview C, harness scenarios, and reports.</p>
+      <svg class="diagram" viewBox="0 0 1180 230" role="img" aria-label="MBD review pipeline from requirements to generated artifacts">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <line x1="220" y1="111" x2="260" y2="111" class="ir-arrow"></line>
+        <line x1="440" y1="111" x2="480" y2="111" class="ir-arrow"></line>
+        <line x1="660" y1="111" x2="700" y2="111" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="69" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="163" class="ir-arrow"></line>
+        <rect x="40" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="140" y="106" text-anchor="middle" class="node-title">Requirements</text>
+        <text x="140" y="128" text-anchor="middle" class="node-note">IDs and intent</text>
+        <rect x="260" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="360" y="106" text-anchor="middle" class="node-title">Specification</text>
+        <text x="360" y="128" text-anchor="middle" class="node-note">demo assumptions</text>
+        <rect x="480" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="580" y="106" text-anchor="middle" class="node-title">MBD Source</text>
+        <text x="580" y="128" text-anchor="middle" class="node-note">model.mbd.md</text>
+        <rect x="700" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="800" y="106" text-anchor="middle" class="node-title">MBD IR</text>
+        <text x="800" y="128" text-anchor="middle" class="node-note">parsed semantics</text>
+        <rect x="920" y="34" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="64" text-anchor="middle" class="node-title">Handoff Artifacts</text>
+        <text x="1020" y="86" text-anchor="middle" class="node-note">MBD tools</text>
+        <rect x="920" y="128" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="158" text-anchor="middle" class="node-title">Harness Reports</text>
+        <text x="1020" y="180" text-anchor="middle" class="node-note">preview evidence</text>
+      </svg>
     </section>
 
 
@@ -319,15 +608,28 @@
         <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
         <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
         <text x="1021" y="68" text-anchor="middle" class="node-title small">ECU_App.control_task</text>
-        <text x="1021" y="88" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">External Endpoint</text>
         <rect x="906" y="116" width="230" height="54" rx="8" class="node"></rect>
         <text x="1021" y="138" text-anchor="middle" class="node-title small">ECU_App.diagnostics</text>
-        <text x="1021" y="158" text-anchor="middle" class="node-note">Virtual Actuator</text>
+        <text x="1021" y="158" text-anchor="middle" class="node-note">External Endpoint</text>
       </svg>
     </section>
     <section class="panel">
+      <h2>State Machine Review Package</h2>
+      <p>State-machine review needs the transition diagram plus a table of guards, actions, traces, scenarios, and execution assumptions. This table is generated from <code>mbd-state</code> and <code>mbd-control</code> together.</p>
+      <table>
+        <thead><tr><th>Transition</th><th>Guard/Event</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>RESET -> INIT</code></td><td>powerOn</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>INIT -> NORMAL</code></td><td>initSequenceOk</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>NORMAL -> FAULT_LATCHED</code></td><td>voltage &lt; undervoltageThreshold</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+          <tr><td><code>FAULT_LATCHED -> RESET</code></td><td>clearFault</td><td>No matching control rule</td><td>Missing action evidence</td><td>Missing trace</td><td>Missing scenario</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
       <h2>State Machine Diagram</h2>
-      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>
+      <p>States and transitions are parsed from <code>mbd-state</code>. Review this together with the State Machine Review Package above; SCXML/Stateflow-oriented files are generated handoff views.</p>
       <svg class="diagram" viewBox="0 0 1180 320" role="img" aria-label="State machine generated from mbd-state">
         <defs>
           <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
@@ -363,23 +665,19 @@
         </defs>
         <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
         <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
-        <text x="142" y="170" text-anchor="middle" class="node-note">test inputs</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test sequence</text>
         <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
-        <text x="386" y="148" text-anchor="middle" class="node-title">Virtual Sensor</text>
-        <text x="386" y="170" text-anchor="middle" class="node-note">virtual IC</text>
+        <text x="386" y="148" text-anchor="middle" class="node-title">Scenario Inputs</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">declared source</text>
         <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
         <text x="630" y="148" text-anchor="middle" class="node-title">ToyPowerMonitorIC</text>
-        <text x="630" y="170" text-anchor="middle" class="node-note">HAL controller</text>
-        <rect x="784" y="72" width="200" height="70" rx="8" class="node"></rect>
-        <text x="884" y="102" text-anchor="middle" class="node-title">Virtual Actuator</text>
-        <text x="884" y="124" text-anchor="middle" class="node-note">virtual IC</text>
-        <line x1="730" y1="153" x2="784" y2="107" class="ir-arrow"></line>
-        <rect x="1010" y="118" width="200" height="70" rx="8" class="node"></rect>
-        <text x="1110" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
-        <text x="1110" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">controller boundary</text>
+        <rect x="784" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="884" y="170" text-anchor="middle" class="node-note">evidence</text>
         <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
         <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
-        <line x1="984" y1="153" x2="1010" y2="153" class="ir-arrow"></line>
+        <line x1="730" y1="153" x2="784" y2="153" class="ir-arrow"></line>
       </svg>
     </section>
     <section class="panel">
@@ -450,5 +748,32 @@
       <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>
     </section>
   </main>
+  <script>
+    (() => {
+      const panel = document.querySelector('[data-state-machine-review]');
+      if (!panel) return;
+      const initialState = "RESET";
+      const initialOutputs = {"fault": "", "ready": ""};
+      const steps = [{"actions": {}, "condition": "powerOn", "outputs": {"fault": "", "ready": ""}, "source": "RESET", "state": "INIT", "target": "INIT"}, {"actions": {}, "condition": "initSequenceOk", "outputs": {"fault": "", "ready": ""}, "source": "INIT", "state": "NORMAL", "target": "NORMAL"}, {"actions": {}, "condition": "voltage < undervoltageThreshold", "outputs": {"fault": "", "ready": ""}, "source": "NORMAL", "state": "FAULT_LATCHED", "target": "FAULT_LATCHED"}, {"actions": {}, "condition": "clearFault", "outputs": {"fault": "", "ready": ""}, "source": "FAULT_LATCHED", "state": "RESET", "target": "RESET"}];
+      const stateTarget = panel.querySelector('[data-current-state]');
+      const outputsTarget = panel.querySelector('[data-current-outputs]');
+      const renderOutputs = (outputs) => Object.entries(outputs).map(([k, v]) => `${k}=${v}`).join(', ');
+      const setReviewState = (state, outputs) => {
+        stateTarget.textContent = state;
+        outputsTarget.textContent = renderOutputs(outputs);
+      };
+      panel.querySelectorAll('[data-step-index]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const step = steps[Number(button.dataset.stepIndex)];
+          setReviewState(step.state, step.outputs);
+          panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.toggle('active-step', item === button));
+        });
+      });
+      panel.querySelector('[data-reset-state]')?.addEventListener('click', () => {
+        setReviewState(initialState, initialOutputs);
+        panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.remove('active-step'));
+      });
+    })();
+  </script>
 </body>
 </html>

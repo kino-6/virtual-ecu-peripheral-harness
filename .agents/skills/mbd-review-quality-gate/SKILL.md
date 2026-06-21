@@ -45,19 +45,63 @@ Review in independent lanes before merging the result:
    - Reject visuals that are more complex than the behavior being reviewed.
    - Reject behavior that depends on hidden rule ordering.
 
-5. **Scenario evidence lane**
+5. **State-machine transition-system lane**
+   - Treat state-machine review as transition-system review, not diagram review.
+   - Lead with state inventory, initial/default state, transition table, trigger
+     or guard, effect/action, priority, trace, and scenario evidence.
+   - Add a transition matrix for source-state to target-state coverage.
+   - Check determinism and completeness: multiple enabled outgoing transitions,
+     missing else/self-hold assumptions, unreachable states, and terminal states.
+   - State action semantics explicitly: entry/during/exit actions, transition
+     actions, condition actions, and Mealy/Moore-like output timing. Reject
+     artifacts that hide this in a diagram label.
+   - Scenario walk-through must show expected source state, input/event, selected
+     transition, expected target state, output effect, trace, and report link.
+   - Reject if the artifact asks "does this match the Spec?" but does not show
+     the Spec intent, Spec state diagram, generated MBD state diagram, and
+     generated transition table close enough for direct comparison.
+
+6. **Scenario evidence lane**
    - Confirm reports separate model inputs, scenario steps, observed behavior,
      expected behavior, and pass/fail.
    - Reject pass/fail without expected behavior or requirement linkage.
 
-6. **Generated artifact boundary lane**
+7. **Generated artifact boundary lane**
    - Confirm Simulink `.m`, Modelica `.mo`, SCXML, Mermaid, PlantUML, FMI
      metadata, and preview C are regenerated outputs from `.mbd.md`.
    - Reject manual synchronization or production/certification wording.
 
+## Self-Review Hard Rejects
+
+Reject the artifact before showing it to the user when any of these are true:
+
+- The reviewer must open `Spec.md` separately and do a mental diff to decide
+  whether the MBD follows the spec.
+- The page is mostly a generated dump of pipelines, markup sections, or generic
+  tables instead of a curated review surface for the user's question.
+- A generated diagram introduces concepts not present in the spec, such as
+  generic sensors, actuators, plants, or harness nodes, without labeling them as
+  derived assumptions or open questions.
+- A state-machine spec has an initial/default state, but the review artifact
+  does not show it structurally in both the state review table and visual view.
+- Missing else/self-hold, unsupported timing, or other unresolved semantics are
+  buried in diagnostics instead of appearing as open review questions.
+- The artifact contains duplicate state/transition tables that dilute the main
+  review path.
+- A reviewer cannot answer the core question in about 30 seconds: spec intent,
+  generated MBD element, trace, scenario/report evidence, and unresolved QA.
+- A reviewer cannot form an initial accept/reject judgment in 30 seconds to
+  1 minute from the first viewport and the immediately following review block.
+- The first review block is text-heavy enough that the reviewer must read
+  paragraphs, scan long evidence strings, or scroll repeatedly before seeing
+  the spec intent, generated behavior, mismatch status, and open questions.
+- Dense trace details, generated element lists, or tool-handoff explanations
+  appear before the concise review verdict. Put those details behind a
+  secondary section or omit them from the human-first review artifact.
+
 ## Workflow
 
-1. Add or update `Tasks.md` gates for the six lanes.
+1. Add or update `Tasks.md` gates for the seven lanes.
 2. Run each lane independently. Use parallel tool calls for file reads and
    generated artifact checks when possible.
 3. Summarize lane findings as PASS/REJECT with file references.

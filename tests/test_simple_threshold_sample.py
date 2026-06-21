@@ -95,6 +95,10 @@ def test_simple_threshold_generated_visuals_match_spec_design():
     assert "sampleValue >= limit" in mermaid
     assert "sampleValue < limit" in mermaid
 
+    assert "MBD Review Artifact" in html
+    assert "Human Review Question" in html
+    assert "Review Evidence Map" in html
+    assert "Spec-Oriented Model Review Diagram" in html
     assert "Semantic MBD Block Diagram" in html
     assert "ToyInputSource.sampleValue" in html
     assert "Virtual Source" in html

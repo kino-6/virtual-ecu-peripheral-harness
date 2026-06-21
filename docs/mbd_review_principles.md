@@ -45,6 +45,31 @@ Review generated MBD artifacts in this order:
   PlantUML, FMI metadata, and preview C are generated outputs. Review source
   markup and regenerate artifacts instead of editing generated files.
 
+## Self-Review Reject Examples
+
+Reject a generated review artifact before showing it as ready when:
+
+- It asks whether the generated MBD matches `Spec.md`, but does not place the
+  spec intent, spec diagram, generated MBD diagram, and generated transition
+  table close enough for direct comparison.
+- It introduces concepts absent from the spec, such as generic sensors,
+  actuators, plants, or harness nodes, without explicitly marking them as open
+  assumptions.
+- It treats a state-machine diagram as sufficient evidence and fails to expose
+  the initial/default state, transition table, guard/effect/action semantics,
+  and scenario evidence.
+- It buries unresolved semantics such as implicit self-hold, else behavior,
+  timing, or unsupported entry/exit actions instead of listing them as review
+  questions.
+- It reads like a generated dump rather than a curated answer to the user's
+  review question.
+- A reviewer cannot make an initial accept/reject judgment in 30 seconds to
+  1 minute. The first viewport and immediately following review block shall show
+  the review verdict, spec intent, generated behavior, mismatch status, and open
+  questions without forcing long reading or repeated scrolling.
+- Dense trace lists, generated element paths, and tool-handoff explanations
+  appear before the concise human review summary.
+
 ## Source-Informed Rationale
 
 - MathWorks MAB/JMAAB guidance emphasizes common understanding for modelers and

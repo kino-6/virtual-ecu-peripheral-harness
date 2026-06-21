@@ -1,0 +1,63 @@
+flowchart LR
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  source_ToySelectorSource["ToySelectorSource"]
+  input_selectHigh["Input Port: selectHigh"]
+  parameter_parameter["Parameter: parameter"]
+  decision_select_high_value_select_low_value{"selectHigh == true?"}
+  action_select_high_value["Output selectedValue = highValue"]
+  action_select_low_value["Output selectedValue = lowValue"]
+  report_observed_behavior["ScenarioReport.observedBehavior"]
+  source_ToySelectorSource -->|"selectHigh"| input_selectHigh
+  input_selectHigh --> decision_select_high_value_select_low_value
+  parameter_parameter --> decision_select_high_value_select_low_value
+  decision_select_high_value_select_low_value -->|"true"| action_select_high_value
+  decision_select_high_value_select_low_value -->|"false"| action_select_low_value
+  action_select_high_value --> report_observed_behavior
+  action_select_low_value --> report_observed_behavior
+  %% Semantic Trace: SWS-001, SWS-002, SWS-003, SWS-004
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
+  ToySelectorSource_selectHigh["ToySelectorSource.selectHigh"]
+  SwitchSelector_selectHigh["SwitchSelector.selectHigh"]
+  %% Trace: SWS-001, SWS-002, SWS-003
+  %% ToySelectorSource_selectHigh --> SwitchSelector_selectHigh
+  ToySelectorSource_selectHigh -->|"selector input"| SwitchSelector_selectHigh
+  ToySwitchSelector_highValue["ToySwitchSelector.highValue"]
+  SwitchSelector_highValue["SwitchSelector.highValue"]
+  %% Trace: SWS-001, SWS-003
+  %% ToySwitchSelector_highValue --> SwitchSelector_highValue
+  ToySwitchSelector_highValue -->|"high constant value"| SwitchSelector_highValue
+  ToySwitchSelector_lowValue["ToySwitchSelector.lowValue"]
+  SwitchSelector_lowValue["SwitchSelector.lowValue"]
+  %% Trace: SWS-002, SWS-003
+  %% ToySwitchSelector_lowValue --> SwitchSelector_lowValue
+  ToySwitchSelector_lowValue -->|"low constant value"| SwitchSelector_lowValue
+  SwitchSelector_selectedValue["SwitchSelector.selectedValue"]
+  ToySwitchSelector_selectedValue["ToySwitchSelector.selectedValue"]
+  %% Trace: SWS-001, SWS-002
+  %% SwitchSelector_selectedValue --> ToySwitchSelector_selectedValue
+  SwitchSelector_selectedValue -->|"selected output"| ToySwitchSelector_selectedValue
+  ToySwitchSelector_selectedValue["ToySwitchSelector.selectedValue"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: SWS-004
+  %% ToySwitchSelector_selectedValue --> ScenarioReport_observedBehavior
+  ToySwitchSelector_selectedValue -->|"reported selected value"| ScenarioReport_observedBehavior
+  function_SwitchSelector["SwitchSelector<br/>Compare selectHigh and select highValue or lowValue using Switch-style simple conditional logic"]
+  %% Function Trace: SWS-001, SWS-002, SWS-003, SWS-004
+  selectedValue["selectedValue"]
+  function_SwitchSelector -->|"owns"| selectedValue
+  rule_select_high_value{"priority 10<br/>rule select_high_value<br/>owner SwitchSelector<br/>from *"}
+  %% Trace: SWS-001, SWS-003, SWS-004
+  %% Scenarios: select_high
+  selectedValue["selectedValue"]
+  rule_select_high_value -->|"selectHigh == true"| selectedValue
+  rule_select_low_value{"priority 20<br/>rule select_low_value<br/>owner SwitchSelector<br/>from *"}
+  %% Trace: SWS-002, SWS-003, SWS-004
+  %% Scenarios: select_high
+  selectedValue["selectedValue"]
+  rule_select_low_value -->|"selectHigh != true"| selectedValue
+  ToySelectorSource["ToySelectorSource<br/>virtual_ic"]
+  %% Trace: SWS-001, SWS-002, SWS-003
+  ToySwitchSelector["ToySwitchSelector<br/>hal"]
+  %% Trace: SWS-001, SWS-002, SWS-003, SWS-004

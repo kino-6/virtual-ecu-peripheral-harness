@@ -1,0 +1,34 @@
+id: simple_switch_selector
+title: Simple Switch Selector
+kind: minimal-mbd
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  select_high: scenarios/select_high.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+  specMbdAlignment: generated/spec_mbd_alignment.md
+  convertedMbd: generated/from_spec.model.mbd.md
+  specMbdViewer: generated/spec_mbd_viewer.html
+specMbd:
+  component: ToySwitchSelector
+  scenario: select_high
+  parameterDefaults:
+    highValue: "100"
+    lowValue: "25"
+  inputDefaults:
+    selectHigh: "false"
+  outputDefaults:
+    selectedValue: "25"
+reports:
+  select_high: reports/select_high.md

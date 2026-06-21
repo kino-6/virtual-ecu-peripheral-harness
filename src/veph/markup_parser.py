@@ -301,7 +301,7 @@ def _parse_harness(body: str) -> list[HarnessDeviceIR]:
 
 def _parse_actions(text: str) -> dict[str, str]:
     actions: dict[str, str] = {}
-    for item in text.split(","):
+    for item in _split_top_level_commas(text):
         item = item.strip()
         if not item:
             continue
@@ -312,6 +312,22 @@ def _parse_actions(text: str) -> dict[str, str]:
     if not actions:
         raise MarkupParseError("control rule must contain at least one action")
     return actions
+
+
+def _split_top_level_commas(text: str) -> list[str]:
+    items: list[str] = []
+    start = 0
+    depth = 0
+    for index, char in enumerate(text):
+        if char == "(":
+            depth += 1
+        elif char == ")" and depth > 0:
+            depth -= 1
+        elif char == "," and depth == 0:
+            items.append(text[start:index])
+            start = index + 1
+    items.append(text[start:])
+    return items
 
 
 def _parse_attrs(tokens: list[str]) -> dict[str, str]:
@@ -393,13 +409,20 @@ class _ExpressionParser:
         return ExpressionIR(kind="logical", source=self.source, operator="or", operands=operands)
 
     def _parse_and(self) -> ExpressionIR:
-        operands = [self._parse_comparison()]
+        operands = [self._parse_not()]
         while self.peek() == "and":
             self._take()
-            operands.append(self._parse_comparison())
+            operands.append(self._parse_not())
         if len(operands) == 1:
             return operands[0]
         return ExpressionIR(kind="logical", source=self.source, operator="and", operands=operands)
+
+    def _parse_not(self) -> ExpressionIR:
+        if self.peek() == "not":
+            self._take()
+            operand = self._parse_not()
+            return ExpressionIR(kind="logical", source=self.source, operator="not", operands=[operand])
+        return self._parse_comparison()
 
     def _parse_comparison(self) -> ExpressionIR:
         left = self._parse_atom()

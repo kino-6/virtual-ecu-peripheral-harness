@@ -11,6 +11,8 @@ def test_sample_catalog_discovers_sample_workspaces():
 
     assert set(samples) == {
         "simple_state_machine",
+        "simple_relay_hysteresis",
+        "simple_switch_selector",
         "simple_threshold_indicator",
         "thermal_fan_control",
         "thermal_protection_controller",

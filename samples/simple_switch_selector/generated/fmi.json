@@ -1,0 +1,133 @@
+{
+  "component": "ToySwitchSelector",
+  "controlRules": [
+    {
+      "actions": {
+        "selectedValue": "highValue"
+      },
+      "condition": "selectHigh == true",
+      "name": "select_high_value",
+      "owner": "SwitchSelector",
+      "priority": 10,
+      "scenarios": [
+        "select_high"
+      ],
+      "stateScope": "*",
+      "trace": [
+        "SWS-001",
+        "SWS-003",
+        "SWS-004"
+      ]
+    },
+    {
+      "actions": {
+        "selectedValue": "lowValue"
+      },
+      "condition": "selectHigh != true",
+      "name": "select_low_value",
+      "owner": "SwitchSelector",
+      "priority": 20,
+      "scenarios": [
+        "select_high"
+      ],
+      "stateScope": "*",
+      "trace": [
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "selectHigh",
+        "highValue",
+        "lowValue"
+      ],
+      "name": "SwitchSelector",
+      "outputs": [
+        "selectedValue"
+      ],
+      "owns": [
+        "selectedValue"
+      ],
+      "responsibility": "Compare selectHigh and select highValue or lowValue using Switch-style simple conditional logic",
+      "scenarios": [
+        "select_high"
+      ],
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToySelectorSource",
+      "role": "source",
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToySwitchSelector",
+      "role": "controller",
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "false",
+      "name": "selectHigh",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "25",
+      "name": "selectedValue",
+      "type": "count"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "100",
+      "name": "highValue",
+      "type": "count"
+    },
+    {
+      "default": "25",
+      "name": "lowValue",
+      "type": "count"
+    }
+  ],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "SWS-001",
+    "SWS-002",
+    "SWS-003",
+    "SWS-004"
+  ],
+  "source": "samples/simple_switch_selector/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": []
+}

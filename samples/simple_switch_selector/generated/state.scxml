@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="INITIAL">
+  <!-- Generated state-machine handoff from samples/simple_switch_selector/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: SWS-001, SWS-002, SWS-003, SWS-004 -->
+  <!-- priority 10 select_high_value owner SwitchSelector from * when selectHigh == true trace SWS-001, SWS-003, SWS-004 scenarios select_high -->
+  <!-- priority 20 select_low_value owner SwitchSelector from * when selectHigh != true trace SWS-002, SWS-003, SWS-004 scenarios select_high -->
+  <!-- function SwitchSelector owns selectedValue trace SWS-001, SWS-002, SWS-003, SWS-004 -->
+</scxml>

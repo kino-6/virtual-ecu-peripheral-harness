@@ -46,7 +46,8 @@ class ExportCommand:
 
 EXPORT_COMMANDS = {
     "export-docs": ExportCommand(export_markdown, "export Markdown documentation"),
-    "export-demo": ExportCommand(export_demo_html, "export static HTML MBD visualization demo"),
+    "export-demo": ExportCommand(export_demo_html, "export HTML MBD review artifact"),
+    "export-review-html": ExportCommand(export_demo_html, "export HTML MBD review artifact"),
     "export-mermaid": ExportCommand(export_mermaid, "export Mermaid preview diagram"),
     "export-plantuml": ExportCommand(export_plantuml, "export PlantUML state diagram"),
     "export-scxml": ExportCommand(export_scxml, "export SCXML state machine"),
@@ -284,6 +285,7 @@ def _export_sample(args: argparse.Namespace) -> None:
         exported["convertedMbd"] = converted_mbd
     if converted_model is not None and alignment_report is not None:
         exported["specMbdViewer"] = export_spec_mbd_viewer(sample.paths.spec, converted_model, alignment_report)
+        exported["convertedReviewHtml"] = export_demo_html(converted_model)
     if "specMbdAlignment" in sample.paths.generated:
         if sample.paths.spec is None:
             raise OSError(f"sample {sample.id!r} requests spec/MBD alignment but has no spec path")

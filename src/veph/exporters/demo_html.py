@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import re
 from html import escape
+from pathlib import Path
 
 from veph.control_semantics import (
     find_threshold_pair,
@@ -45,6 +48,9 @@ def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
 
 
 def _export_ir_demo_html(model: MbdModelIR) -> str:
+    has_spec_review = _has_spec_review(model)
+    if has_spec_review:
+        return _export_spec_review_html(model)
     function_rows = _ir_function_rows(model)
     req_rows = _ir_requirement_rows(model)
     control_rows = _ir_control_rows(model)
@@ -59,7 +65,7 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "<head>",
             '  <meta charset="utf-8">',
             '  <meta name="viewport" content="width=device-width, initial-scale=1">',
-            f"  <title>{escape(model.component.name)} Markup-to-MBD Demo</title>",
+            f"  <title>{escape(model.component.name)} MBD Review Artifact</title>",
             "  <style>",
             _css(),
             "  </style>",
@@ -68,9 +74,9 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             '  <main class="shell">',
             '    <section class="hero">',
             '      <div class="hero-copy">',
-            "        <p>Author in text. Verify in MBD tools.</p>",
-            f"        <h1>{escape(model.component.name)} Markup-to-MBD Demo</h1>",
-            "        <span>Generated from Mermaid-like Markdown markup. This is a preview, not the verification backend.</span>",
+            "        <p>Author in text. Review against the specification.</p>",
+            f"        <h1>{escape(model.component.name)} MBD Review Artifact</h1>",
+            "        <span>Generated from Mermaid-like Markdown markup. Use this page to ask whether the MBD matches the specification; external MBD tools remain the verification backend.</span>",
             "      </div>",
             '      <div class="hero-facts" aria-label="model facts">',
             f"        <div><strong>{len(model.ports)}</strong><span>ports</span></div>",
@@ -79,6 +85,11 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             f"        <div><strong>{len(model.harness_devices)}</strong><span>harness boundaries</span></div>",
             "      </div>",
             "    </section>",
+            _ir_spec_first_state_machine_review(model),
+            _ir_review_objective_panel(model),
+            _ir_review_evidence_map(model),
+            "" if has_spec_review else _ir_state_machine_review_dashboard(model),
+            _ir_review_pipeline_svg(model),
             _ir_design_overview_svg(model),
             _ir_semantic_mbd_svg(model),
             _ir_functional_decomposition_svg(model),
@@ -93,7 +104,8 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             _ir_mbd_review_checklist(),
             _ir_control_semantics_summary(),
             _ir_data_flow_svg(model),
-            _ir_state_machine_svg(model),
+            "" if has_spec_review else _ir_state_machine_review_package(model),
+            "" if has_spec_review else _ir_state_machine_svg(model),
             _ir_harness_boundary_svg(model),
             '    <section class="panel">',
             "      <h2>Requirements Trace Matrix</h2>",
@@ -150,6 +162,45 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "      <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>",
             "    </section>",
             "  </main>",
+            _ir_state_machine_review_script(model),
+            "</body>",
+            "</html>",
+            "",
+        ]
+    )
+
+
+def _export_spec_review_html(model: MbdModelIR) -> str:
+    return "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="ja">',
+            "<head>",
+            '  <meta charset="utf-8">',
+            '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+            f"  <title>{escape(model.component.name)} MBDレビュー</title>",
+            "  <style>",
+            _css(),
+            "  </style>",
+            "</head>",
+            "<body>",
+            '  <main class="shell compact-shell">',
+            '    <section class="hero compact-hero">',
+            '      <div class="hero-copy">',
+            "        <p>仕様から生成したMBDの確認資料</p>",
+            f"        <h1>{escape(model.component.name)} MBDレビュー</h1>",
+            "        <span>仕様意図、状態遷移、生成MBD、未解決QAだけを並べています。ツール別成果物は補助資料です。</span>",
+            "      </div>",
+            '      <div class="hero-facts" aria-label="model facts">',
+            f"        <div><strong>{len(model.ports)}</strong><span>ポート</span></div>",
+            f"        <div><strong>{len(model.transitions)}</strong><span>遷移</span></div>",
+            f"        <div><strong>{len(model.controls)}</strong><span>制御ルール</span></div>",
+            f"        <div><strong>{len(model.requirement_refs())}</strong><span>要求ID</span></div>",
+            "      </div>",
+            "    </section>",
+            _ir_spec_first_state_machine_review(model),
+            _spec_review_footer(model),
+            "  </main>",
             "</body>",
             "</html>",
             "",
@@ -159,6 +210,458 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
 
 def flow_or_empty(rows: str, colspan: int = 4) -> str:
     return rows if rows else f'          <tr><td colspan="{colspan}">None</td></tr>'
+
+
+def _has_spec_review(model: MbdModelIR) -> bool:
+    return any(section.language == "mbd-spec-review" for section in model.sections)
+
+
+def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
+    spec = _spec_review_data(model)
+    if spec is None or not model.transitions:
+        return ""
+    verification = _spec_verification_data(model, spec)
+    intent_rows = "\n".join(_spec_intent_row(model, spec, item) for item in spec["intents"])
+    transition_rows = "\n".join(
+        _spec_transition_compare_row(model, transition)
+        for transition in spec["transitions"]
+    )
+    open_question_rows = "\n".join(
+        f"          <tr><td>{escape(_ja_open_question(question))}</td><td>受け入れ前に人間が判断する。</td></tr>"
+        for question in spec["open_questions"]
+    )
+    unsupported_rows = "\n".join(
+        f"          <tr><td>{escape(_ja_unsupported(item))}</td><td>この資料から挙動を推定しない。</td></tr>"
+        for item in spec["unsupported"]
+    )
+    initial = spec["initial"] or (_ordered_states(model.transitions)[0] if model.transitions else "")
+    generated_initial = _ordered_states(model.transitions)[0] if model.transitions else ""
+    initial_status = "一致" if initial == generated_initial else "要確認"
+    scenario = ", ".join(f"{name} ({report})" for name, report in spec["scenarios"]) or "未定義"
+    return "\n".join(
+        [
+            '    <section class="panel spec-first-review">',
+            "      <h2>仕様 vs 生成MBD</h2>",
+            "      <div class=\"review-badges\">",
+            f"        <span>仕様: <strong>{escape(spec['source'])}</strong></span>",
+            f"        <span>初期状態: <strong>{escape(initial)}</strong> / 生成 <strong>{escape(generated_initial)}</strong> ({escape(initial_status)})</span>",
+            f"        <span>シナリオ証跡: <strong>{escape(scenario)}</strong></span>",
+            "      </div>",
+            _spec_verification_summary_html(verification),
+            "      <h3>要求ごとの確認</h3>",
+            "      <table class=\"review-table\">",
+            "        <thead><tr><th>要求</th><th>仕様意図</th><th>生成MBDの証跡</th><th>シナリオ</th><th>判定</th></tr></thead>",
+            "        <tbody>",
+            flow_or_empty(intent_rows, colspan=5),
+            "        </tbody>",
+            "      </table>",
+            "      <h3>状態図の比較</h3>",
+            "      <div class=\"review-compare\">",
+            _state_review_svg("仕様の状態図", spec["transitions"], initial),
+            _state_review_svg(
+                "生成MBDの状態図",
+                [
+                    {"source": transition.source, "target": transition.target, "condition": transition.condition}
+                    for transition in model.transitions
+                ],
+                generated_initial,
+            ),
+            "      </div>",
+            "      <h3>遷移ごとの確認</h3>",
+            "      <table class=\"review-table\">",
+            "        <thead><tr><th>仕様の遷移</th><th>生成された遷移</th><th>生成された動作</th><th>トレース</th><th>判定</th></tr></thead>",
+            "        <tbody>",
+            flow_or_empty(transition_rows, colspan=5),
+            "        </tbody>",
+            "      </table>",
+            "      <h3>未解決QA</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>",
+            "        <tbody>",
+            flow_or_empty(open_question_rows, colspan=2),
+            "        </tbody>",
+            "      </table>",
+            "      <h3>対象外</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>",
+            "        <tbody>",
+            flow_or_empty(unsupported_rows, colspan=2),
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _spec_review_data(model: MbdModelIR) -> dict[str, object] | None:
+    body = next((section.body for section in model.sections if section.language == "mbd-spec-review"), "")
+    if not body:
+        return None
+    data: dict[str, object] = {
+        "source": "",
+        "question": "",
+        "initial": "",
+        "intents": [],
+        "transitions": [],
+        "trace_intents": [],
+        "scenarios": [],
+        "open_questions": [],
+        "unsupported": [],
+    }
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("source "):
+            data["source"] = line.removeprefix("source ").strip()
+        elif line.startswith("question "):
+            data["question"] = line.removeprefix("question ").strip()
+        elif line.startswith("intent "):
+            req, text = _split_pipe(line.removeprefix("intent "))
+            data["intents"].append({"requirement": req, "text": text})  # type: ignore[index, union-attr]
+        elif line.startswith("spec-initial "):
+            data["initial"] = line.removeprefix("spec-initial ").strip()
+        elif line.startswith("spec-transition "):
+            data["transitions"].append(_parse_review_transition(line.removeprefix("spec-transition ")))  # type: ignore[index, union-attr]
+        elif line.startswith("trace-intent "):
+            data["trace_intents"].append(_parse_trace_intent_line(line.removeprefix("trace-intent ")))  # type: ignore[index, union-attr]
+        elif line.startswith("scenario "):
+            scenario, report = _split_pipe(line.removeprefix("scenario "))
+            data["scenarios"].append((scenario, report))  # type: ignore[index, union-attr]
+        elif line.startswith("open-question "):
+            _, question = _split_pipe(line.removeprefix("open-question "))
+            data["open_questions"].append(question)  # type: ignore[index, union-attr]
+        elif line.startswith("unsupported "):
+            data["unsupported"].append(line.removeprefix("unsupported ").strip())  # type: ignore[index, union-attr]
+    return data
+
+
+def _spec_review_footer(model: MbdModelIR) -> str:
+    return "\n".join(
+        [
+            '    <section class="panel policy">',
+            "      <h2>確認範囲</h2>",
+            f"      <p>このHTMLは <code>{escape(model.source_path.name)}</code> から生成したレビュー資料です。Python実行はプレビュー用途で、正式な検証は生成されたSCXML、Simulink/Stateflow向け成果物、Modelica/FMI向け成果物を既存MBD環境へ渡して行います。</p>",
+            "    </section>",
+        ]
+    )
+
+
+def _spec_verification_data(model: MbdModelIR, spec: dict[str, object]) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for scenario, report in spec.get("scenarios", []):
+        report_path = _resolve_report_path(model, str(report))
+        row: dict[str, object] = {
+            "scenario": str(scenario),
+            "report": str(report),
+            "status": "未確認",
+            "final_state": "",
+            "checks": [],
+            "steps": "",
+        }
+        if report_path is not None and report_path.exists():
+            text = report_path.read_text(encoding="utf-8")
+            row.update(_parse_preview_report_summary(text))
+        rows.append(row)
+    return rows
+
+
+def _resolve_report_path(model: MbdModelIR, report: str) -> Path | None:
+    report_path = Path(report)
+    if report_path.is_absolute():
+        return report_path
+    source_dir = model.source_path.parent
+    candidates = [
+        source_dir / report_path,
+        source_dir.parent / report_path,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[-1] if candidates else None
+
+
+def _parse_preview_report_summary(text: str) -> dict[str, object]:
+    status = _regex_group(r"- Result: \*\*(PASS|FAIL)\*\*", text) or "未確認"
+    final_state = _regex_group(r"- Final state: `([^`]+)`", text) or ""
+    checks = re.findall(r"^- ((?:PASS|FAIL) [^\n]+)$", text, re.MULTILINE)
+    scenario_steps = _report_section(text, "Scenario Steps", "Harness Boundary Evidence")
+    steps = len(re.findall(r"^\s*-\s*atMs:", scenario_steps, re.MULTILINE))
+    return {
+        "status": status,
+        "final_state": final_state,
+        "checks": checks,
+        "steps": str(steps) if steps else "",
+    }
+
+
+def _regex_group(pattern: str, text: str) -> str:
+    match = re.search(pattern, text, re.MULTILINE)
+    return match.group(1) if match else ""
+
+
+def _report_section(text: str, start_heading: str, end_heading: str) -> str:
+    pattern = rf"## {re.escape(start_heading)}\n(?P<body>.*?)\n## {re.escape(end_heading)}"
+    match = re.search(pattern, text, re.DOTALL)
+    return match.group("body") if match else ""
+
+
+def _spec_verification_summary_html(rows: list[dict[str, object]]) -> str:
+    if not rows:
+        return "\n".join(
+            [
+                '      <section class="verification-summary">',
+                "        <h3>Harness検証結果</h3>",
+                "        <p>検証シナリオは未定義です。</p>",
+                "      </section>",
+            ]
+        )
+    body = "\n".join(_spec_verification_row(row) for row in rows)
+    return "\n".join(
+        [
+            '      <section class="verification-summary">',
+            "        <h3>Harness検証結果</h3>",
+            "        <table class=\"review-table compact\">",
+            "          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>",
+            "          <tbody>",
+            body,
+            "          </tbody>",
+            "        </table>",
+            "      </section>",
+        ]
+    )
+
+
+def _spec_verification_row(row: dict[str, object]) -> str:
+    checks = row.get("checks", [])
+    check_text = _ja_check_summary(checks) if isinstance(checks, list) else ""
+    status = str(row.get("status", "未確認"))
+    status_label = "PASS" if status == "PASS" else ("FAIL" if status == "FAIL" else "未確認")
+    return (
+        "          <tr>"
+        f"<td>{escape(str(row.get('scenario', '')))}</td>"
+        f"<td><strong>{escape(status_label)}</strong></td>"
+        f"<td>{escape(str(row.get('final_state', '')))}</td>"
+        f"<td>{escape(str(row.get('steps', '')))}</td>"
+        f"<td>{escape(check_text or '確認項目なし')}</td>"
+        f"<td><code>{escape(str(row.get('report', '')))}</code></td>"
+        "</tr>"
+    )
+
+
+def _ja_check_summary(checks: list[object]) -> str:
+    summaries: list[str] = []
+    for check in checks[:3]:
+        text = str(check)
+        match = re.match(r"PASS finalState: actual ([^,]+), expected \1", text)
+        if match:
+            summaries.append(f"最終状態={match.group(1)}")
+            continue
+        match = re.match(r"PASS outputs\.([^:]+): actual ([^,]+), expected \2", text)
+        if match:
+            summaries.append(f"{match.group(1)}={match.group(2)}")
+            continue
+        summaries.append(text)
+    return ", ".join(summaries)
+
+
+def _split_pipe(text: str) -> tuple[str, str]:
+    left, separator, right = text.partition("|")
+    if separator != "|":
+        return text.strip(), ""
+    return left.strip(), right.strip()
+
+
+def _parse_review_transition(text: str) -> dict[str, str]:
+    left, _, condition = text.partition(":")
+    source, _, target = left.partition("-->")
+    return {
+        "source": source.strip(),
+        "target": target.strip(),
+        "condition": condition.strip(),
+    }
+
+
+def _parse_trace_intent_line(text: str) -> dict[str, str]:
+    requirement, rest = _split_pipe(text)
+    transition, actions = _split_pipe(rest)
+    source, _, target = transition.partition("-->")
+    return {
+        "requirement": requirement,
+        "source": source.strip(),
+        "target": target.strip(),
+        "actions": actions,
+    }
+
+
+def _spec_intent_row(model: MbdModelIR, spec: dict[str, object], item: dict[str, str]) -> str:
+    requirement = item["requirement"]
+    evidence_items = _ir_elements_for_ref(model, requirement)
+    evidence = _review_evidence_summary(evidence_items) or "Missing generated MBD evidence"
+    scenario = ", ".join(_ir_scenarios_for_ref(model, requirement)) or "Missing scenario evidence"
+    status = "一致" if evidence != "Missing generated MBD evidence" and scenario != "Missing scenario evidence" else "要確認"
+    intent = _ja_requirement_summary(spec, requirement) or item["text"]
+    return (
+        "          <tr>"
+        f"<td><code>{escape(requirement)}</code></td>"
+        f"<td>{escape(intent)}</td>"
+        f"<td>{escape(evidence)}</td>"
+        f"<td>{escape(scenario)}</td>"
+        f"<td>{escape(status)}</td>"
+        "</tr>"
+    )
+
+
+def _review_evidence_summary(elements: list[str]) -> str:
+    controls = [element.removeprefix("control:") for element in elements if element.startswith("control:")]
+    functions = [element.removeprefix("function:") for element in elements if element.startswith("function:")]
+    flows = [element for element in elements if element.startswith("flow:")]
+    harnesses = [element.removeprefix("harness:") for element in elements if element.startswith("harness:")]
+    parts: list[str] = []
+    if controls:
+        parts.append(f"制御: {', '.join(controls)}")
+    if functions:
+        parts.append(f"機能: {', '.join(functions)}")
+    if flows:
+        parts.append(f"信号線: {len(flows)}件")
+    if harnesses:
+        parts.append(f"Harness: {', '.join(harnesses)}")
+    return " / ".join(parts)
+
+
+def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, str]) -> str:
+    source = spec_transition["source"]
+    target = spec_transition["target"]
+    condition = spec_transition["condition"]
+    if source == "[*]":
+        generated_initial = _ordered_states(model.transitions)[0] if model.transitions else ""
+        status = "一致" if target == generated_initial else "要確認"
+        return (
+            "          <tr>"
+            f"<td><code>[*] -> {escape(target)}</code> / {escape(condition)}</td>"
+            f"<td>生成初期状態: <code>{escape(generated_initial)}</code></td>"
+            "<td>初期状態</td>"
+            "<td>仕様構造</td>"
+            f"<td>{escape(status)}</td>"
+            "</tr>"
+        )
+    transition = next(
+        (
+            candidate
+            for candidate in model.transitions
+            if candidate.source == source
+            and candidate.target == target
+            and candidate.condition == condition
+        ),
+        None,
+    )
+    rule = _control_rule_for_transition(model.controls, transition) if transition is not None else None
+    generated = (
+        f"{transition.source} -> {transition.target} / {transition.condition}"
+        if transition is not None
+        else "Missing generated transition"
+    )
+    actions = _control_actions(rule)
+    trace = ", ".join(rule.trace) if rule is not None and rule.trace else "Missing trace"
+    status = "一致" if transition is not None and rule is not None and rule.trace else "要確認"
+    return (
+        "          <tr>"
+        f"<td><code>{escape(source)} -> {escape(target)}</code> / {escape(condition)}</td>"
+        f"<td>{escape(generated)}</td>"
+        f"<td>{escape(actions)}</td>"
+        f"<td>{escape(trace)}</td>"
+        f"<td>{escape(status)}</td>"
+        "</tr>"
+    )
+
+
+def _ja_requirement_summary(spec: dict[str, object], requirement: str) -> str:
+    trace_intents = spec.get("trace_intents", [])
+    for item in trace_intents:
+        if item["requirement"] != requirement:  # type: ignore[index]
+            continue
+        transition = f"{item['source']} -> {item['target']}"  # type: ignore[index]
+        actions = item["actions"]  # type: ignore[index]
+        return f"{transition}。出力/状態更新: {actions}。"
+    intent_text = _spec_intent_text(spec, requirement)
+    if "between the two thresholds" in intent_text and "keep its current state" in intent_text:
+        return "2つの閾値の間では遷移せず、現在状態と出力を保持する。"
+    if "expose" in intent_text and "reviewable MBD elements" in intent_text:
+        return "入力、パラメータ、状態、出力をレビュー可能なMBD要素として分離する。"
+    if "preview report" in intent_text:
+        return "レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。"
+    if requirement in {"SM-004"}:
+        return "レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。"
+    return ""
+
+
+def _spec_intent_text(spec: dict[str, object], requirement: str) -> str:
+    intents = spec.get("intents", [])
+    for item in intents:
+        if item["requirement"] == requirement:  # type: ignore[index]
+            return str(item["text"])  # type: ignore[index]
+    return ""
+
+
+def _ja_open_question(question: str) -> str:
+    if "implicit self-hold" in question:
+        return "ガードが偽の場合は、プレビュー上は暗黙の自己保持として扱う。この解釈でよいか。"
+    return question
+
+
+def _ja_unsupported(item: str) -> str:
+    if "Entry/during/exit" in item:
+        return "entry/during/exit、階層状態、並列状態、履歴、時間イベント"
+    return item
+
+
+def _state_review_svg(title: str, transitions: list[dict[str, str]], initial: str) -> str:
+    state_names: list[str] = []
+    for transition in transitions:
+        for state in [transition["source"], transition["target"]]:
+            if state != "[*]" and state not in state_names:
+                state_names.append(state)
+    if initial and initial not in state_names:
+        state_names.insert(0, initial)
+    positions = {state: 96 + index * 190 for index, state in enumerate(state_names)}
+    width = max(760, 160 + max(1, len(state_names)) * 190)
+    parts = [
+        '        <div class="evidence-card">',
+        f"          <h4>{escape(title)}</h4>",
+        f'          <svg class="mini-state-diagram" viewBox="0 0 {width} 190" role="img" aria-label="{escape(title)}">',
+        *(_svg_defs("miniStateArrow")),
+    ]
+    if initial:
+        parts.extend(
+            [
+                '            <circle cx="34" cy="92" r="10" class="initial-dot"></circle>',
+                f'            <line x1="48" y1="92" x2="{positions.get(initial, 96)}" y2="92" class="ir-state-line"></line>',
+                f'            <text x="{(48 + positions.get(initial, 96)) / 2:.0f}" y="80" text-anchor="middle" class="edge-note">initial</text>',
+            ]
+        )
+    for transition in transitions:
+        if transition["source"] == "[*]":
+            continue
+        x1 = positions[transition["source"]] + 120
+        x2 = positions[transition["target"]]
+        y = 92 if x2 > x1 else 132
+        if x2 > x1:
+            parts.append(f'            <line x1="{x1}" y1="{y}" x2="{x2}" y2="{y}" class="ir-state-line"></line>')
+        else:
+            mid = (x1 + x2) / 2
+            parts.append(f'            <path d="M {x1} 132 C {mid:.0f} 170, {mid:.0f} 170, {x2} 132" class="ir-state-line"></path>')
+        parts.append(
+            f'            <text x="{(x1 + x2) / 2:.0f}" y="{y - 12}" text-anchor="middle" class="edge-note">{escape(_shorten(transition["condition"], 34))}</text>'
+        )
+    for state, x in positions.items():
+        parts.extend(
+            [
+                f'            <rect x="{x}" y="62" width="120" height="60" rx="8" class="state"></rect>',
+                f'            <text x="{x + 60}" y="98" text-anchor="middle" class="state-label">{escape(state)}</text>',
+            ]
+        )
+    parts.extend(["          </svg>", "        </div>"])
+    return "\n".join(parts)
 
 
 def _ir_design_overview_svg(model: MbdModelIR) -> str:
@@ -175,8 +678,8 @@ def _ir_design_overview_svg(model: MbdModelIR) -> str:
     height = max(300, max(input_positions[-1], output_positions[-1]) + 96)
     parts = [
         '    <section class="panel">',
-        "      <h2>Design Overview Diagram</h2>",
-        "      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. This view intentionally matches the specification-level design overview before detailed control-rule review.</p>",
+        "      <h2>Spec-Oriented Model Review Diagram</h2>",
+        "      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. Use this view to check whether the MBD shape matches the specification-level Mermaid design overview before detailed control-rule review.</p>",
         f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Design overview generated from MBD source">',
         *(_svg_defs("irDesignArrow")),
         *(_semantic_svg_node([source], 42, height // 2 - 35, 190, "scenario source")),
@@ -332,6 +835,96 @@ def _ir_elements_for_ref(model: MbdModelIR, ref: str) -> list[str]:
         if ref in device.trace:
             elements.append(f"harness:{device.name}")
     return elements
+
+
+def _ir_review_objective_panel(model: MbdModelIR) -> str:
+    state_text = "present" if model.transitions else "not declared"
+    scenario_count = len(
+        {
+            scenario
+            for function in model.functions
+            for scenario in function.scenarios
+        }
+        | {
+            scenario
+            for control in model.controls
+            for scenario in control.scenarios
+        }
+    )
+    return "\n".join(
+        [
+            '    <section class="panel review-gate">',
+            "      <h2>Human Review Question</h2>",
+            "      <p><strong>Does the generated MBD represent the specification as written?</strong> Review this artifact from top to bottom before opening tool-specific handoff files.</p>",
+            "      <table>",
+            "        <thead><tr><th>Concern</th><th>Generated evidence in this artifact</th></tr></thead>",
+            "        <tbody>",
+            f"          <tr><td>Specification fidelity</td><td>{len(model.requirement_refs())} requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>",
+            f"          <tr><td>Model behavior</td><td>{len(model.controls)} priority-ordered control rule(s); state machine is {escape(state_text)}.</td></tr>",
+            f"          <tr><td>Scenario evidence</td><td>{scenario_count} declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>",
+            "          <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>",
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_review_evidence_map(model: MbdModelIR) -> str:
+    rows = [
+        (
+            "Specification intent",
+            "sample spec / requirement IDs",
+            "Check that names, states, inputs, outputs, and expected behavior match the human-readable spec.",
+        ),
+        (
+            "Functional decomposition",
+            f"{len(model.functions)} function(s)",
+            "Check responsibility allocation before inspecting detailed logic.",
+        ),
+        (
+            "Interface and data flow",
+            f"{len(model.ports)} port(s), {len(model.flows)} flow(s)",
+            "Check signal direction and harness/report boundaries.",
+        ),
+        (
+            "State/control semantics",
+            f"{len(model.transitions)} transition(s), {len(model.controls)} control rule(s)",
+            "Check guard conditions, state scope, actions, priority, and unsupported assumptions.",
+        ),
+        (
+            "Scenario/report evidence",
+            "scenario links on functions and controls",
+            "Check expected-vs-observed behavior outside this static page in generated reports.",
+        ),
+        (
+            "Tool handoff",
+            "Simulink, SCXML, Modelica, FMI metadata",
+            "Check that semantics are structurally exported where supported, not only preserved as comments.",
+        ),
+    ]
+    body = "\n".join(
+        "          <tr>"
+        f"<td>{escape(area)}</td>"
+        f"<td>{escape(evidence)}</td>"
+        f"<td>{escape(review)}</td>"
+        "</tr>"
+        for area, evidence, review in rows
+    )
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>Review Evidence Map</h2>",
+            "      <p>This page is organized around the reviewer question, not around file formats. Tool-specific artifacts are supporting evidence.</p>",
+            "      <table>",
+            "        <thead><tr><th>Review area</th><th>Evidence source</th><th>What the reviewer checks</th></tr></thead>",
+            "        <tbody>",
+            body,
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
+    )
 
 
 def _ir_spec_compliance_review(model: MbdModelIR) -> str:
@@ -584,7 +1177,7 @@ def _ir_flow_kind(model: MbdModelIR, endpoint: str) -> str:
         return "Report"
     if role == "actuator":
         return "Virtual Actuator"
-    return "Virtual Actuator"
+    return "External Endpoint"
 
 
 def _endpoint_role(model: MbdModelIR, endpoint: str) -> str:
@@ -634,7 +1227,7 @@ def _ir_state_machine_svg(model: MbdModelIR) -> str:
     parts = [
         '    <section class="panel">',
         "      <h2>State Machine Diagram</h2>",
-        "      <p>States and transitions are parsed from `mbd-state`; production review should hand these off to Stateflow/SCXML-capable tooling.</p>",
+        "      <p>States and transitions are parsed from <code>mbd-state</code>. Review this together with the State Machine Review Package above; SCXML/Stateflow-oriented files are generated handoff views.</p>",
         f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="State machine generated from mbd-state">',
         *(_svg_defs("irStateArrow")),
     ]
@@ -645,6 +1238,403 @@ def _ir_state_machine_svg(model: MbdModelIR) -> str:
         parts.append(f'        <text x="{x + 105}" y="{y + 39}" text-anchor="middle" class="state-label">{escape(state)}</text>')
     parts.extend(["      </svg>", "    </section>"])
     return "\n".join(parts)
+
+
+def _ir_state_machine_review_dashboard(model: MbdModelIR) -> str:
+    if not model.transitions:
+        return ""
+    states = _ordered_states(model.transitions)
+    initial_state = states[0] if states else "unknown"
+    transition_rows = "\n".join(
+        _ir_state_machine_review_row(model, transition) for transition in model.transitions
+    )
+    inventory_rows = "\n".join(
+        _ir_state_inventory_row(model, state, initial_state) for state in states
+    )
+    matrix_rows = "\n".join(_ir_transition_matrix_row(model, states, state) for state in states)
+    diagnostic_rows = "\n".join(_ir_guard_diagnostic_row(model, state) for state in states)
+    walkthrough_rows = "\n".join(
+        _ir_scenario_walkthrough_row(model, index, transition)
+        for index, transition in enumerate(model.transitions, start=1)
+    )
+    state_rows = "\n".join(
+        f"          <tr><td>{escape(state)}</td><td>{escape(_outgoing_conditions(model, state))}</td><td>{escape(_state_output_summary(model, state))}</td></tr>"
+        for state in states
+    )
+    matrix_headers = "".join(f"<th>{escape(state)}</th>" for state in states)
+    return "\n".join(
+        [
+            '    <section class="panel state-review" data-state-machine-review>',
+            "      <h2>State Machine Transition Review</h2>",
+            "      <p>This is the state-machine review surface. Review the transition table first, then use the diagram as supporting evidence.</p>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>Review basis</th><th>What this artifact exposes</th></tr></thead>",
+            "        <tbody>",
+            "          <tr><td>Finite modes and initial/default state</td><td>Initial state, state inventory, and outgoing transition coverage.</td></tr>",
+            "          <tr><td>Trigger / guard / effect semantics</td><td>Each transition row separates guard/event text from state and output actions.</td></tr>",
+            "          <tr><td>Transition-system completeness</td><td>Transition matrix and guard diagnostics expose missing else/self-hold assumptions and multiple outgoing transitions.</td></tr>",
+            "          <tr><td>Executable handoff boundary</td><td>SCXML/Stateflow-oriented handoff is generated separately; this page is the human review surface.</td></tr>",
+            "          <tr><td>Scenario-based validation</td><td>Interactive step buttons let reviewers walk the expected path and compare state/output effects.</td></tr>",
+            "        </tbody>",
+            "      </table>",
+            "      <div class=\"review-badges\">",
+            f"        <span>Initial state: <strong data-current-state>{escape(initial_state)}</strong></span>",
+            f"        <span>{len(states)} states</span>",
+            f"        <span>{len(model.transitions)} transitions</span>",
+            f"        <span>{len(model.controls)} control rules</span>",
+            "      </div>",
+            "      <div class=\"state-playback\">",
+            "        <div class=\"playback-status\">",
+            "          <span>Current outputs</span>",
+            f"          <strong data-current-outputs>{escape(_initial_output_summary(model))}</strong>",
+            "        </div>",
+            "        <div class=\"playback-buttons\">",
+            *(_state_playback_buttons(model)),
+            "          <button type=\"button\" data-reset-state>Reset</button>",
+            "        </div>",
+            "      </div>",
+            "      <h3>State Inventory</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>State</th><th>Role</th><th>Incoming</th><th>Outgoing</th><th>Owned output effects</th><th>Review finding</th></tr></thead>",
+            "        <tbody>",
+            inventory_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Transition Table</h3>",
+            "      <table class=\"review-table\">",
+            "        <thead><tr><th>Transition</th><th>Trigger / Guard</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>",
+            "        <tbody>",
+            transition_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Transition Matrix</h3>",
+            "      <table class=\"review-table compact transition-matrix\">",
+            f"        <thead><tr><th>Source \\ Target</th>{matrix_headers}</tr></thead>",
+            "        <tbody>",
+            matrix_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Guard Diagnostics</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>State</th><th>Outgoing guards</th><th>Determinism / completeness check</th><th>Required reviewer decision</th></tr></thead>",
+            "        <tbody>",
+            diagnostic_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Action Semantics</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>Action class</th><th>Current support</th><th>Review implication</th></tr></thead>",
+            "        <tbody>",
+            "          <tr><td>Transition action</td><td>Supported through <code>mbd-control</code> actions on the selected transition.</td><td>State and output effects must appear in the transition row.</td></tr>",
+            "          <tr><td>Entry / during / exit action</td><td>Unsupported in this preview subset.</td><td>Do not infer hidden Stateflow-style entry, during, or exit behavior.</td></tr>",
+            "          <tr><td>Output timing</td><td>Outputs are reviewed as transition effects in the discrete scenario step.</td><td>Treat this as preview semantics; tool-backed timing verification is external.</td></tr>",
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Scenario Walk-Through</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>Step</th><th>Expected source state</th><th>Input / event</th><th>Selected transition</th><th>Expected target state</th><th>Expected output effect</th><th>Trace</th><th>Scenario</th><th>Report evidence</th></tr></thead>",
+            "        <tbody>",
+            walkthrough_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <h3>Compact State Summary</h3>",
+            "      <table class=\"review-table compact\">",
+            "        <thead><tr><th>State</th><th>Allowed guard(s)</th><th>Output effect after transition</th></tr></thead>",
+            "        <tbody>",
+            state_rows,
+            "        </tbody>",
+            "      </table>",
+            "      <div class=\"review-notes\">",
+            "        <p><strong>Review gates:</strong> every state has an explicit outgoing rule for the intended path; every transition has one owning control rule; every effect is visible as state/output actions; every behavior row has requirement and scenario evidence.</p>",
+            "        <p><strong>Unsupported in this slice:</strong> hierarchy, parallel states, history, time events, entry/exit/do actions, backtracking flowcharts, and multiple enabled outgoing transitions from the same state.</p>",
+            "      </div>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_state_inventory_row(model: MbdModelIR, state: str, initial_state: str) -> str:
+    incoming = [transition for transition in model.transitions if transition.target == state]
+    outgoing = [transition for transition in model.transitions if transition.source == state]
+    owned_outputs = sorted(
+        {
+            key
+            for transition in outgoing
+            for control in [_control_rule_for_transition(model.controls, transition)]
+            if control is not None
+            for key in control.actions
+            if key != "state"
+        }
+    )
+    role = "initial/default" if state == initial_state else "reachable"
+    if not incoming and state != initial_state:
+        finding = "No incoming transition; review reachability."
+    elif not outgoing:
+        finding = "No outgoing transition; review terminal-state intent."
+    else:
+        finding = "Declared path is reviewable."
+    return (
+        "          <tr>"
+        f"<td><code>{escape(state)}</code></td>"
+        f"<td>{escape(role)}</td>"
+        f"<td>{len(incoming)}</td>"
+        f"<td>{len(outgoing)}</td>"
+        f"<td>{escape(', '.join(owned_outputs) or 'none')}</td>"
+        f"<td>{escape(finding)}</td>"
+        "</tr>"
+    )
+
+
+def _ir_transition_matrix_row(model: MbdModelIR, states: list[str], source_state: str) -> str:
+    cells = []
+    for target_state in states:
+        transitions = [
+            transition
+            for transition in model.transitions
+            if transition.source == source_state and transition.target == target_state
+        ]
+        cell_text = "; ".join(
+            f"{transition.condition} / {_control_actions(_control_rule_for_transition(model.controls, transition))}"
+            for transition in transitions
+        )
+        cells.append(f"<td>{escape(cell_text or '-')}</td>")
+    return f"          <tr><th>{escape(source_state)}</th>{''.join(cells)}</tr>"
+
+
+def _ir_guard_diagnostic_row(model: MbdModelIR, state: str) -> str:
+    outgoing = [transition for transition in model.transitions if transition.source == state]
+    guards = [transition.condition for transition in outgoing]
+    if not outgoing:
+        check = "No outgoing transition declared."
+        decision = "Confirm this state is intentionally terminal, or add an outgoing rule."
+    elif len(outgoing) == 1:
+        guard = guards[0].strip().lower()
+        if guard in {"always", "true"}:
+            check = "Single unconditional outgoing transition."
+            decision = "Confirm automatic transition is intended."
+        else:
+            check = "Single guarded outgoing transition; false case is implicit self-hold."
+            decision = "Confirm self-hold is intended or add an explicit else rule."
+    elif len(set(guards)) != len(guards):
+        check = "Duplicate outgoing guard detected."
+        decision = "Resolve duplicate guard or document priority behavior."
+    else:
+        check = "Multiple outgoing guards; overlap analysis is not proven by this subset."
+        decision = "Review guard mutual exclusivity and priority order."
+    return (
+        "          <tr>"
+        f"<td><code>{escape(state)}</code></td>"
+        f"<td>{escape(', '.join(guards) or 'none')}</td>"
+        f"<td>{escape(check)}</td>"
+        f"<td>{escape(decision)}</td>"
+        "</tr>"
+    )
+
+
+def _ir_scenario_walkthrough_row(
+    model: MbdModelIR,
+    index: int,
+    transition: TransitionIR,
+) -> str:
+    rule = _control_rule_for_transition(model.controls, transition)
+    rule_name = rule.name if rule is not None else "missing rule"
+    actions = _control_actions(rule)
+    trace = ", ".join(rule.trace) if rule is not None and rule.trace else "Missing trace"
+    scenarios = ", ".join(rule.scenarios) if rule is not None and rule.scenarios else "Missing scenario"
+    report_evidence = _report_evidence_for_scenarios(rule.scenarios if rule is not None else [])
+    return (
+        "          <tr>"
+        f"<td>{index}</td>"
+        f"<td><code>{escape(transition.source)}</code></td>"
+        f"<td>{escape(transition.condition)}</td>"
+        f"<td>{escape(rule_name)}</td>"
+        f"<td><code>{escape(transition.target)}</code></td>"
+        f"<td>{escape(actions)}</td>"
+        f"<td>{escape(trace)}</td>"
+        f"<td>{escape(scenarios)}</td>"
+        f"<td>{escape(report_evidence)}</td>"
+        "</tr>"
+    )
+
+
+def _report_evidence_for_scenarios(scenarios: list[str]) -> str:
+    if not scenarios:
+        return "Missing report link"
+    return ", ".join(f"reports/{scenario}.md" for scenario in scenarios)
+
+
+def _state_playback_buttons(model: MbdModelIR) -> list[str]:
+    buttons: list[str] = []
+    for index, transition in enumerate(model.transitions):
+        rule = _control_rule_for_transition(model.controls, transition)
+        label = f"{transition.source} -> {transition.target}"
+        condition = transition.condition
+        actions = _control_actions(rule)
+        buttons.append(
+            f'          <button type="button" data-step-index="{index}">{escape(label)} <span>{escape(condition)}</span><small>{escape(actions)}</small></button>'
+        )
+    return buttons
+
+
+def _outgoing_conditions(model: MbdModelIR, state: str) -> str:
+    conditions = [transition.condition for transition in model.transitions if transition.source == state]
+    return ", ".join(conditions) if conditions else "No outgoing transition"
+
+
+def _state_output_summary(model: MbdModelIR, state: str) -> str:
+    summaries: list[str] = []
+    for transition in model.transitions:
+        if transition.source != state:
+            continue
+        rule = _control_rule_for_transition(model.controls, transition)
+        if rule is not None:
+            summaries.append(f"{transition.target}: {_control_actions(rule)}")
+    return "; ".join(summaries) if summaries else "No action evidence"
+
+
+def _initial_output_summary(model: MbdModelIR) -> str:
+    outputs = [
+        f"{port.name}={port.default or 'unset'}"
+        for port in model.ports.values()
+        if port.direction == "out"
+    ]
+    return ", ".join(outputs) if outputs else "No outputs"
+
+
+def _control_actions(control: ControlRuleIR | None) -> str:
+    if control is None:
+        return "No matching control rule"
+    return ", ".join(f"{key}={value}" for key, value in control.actions.items()) or "No actions"
+
+
+def _ir_state_machine_review_script(model: MbdModelIR) -> str:
+    if not model.transitions:
+        return ""
+    initial_state = _ordered_states(model.transitions)[0]
+    initial_outputs = {
+        port.name: port.default or ""
+        for port in model.ports.values()
+        if port.direction == "out"
+    }
+    steps = []
+    for transition in model.transitions:
+        rule = _control_rule_for_transition(model.controls, transition)
+        outputs = dict(initial_outputs)
+        state = transition.target
+        actions = rule.actions if rule is not None else {}
+        for key, value in actions.items():
+            if key == "state":
+                state = value
+            elif key in initial_outputs:
+                outputs[key] = value
+        steps.append(
+            {
+                "source": transition.source,
+                "target": transition.target,
+                "condition": transition.condition,
+                "state": state,
+                "outputs": outputs,
+                "actions": actions,
+            }
+        )
+    return "\n".join(
+        [
+            "  <script>",
+            "    (() => {",
+            "      const panel = document.querySelector('[data-state-machine-review]');",
+            "      if (!panel) return;",
+            f"      const initialState = {json.dumps(initial_state)};",
+            f"      const initialOutputs = {json.dumps(initial_outputs, sort_keys=True)};",
+            f"      const steps = {json.dumps(steps, sort_keys=True)};",
+            "      const stateTarget = panel.querySelector('[data-current-state]');",
+            "      const outputsTarget = panel.querySelector('[data-current-outputs]');",
+            "      const renderOutputs = (outputs) => Object.entries(outputs).map(([k, v]) => `${k}=${v}`).join(', ');",
+            "      const setReviewState = (state, outputs) => {",
+            "        stateTarget.textContent = state;",
+            "        outputsTarget.textContent = renderOutputs(outputs);",
+            "      };",
+            "      panel.querySelectorAll('[data-step-index]').forEach((button) => {",
+            "        button.addEventListener('click', () => {",
+            "          const step = steps[Number(button.dataset.stepIndex)];",
+            "          setReviewState(step.state, step.outputs);",
+            "          panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.toggle('active-step', item === button));",
+            "        });",
+            "      });",
+            "      panel.querySelector('[data-reset-state]')?.addEventListener('click', () => {",
+            "        setReviewState(initialState, initialOutputs);",
+            "        panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.remove('active-step'));",
+            "      });",
+            "    })();",
+            "  </script>",
+        ]
+    )
+
+
+def _ir_state_machine_review_package(model: MbdModelIR) -> str:
+    if not model.transitions:
+        return ""
+    rows = "\n".join(_ir_state_machine_review_row(model, transition) for transition in model.transitions)
+    return "\n".join(
+        [
+            '    <section class="panel">',
+            "      <h2>State Machine Review Package</h2>",
+            "      <p>State-machine review needs the transition diagram plus a table of guards, actions, traces, scenarios, and execution assumptions. This table is generated from <code>mbd-state</code> and <code>mbd-control</code> together.</p>",
+            "      <table>",
+            "        <thead><tr><th>Transition</th><th>Guard/Event</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>",
+            "        <tbody>",
+            rows,
+            "        </tbody>",
+            "      </table>",
+            "    </section>",
+        ]
+    )
+
+
+def _ir_state_machine_review_row(model: MbdModelIR, transition: TransitionIR) -> str:
+    rule = _control_rule_for_transition(model.controls, transition)
+    if rule is None:
+        rule_name = "No matching control rule"
+        actions = "Missing action evidence"
+        trace = "Missing trace"
+        scenarios = "Missing scenario"
+    else:
+        rule_name = f"{rule.name} (priority {rule.priority}, owner {rule.owner or 'unallocated'})"
+        actions = ", ".join(f"{key}={value}" for key, value in rule.actions.items()) or "No actions"
+        trace = ", ".join(rule.trace) or "Missing trace"
+        scenarios = ", ".join(rule.scenarios) or "Missing scenario"
+    return (
+        "          <tr>"
+        f"<td><code>{escape(transition.source)} -> {escape(transition.target)}</code></td>"
+        f"<td>{escape(transition.condition)}</td>"
+        f"<td>{escape(rule_name)}</td>"
+        f"<td>{escape(actions)}</td>"
+        f"<td>{escape(trace)}</td>"
+        f"<td>{escape(scenarios)}</td>"
+        "</tr>"
+    )
+
+
+def _control_rule_for_transition(
+    controls: list[ControlRuleIR],
+    transition: TransitionIR,
+) -> ControlRuleIR | None:
+    candidates = [
+        control
+        for control in controls
+        if control.state_scope == transition.source
+        and control.actions.get("state") == transition.target
+        and control.condition == transition.condition
+    ]
+    if not candidates:
+        candidates = [
+            control
+            for control in controls
+            if control.state_scope == transition.source
+            and control.actions.get("state") == transition.target
+        ]
+    if not candidates:
+        return None
+    return sorted(candidates, key=lambda item: (item.priority, item.name))[0]
 
 
 def _ordered_states(transitions: list[TransitionIR]) -> list[str]:
@@ -718,11 +1708,12 @@ def _ir_control_rule_svg(model: MbdModelIR) -> str:
 
 
 def _ir_harness_boundary_svg(model: MbdModelIR) -> str:
-    sensors = [device for device in model.harness_devices if device.role == "sensor"]
+    sources = [device for device in model.harness_devices if device.role in {"source", "sensor"}]
     controllers = [device for device in model.harness_devices if device.role == "controller"]
     actuators = [device for device in model.harness_devices if device.role == "actuator"]
     controller = controllers[0].name if controllers else model.component.name
-    actuator_names = [device.name for device in actuators] or ["Virtual Actuator"]
+    source_names = [device.name for device in sources] or ["Scenario Inputs"]
+    actuator_names = [device.name for device in actuators]
     height = 310
     parts = [
         '    <section class="panel">',
@@ -731,17 +1722,23 @@ def _ir_harness_boundary_svg(model: MbdModelIR) -> str:
         f'      <svg class="diagram" viewBox="0 0 1180 {height}" role="img" aria-label="Harness boundary generated from mbd-harness">',
         *(_svg_defs("irHarnessArrow")),
     ]
-    sensor_name = sensors[0].name if sensors else "Virtual Sensor"
-    parts.extend(_svg_node("Scenario Steps", 42, 118, "test inputs"))
-    parts.extend(_svg_node(sensor_name, 286, 118, "virtual IC"))
-    parts.extend(_svg_node(controller, 530, 118, "HAL controller"))
-    for index, actuator in enumerate(actuator_names):
-        parts.extend(_svg_node(actuator, 784, 72 + index * 94, "virtual IC"))
-        parts.append(
-            f'        <line x1="730" y1="153" x2="784" y2="{107 + index * 94}" class="ir-arrow"></line>'
-        )
-    parts.extend(_svg_node("Scenario Report", 1010, 118, "evidence"))
-    for x1, y1, x2, y2 in [(242, 153, 286, 153), (486, 153, 530, 153), (984, 153, 1010, 153)]:
+    parts.extend(_svg_node("Scenario Steps", 42, 118, "test sequence"))
+    source_label = ", ".join(source_names)
+    parts.extend(_svg_node(source_label, 286, 118, "declared source"))
+    parts.extend(_svg_node(controller, 530, 118, "controller boundary"))
+    report_x = 1010
+    if actuator_names:
+        for index, actuator in enumerate(actuator_names):
+            parts.extend(_svg_node(actuator, 784, 72 + index * 94, "declared actuator"))
+            parts.append(
+                f'        <line x1="730" y1="153" x2="784" y2="{107 + index * 94}" class="ir-arrow"></line>'
+            )
+        parts.extend(_svg_node("Scenario Report", report_x, 118, "evidence"))
+        parts.append('        <line x1="984" y1="153" x2="1010" y2="153" class="ir-arrow"></line>')
+    else:
+        parts.extend(_svg_node("Scenario Report", 784, 118, "evidence"))
+        report_x = 784
+    for x1, y1, x2, y2 in [(242, 153, 286, 153), (486, 153, 530, 153), (730, 153, report_x, 153)]:
         parts.append(f'        <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" class="ir-arrow"></line>')
     parts.extend(["      </svg>", "    </section>"])
     return "\n".join(parts)
@@ -1190,6 +2187,125 @@ def _css() -> str:
       margin-bottom: 18px;
       overflow-x: auto;
     }
+    .state-review {
+      border-color: #9fb2b7;
+      background: #fbfdfd;
+    }
+    .spec-first-review {
+      border-color: #7aa0a7;
+      background: #fbfdfd;
+    }
+    .review-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      min-width: 0;
+    }
+    .evidence-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .mini-state-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .initial-dot {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+    .review-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .review-badges span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 11px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .state-playback {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+      gap: 14px;
+      margin: 16px 0;
+      align-items: stretch;
+    }
+    .playback-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+    .playback-status span {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .playback-status strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .playback-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+    .playback-buttons button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .playback-buttons button:hover, .playback-buttons button.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .playback-buttons span, .playback-buttons small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .review-table.compact {
+      font-size: 13px;
+    }
+    .review-notes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .review-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
@@ -1314,6 +2430,7 @@ def _css() -> str:
     .policy h2 { color: var(--warn); }
     @media (max-width: 840px) {
       .hero, .grid { grid-template-columns: 1fr; }
+      .state-playback, .review-notes, .review-compare { grid-template-columns: 1fr; }
       .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
       .hero-copy, .panel { padding: 16px; }
       h1 { font-size: 34px; }

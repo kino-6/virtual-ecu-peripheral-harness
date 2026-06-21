@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="OFF">
+  <!-- Generated state-machine handoff from samples/simple_relay_hysteresis/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: RLY-001, RLY-002, RLY-003, RLY-004, RLY-005 -->
+  <!-- priority 10 off_to_on owner ToyRelayController from OFF when level &gt;= onThreshold trace RLY-001, RLY-003, RLY-005 scenarios hysteresis_cycle -->
+  <!-- priority 20 on_to_off owner ToyRelayController from ON when level &lt;= offThreshold trace RLY-002, RLY-003, RLY-005 scenarios hysteresis_cycle -->
+  <!-- function ToyRelayController owns OFF, ON, active trace RLY-001, RLY-002, RLY-003, RLY-004, RLY-005 -->
+  <state id="OFF">
+    <transition event="level &gt;= onThreshold" target="ON" />
+  </state>
+  <state id="ON">
+    <transition event="level &lt;= offThreshold" target="OFF" />
+  </state>
+</scxml>

@@ -1,0 +1,11 @@
+name: simple_switch_select_high
+model: ToySwitchSelector
+steps:
+  - atMs: 0
+    setInput:
+      name: selectHigh
+      value: true
+expect:
+  finalState: INITIAL
+  outputs:
+    selectedValue: 100

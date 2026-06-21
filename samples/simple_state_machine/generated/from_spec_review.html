@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToyStateMachine MBDレビュー</title>
+  <style>
+:root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5f6f76;
+      --line: #c7d2d6;
+      --panel: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+      --accent-soft: #dcebea;
+      --warn: #8a4b25;
+      --warn-soft: #f6e7d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-copy, .hero-facts, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .hero-copy { padding: 28px; }
+    .hero-copy p {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    p, span, li, td, th { color: var(--muted); }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      background: var(--line);
+    }
+    .hero-facts div {
+      background: var(--panel);
+      padding: 18px;
+    }
+    .hero-facts strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .hero-facts span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+    .state-review {
+      border-color: #9fb2b7;
+      background: #fbfdfd;
+    }
+    .spec-first-review {
+      border-color: #7aa0a7;
+      background: #fbfdfd;
+    }
+    .review-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      min-width: 0;
+    }
+    .evidence-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .mini-state-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .initial-dot {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+    .review-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .review-badges span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 11px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .state-playback {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+      gap: 14px;
+      margin: 16px 0;
+      align-items: stretch;
+    }
+    .playback-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+    .playback-status span {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .playback-status strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .playback-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+    .playback-buttons button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .playback-buttons button:hover, .playback-buttons button.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .playback-buttons span, .playback-buttons small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .review-table.compact {
+      font-size: 13px;
+    }
+    .review-notes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .review-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+    }
+    .diagram {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+      margin-top: 16px;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .node, .state {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 2;
+    }
+    .mbd-block {
+      fill: #ffffff;
+      stroke: #78909a;
+      stroke-width: 2;
+      filter: drop-shadow(0 2px 2px rgba(23, 32, 38, 0.08));
+    }
+    .initial { fill: var(--accent-soft); stroke: var(--accent); }
+    .arrow, .state-arrow {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .state-arrow { stroke: #475569; marker-end: url(#stateArrow); }
+    .signal-line {
+      stroke: #256f3f;
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#signalArrow);
+    }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
+    .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
+    .node-title, .state-label {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-title.small { font-size: 12px; }
+    .block-title {
+      fill: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .block-kind {
+      fill: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .port-label {
+      fill: #334155;
+      font-size: 11px;
+    }
+    .signal-label {
+      fill: #1f5f36;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-note, .edge-note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .edge-label {
+      fill: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); font-weight: 700; }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .policy {
+      border-color: #e0c3a8;
+      background: var(--warn-soft);
+    }
+    .policy h2 { color: var(--warn); }
+    @media (max-width: 840px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .state-playback, .review-notes, .review-compare { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
+      .hero-copy, .panel { padding: 16px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell compact-shell">
+    <section class="hero compact-hero">
+      <div class="hero-copy">
+        <p>仕様から生成したMBDの確認資料</p>
+        <h1>ToyStateMachine MBDレビュー</h1>
+        <span>仕様意図、状態遷移、生成MBD、未解決QAだけを並べています。ツール別成果物は補助資料です。</span>
+      </div>
+      <div class="hero-facts" aria-label="model facts">
+        <div><strong>5</strong><span>ポート</span></div>
+        <div><strong>3</strong><span>遷移</span></div>
+        <div><strong>3</strong><span>制御ルール</span></div>
+        <div><strong>4</strong><span>要求ID</span></div>
+      </div>
+    </section>
+    <section class="panel spec-first-review">
+      <h2>仕様 vs 生成MBD</h2>
+      <div class="review-badges">
+        <span>仕様: <strong>samples/simple_state_machine/spec.md</strong></span>
+        <span>初期状態: <strong>IDLE</strong> / 生成 <strong>IDLE</strong> (一致)</span>
+        <span>シナリオ証跡: <strong>full_cycle (reports/full_cycle.md)</strong></span>
+      </div>
+      <section class="verification-summary">
+        <h3>Harness検証結果</h3>
+        <table class="review-table compact">
+          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>
+          <tbody>
+          <tr><td>full_cycle</td><td><strong>PASS</strong></td><td>IDLE</td><td>3</td><td>最終状態=IDLE, busy=False, complete=False</td><td><code>reports/full_cycle.md</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <h3>要求ごとの確認</h3>
+      <table class="review-table">
+        <thead><tr><th>要求</th><th>仕様意図</th><th>生成MBDの証跡</th><th>シナリオ</th><th>判定</th></tr></thead>
+        <tbody>
+          <tr><td><code>SM-001</code></td><td>IDLE -&gt; RUNNING。出力/状態更新: busy=true, complete=false。</td><td>制御: idle_to_running / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-002</code></td><td>RUNNING -&gt; DONE。出力/状態更新: busy=false, complete=true。</td><td>制御: running_to_done / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-003</code></td><td>DONE -&gt; IDLE。出力/状態更新: busy=false, complete=false。</td><td>制御: done_to_idle / 機能: ToyStateController / 信号線: 3件 / Harness: ToyCommandSource, ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
+          <tr><td><code>SM-004</code></td><td>レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。</td><td>制御: idle_to_running, running_to_done, done_to_idle / 機能: ToyStateController / 信号線: 2件 / Harness: ToyStateMachine</td><td>full_cycle</td><td>一致</td></tr>
+        </tbody>
+      </table>
+      <h3>状態図の比較</h3>
+      <div class="review-compare">
+        <div class="evidence-card">
+          <h4>仕様の状態図</h4>
+          <svg class="mini-state-diagram" viewBox="0 0 760 190" role="img" aria-label="仕様の状態図">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+            <circle cx="34" cy="92" r="10" class="initial-dot"></circle>
+            <line x1="48" y1="92" x2="96" y2="92" class="ir-state-line"></line>
+            <text x="72" y="80" text-anchor="middle" class="edge-note">initial</text>
+            <line x1="216" y1="92" x2="286" y2="92" class="ir-state-line"></line>
+            <text x="251" y="80" text-anchor="middle" class="edge-note">startCommand == true</text>
+            <line x1="406" y1="92" x2="476" y2="92" class="ir-state-line"></line>
+            <text x="441" y="80" text-anchor="middle" class="edge-note">finishCommand == true</text>
+            <path d="M 596 132 C 346 170, 346 170, 96 132" class="ir-state-line"></path>
+            <text x="346" y="120" text-anchor="middle" class="edge-note">resetCommand == true</text>
+            <rect x="96" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="156" y="98" text-anchor="middle" class="state-label">IDLE</text>
+            <rect x="286" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="346" y="98" text-anchor="middle" class="state-label">RUNNING</text>
+            <rect x="476" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="536" y="98" text-anchor="middle" class="state-label">DONE</text>
+          </svg>
+        </div>
+        <div class="evidence-card">
+          <h4>生成MBDの状態図</h4>
+          <svg class="mini-state-diagram" viewBox="0 0 760 190" role="img" aria-label="生成MBDの状態図">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+            <circle cx="34" cy="92" r="10" class="initial-dot"></circle>
+            <line x1="48" y1="92" x2="96" y2="92" class="ir-state-line"></line>
+            <text x="72" y="80" text-anchor="middle" class="edge-note">initial</text>
+            <line x1="216" y1="92" x2="286" y2="92" class="ir-state-line"></line>
+            <text x="251" y="80" text-anchor="middle" class="edge-note">startCommand == true</text>
+            <line x1="406" y1="92" x2="476" y2="92" class="ir-state-line"></line>
+            <text x="441" y="80" text-anchor="middle" class="edge-note">finishCommand == true</text>
+            <path d="M 596 132 C 346 170, 346 170, 96 132" class="ir-state-line"></path>
+            <text x="346" y="120" text-anchor="middle" class="edge-note">resetCommand == true</text>
+            <rect x="96" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="156" y="98" text-anchor="middle" class="state-label">IDLE</text>
+            <rect x="286" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="346" y="98" text-anchor="middle" class="state-label">RUNNING</text>
+            <rect x="476" y="62" width="120" height="60" rx="8" class="state"></rect>
+            <text x="536" y="98" text-anchor="middle" class="state-label">DONE</text>
+          </svg>
+        </div>
+      </div>
+      <h3>遷移ごとの確認</h3>
+      <table class="review-table">
+        <thead><tr><th>仕様の遷移</th><th>生成された遷移</th><th>生成された動作</th><th>トレース</th><th>判定</th></tr></thead>
+        <tbody>
+          <tr><td><code>[*] -> IDLE</code> / initial</td><td>生成初期状態: <code>IDLE</code></td><td>初期状態</td><td>仕様構造</td><td>一致</td></tr>
+          <tr><td><code>IDLE -> RUNNING</code> / startCommand == true</td><td>IDLE -&gt; RUNNING / startCommand == true</td><td>state=RUNNING, busy=true, complete=false</td><td>SM-001, SM-004</td><td>一致</td></tr>
+          <tr><td><code>RUNNING -> DONE</code> / finishCommand == true</td><td>RUNNING -&gt; DONE / finishCommand == true</td><td>state=DONE, busy=false, complete=true</td><td>SM-002, SM-004</td><td>一致</td></tr>
+          <tr><td><code>DONE -> IDLE</code> / resetCommand == true</td><td>DONE -&gt; IDLE / resetCommand == true</td><td>state=IDLE, busy=false, complete=false</td><td>SM-003, SM-004</td><td>一致</td></tr>
+        </tbody>
+      </table>
+      <h3>未解決QA</h3>
+      <table class="review-table compact">
+        <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>
+        <tbody>
+          <tr><td>ガードが偽の場合は、プレビュー上は暗黙の自己保持として扱う。この解釈でよいか。</td><td>受け入れ前に人間が判断する。</td></tr>
+        </tbody>
+      </table>
+      <h3>対象外</h3>
+      <table class="review-table compact">
+        <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>
+        <tbody>
+          <tr><td colspan="2">None</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel policy">
+      <h2>確認範囲</h2>
+      <p>このHTMLは <code>from_spec.model.mbd.md</code> から生成したレビュー資料です。Python実行はプレビュー用途で、正式な検証は生成されたSCXML、Simulink/Stateflow向け成果物、Modelica/FMI向け成果物を既存MBD環境へ渡して行います。</p>
+    </section>
+  </main>
+</body>
+</html>

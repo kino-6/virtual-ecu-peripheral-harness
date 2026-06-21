@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToyRelayHysteresis MBD Review Artifact</title>
+  <style>
+:root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5f6f76;
+      --line: #c7d2d6;
+      --panel: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+      --accent-soft: #dcebea;
+      --warn: #8a4b25;
+      --warn-soft: #f6e7d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-copy, .hero-facts, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .hero-copy { padding: 28px; }
+    .hero-copy p {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    p, span, li, td, th { color: var(--muted); }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      background: var(--line);
+    }
+    .hero-facts div {
+      background: var(--panel);
+      padding: 18px;
+    }
+    .hero-facts strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .hero-facts span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+    .state-review {
+      border-color: #9fb2b7;
+      background: #fbfdfd;
+    }
+    .spec-first-review {
+      border-color: #7aa0a7;
+      background: #fbfdfd;
+    }
+    .review-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      min-width: 0;
+    }
+    .evidence-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .mini-state-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .initial-dot {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+    .review-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .review-badges span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 11px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .state-playback {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+      gap: 14px;
+      margin: 16px 0;
+      align-items: stretch;
+    }
+    .playback-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+    .playback-status span {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .playback-status strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .playback-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+    .playback-buttons button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .playback-buttons button:hover, .playback-buttons button.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .playback-buttons span, .playback-buttons small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .review-table.compact {
+      font-size: 13px;
+    }
+    .review-notes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .review-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+    }
+    .diagram {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+      margin-top: 16px;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .node, .state {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 2;
+    }
+    .mbd-block {
+      fill: #ffffff;
+      stroke: #78909a;
+      stroke-width: 2;
+      filter: drop-shadow(0 2px 2px rgba(23, 32, 38, 0.08));
+    }
+    .initial { fill: var(--accent-soft); stroke: var(--accent); }
+    .arrow, .state-arrow {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .state-arrow { stroke: #475569; marker-end: url(#stateArrow); }
+    .signal-line {
+      stroke: #256f3f;
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#signalArrow);
+    }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
+    .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
+    .node-title, .state-label {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-title.small { font-size: 12px; }
+    .block-title {
+      fill: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .block-kind {
+      fill: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .port-label {
+      fill: #334155;
+      font-size: 11px;
+    }
+    .signal-label {
+      fill: #1f5f36;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-note, .edge-note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .edge-label {
+      fill: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); font-weight: 700; }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .policy {
+      border-color: #e0c3a8;
+      background: var(--warn-soft);
+    }
+    .policy h2 { color: var(--warn); }
+    @media (max-width: 840px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .state-playback, .review-notes, .review-compare { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
+      .hero-copy, .panel { padding: 16px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p>Author in text. Review against the specification.</p>
+        <h1>ToyRelayHysteresis MBD Review Artifact</h1>
+        <span>Generated from Mermaid-like Markdown markup. Use this page to ask whether the MBD matches the specification; external MBD tools remain the verification backend.</span>
+      </div>
+      <div class="hero-facts" aria-label="model facts">
+        <div><strong>2</strong><span>ports</span></div>
+        <div><strong>1</strong><span>functions</span></div>
+        <div><strong>2</strong><span>control rules</span></div>
+        <div><strong>2</strong><span>harness boundaries</span></div>
+      </div>
+    </section>
+
+    <section class="panel review-gate">
+      <h2>Human Review Question</h2>
+      <p><strong>Does the generated MBD represent the specification as written?</strong> Review this artifact from top to bottom before opening tool-specific handoff files.</p>
+      <table>
+        <thead><tr><th>Concern</th><th>Generated evidence in this artifact</th></tr></thead>
+        <tbody>
+          <tr><td>Specification fidelity</td><td>5 requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>
+          <tr><td>Model behavior</td><td>2 priority-ordered control rule(s); state machine is present.</td></tr>
+          <tr><td>Scenario evidence</td><td>1 declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>
+          <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Review Evidence Map</h2>
+      <p>This page is organized around the reviewer question, not around file formats. Tool-specific artifacts are supporting evidence.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>Evidence source</th><th>What the reviewer checks</th></tr></thead>
+        <tbody>
+          <tr><td>Specification intent</td><td>sample spec / requirement IDs</td><td>Check that names, states, inputs, outputs, and expected behavior match the human-readable spec.</td></tr>
+          <tr><td>Functional decomposition</td><td>1 function(s)</td><td>Check responsibility allocation before inspecting detailed logic.</td></tr>
+          <tr><td>Interface and data flow</td><td>2 port(s), 5 flow(s)</td><td>Check signal direction and harness/report boundaries.</td></tr>
+          <tr><td>State/control semantics</td><td>2 transition(s), 2 control rule(s)</td><td>Check guard conditions, state scope, actions, priority, and unsupported assumptions.</td></tr>
+          <tr><td>Scenario/report evidence</td><td>scenario links on functions and controls</td><td>Check expected-vs-observed behavior outside this static page in generated reports.</td></tr>
+          <tr><td>Tool handoff</td><td>Simulink, SCXML, Modelica, FMI metadata</td><td>Check that semantics are structurally exported where supported, not only preserved as comments.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel state-review" data-state-machine-review>
+      <h2>State Machine Transition Review</h2>
+      <p>This is the state-machine review surface. Review the transition table first, then use the diagram as supporting evidence.</p>
+      <table class="review-table compact">
+        <thead><tr><th>Review basis</th><th>What this artifact exposes</th></tr></thead>
+        <tbody>
+          <tr><td>Finite modes and initial/default state</td><td>Initial state, state inventory, and outgoing transition coverage.</td></tr>
+          <tr><td>Trigger / guard / effect semantics</td><td>Each transition row separates guard/event text from state and output actions.</td></tr>
+          <tr><td>Transition-system completeness</td><td>Transition matrix and guard diagnostics expose missing else/self-hold assumptions and multiple outgoing transitions.</td></tr>
+          <tr><td>Executable handoff boundary</td><td>SCXML/Stateflow-oriented handoff is generated separately; this page is the human review surface.</td></tr>
+          <tr><td>Scenario-based validation</td><td>Interactive step buttons let reviewers walk the expected path and compare state/output effects.</td></tr>
+        </tbody>
+      </table>
+      <div class="review-badges">
+        <span>Initial state: <strong data-current-state>OFF</strong></span>
+        <span>2 states</span>
+        <span>2 transitions</span>
+        <span>2 control rules</span>
+      </div>
+      <div class="state-playback">
+        <div class="playback-status">
+          <span>Current outputs</span>
+          <strong data-current-outputs>active=false</strong>
+        </div>
+        <div class="playback-buttons">
+          <button type="button" data-step-index="0">OFF -&gt; ON <span>level &gt;= onThreshold</span><small>state=ON, active=true</small></button>
+          <button type="button" data-step-index="1">ON -&gt; OFF <span>level &lt;= offThreshold</span><small>state=OFF, active=false</small></button>
+          <button type="button" data-reset-state>Reset</button>
+        </div>
+      </div>
+      <h3>State Inventory</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Role</th><th>Incoming</th><th>Outgoing</th><th>Owned output effects</th><th>Review finding</th></tr></thead>
+        <tbody>
+          <tr><td><code>OFF</code></td><td>initial/default</td><td>1</td><td>1</td><td>active</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>ON</code></td><td>reachable</td><td>1</td><td>1</td><td>active</td><td>Declared path is reviewable.</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Table</h3>
+      <table class="review-table">
+        <thead><tr><th>Transition</th><th>Trigger / Guard</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>OFF -> ON</code></td><td>level &gt;= onThreshold</td><td>off_to_on (priority 10, owner ToyRelayController)</td><td>state=ON, active=true</td><td>RLY-001, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>ON -> OFF</code></td><td>level &lt;= offThreshold</td><td>on_to_off (priority 20, owner ToyRelayController)</td><td>state=OFF, active=false</td><td>RLY-002, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Matrix</h3>
+      <table class="review-table compact transition-matrix">
+        <thead><tr><th>Source \ Target</th><th>OFF</th><th>ON</th></tr></thead>
+        <tbody>
+          <tr><th>OFF</th><td>-</td><td>level &gt;= onThreshold / state=ON, active=true</td></tr>
+          <tr><th>ON</th><td>level &lt;= offThreshold / state=OFF, active=false</td><td>-</td></tr>
+        </tbody>
+      </table>
+      <h3>Guard Diagnostics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Outgoing guards</th><th>Determinism / completeness check</th><th>Required reviewer decision</th></tr></thead>
+        <tbody>
+          <tr><td><code>OFF</code></td><td>level &gt;= onThreshold</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+          <tr><td><code>ON</code></td><td>level &lt;= offThreshold</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+        </tbody>
+      </table>
+      <h3>Action Semantics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Action class</th><th>Current support</th><th>Review implication</th></tr></thead>
+        <tbody>
+          <tr><td>Transition action</td><td>Supported through <code>mbd-control</code> actions on the selected transition.</td><td>State and output effects must appear in the transition row.</td></tr>
+          <tr><td>Entry / during / exit action</td><td>Unsupported in this preview subset.</td><td>Do not infer hidden Stateflow-style entry, during, or exit behavior.</td></tr>
+          <tr><td>Output timing</td><td>Outputs are reviewed as transition effects in the discrete scenario step.</td><td>Treat this as preview semantics; tool-backed timing verification is external.</td></tr>
+        </tbody>
+      </table>
+      <h3>Scenario Walk-Through</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Step</th><th>Expected source state</th><th>Input / event</th><th>Selected transition</th><th>Expected target state</th><th>Expected output effect</th><th>Trace</th><th>Scenario</th><th>Report evidence</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>OFF</code></td><td>level &gt;= onThreshold</td><td>off_to_on</td><td><code>ON</code></td><td>state=ON, active=true</td><td>RLY-001, RLY-003, RLY-005</td><td>hysteresis_cycle</td><td>reports/hysteresis_cycle.md</td></tr>
+          <tr><td>2</td><td><code>ON</code></td><td>level &lt;= offThreshold</td><td>on_to_off</td><td><code>OFF</code></td><td>state=OFF, active=false</td><td>RLY-002, RLY-003, RLY-005</td><td>hysteresis_cycle</td><td>reports/hysteresis_cycle.md</td></tr>
+        </tbody>
+      </table>
+      <h3>Compact State Summary</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Allowed guard(s)</th><th>Output effect after transition</th></tr></thead>
+        <tbody>
+          <tr><td>OFF</td><td>level &gt;= onThreshold</td><td>ON: state=ON, active=true</td></tr>
+          <tr><td>ON</td><td>level &lt;= offThreshold</td><td>OFF: state=OFF, active=false</td></tr>
+        </tbody>
+      </table>
+      <div class="review-notes">
+        <p><strong>Review gates:</strong> every state has an explicit outgoing rule for the intended path; every transition has one owning control rule; every effect is visible as state/output actions; every behavior row has requirement and scenario evidence.</p>
+        <p><strong>Unsupported in this slice:</strong> hierarchy, parallel states, history, time events, entry/exit/do actions, backtracking flowcharts, and multiple enabled outgoing transitions from the same state.</p>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Pipeline</h2>
+      <p>The reviewer follows the generated chain from requirements to MBD IR, handoff artifacts, preview C, harness scenarios, and reports.</p>
+      <svg class="diagram" viewBox="0 0 1180 230" role="img" aria-label="MBD review pipeline from requirements to generated artifacts">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <line x1="220" y1="111" x2="260" y2="111" class="ir-arrow"></line>
+        <line x1="440" y1="111" x2="480" y2="111" class="ir-arrow"></line>
+        <line x1="660" y1="111" x2="700" y2="111" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="69" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="163" class="ir-arrow"></line>
+        <rect x="40" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="140" y="106" text-anchor="middle" class="node-title">Requirements</text>
+        <text x="140" y="128" text-anchor="middle" class="node-note">IDs and intent</text>
+        <rect x="260" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="360" y="106" text-anchor="middle" class="node-title">Specification</text>
+        <text x="360" y="128" text-anchor="middle" class="node-note">demo assumptions</text>
+        <rect x="480" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="580" y="106" text-anchor="middle" class="node-title">MBD Source</text>
+        <text x="580" y="128" text-anchor="middle" class="node-note">model.mbd.md</text>
+        <rect x="700" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="800" y="106" text-anchor="middle" class="node-title">MBD IR</text>
+        <text x="800" y="128" text-anchor="middle" class="node-note">parsed semantics</text>
+        <rect x="920" y="34" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="64" text-anchor="middle" class="node-title">Handoff Artifacts</text>
+        <text x="1020" y="86" text-anchor="middle" class="node-note">MBD tools</text>
+        <rect x="920" y="128" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="158" text-anchor="middle" class="node-title">Harness Reports</text>
+        <text x="1020" y="180" text-anchor="middle" class="node-note">preview evidence</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Spec-Oriented Model Review Diagram</h2>
+      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. Use this view to check whether the MBD shape matches the specification-level Mermaid design overview before detailed control-rule review.</p>
+      <svg class="diagram" viewBox="0 0 1180 300" role="img" aria-label="Design overview generated from MBD source">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="115" width="190" height="70" rx="8" class="node"></rect>
+        <text x="137" y="145" text-anchor="middle" class="node-title small">ToyLevelSource</text>
+        <text x="137" y="177" text-anchor="middle" class="node-note">scenario source</text>
+        <rect x="536" y="115" width="230" height="70" rx="8" class="node"></rect>
+        <text x="651" y="145" text-anchor="middle" class="node-title small">ToyRelayController</text>
+        <text x="651" y="177" text-anchor="middle" class="node-note">function</text>
+        <rect x="1036" y="115" width="130" height="70" rx="8" class="node"></rect>
+        <text x="1101" y="145" text-anchor="middle" class="node-title small">ScenarioReport.observed...</text>
+        <text x="1101" y="177" text-anchor="middle" class="node-note">report</text>
+        <rect x="266" y="118" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="143" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="161" text-anchor="middle" class="node-title small">level</text>
+        <text x="371" y="180" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="153" class="ir-arrow"></line>
+        <text x="249" y="144" text-anchor="middle" class="edge-note">level</text>
+        <line x1="476" y1="153" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="806" y="118" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="148" text-anchor="middle" class="node-title small">Output active</text>
+        <text x="901" y="180" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="150" x2="806" y2="153" class="ir-arrow"></line>
+        <line x1="996" y1="153" x2="1036" y2="150" class="ir-arrow"></line>
+      </svg>
+    </section>
+
+    <section class="panel">
+      <h2>Functional Architecture</h2>
+      <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>
+      <svg class="diagram" viewBox="0 0 1180 168" role="img" aria-label="Functional decomposition generated from mbd-decomposition">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="44" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="66" class="node-title small">ToyRelayController</text>
+        <text x="58" y="87" class="node-note">owns OFF, ON, active</text>
+        <line x1="342" y1="73" x2="396" y2="73" class="ir-arrow"></line>
+        <rect x="396" y="44" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="68" class="node-note">in level, onThreshold, offThreshold</text>
+        <text x="412" y="88" class="node-note">out state, active</text>
+        <line x1="712" y1="73" x2="766" y2="73" class="ir-arrow"></line>
+        <rect x="766" y="44" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="68" class="node-note">trace RLY-001, RLY-002, RLY-003, RLY-00...</text>
+        <text x="782" y="88" class="edge-note">Own OFF/ON relay hysteresis and map threshold-crossin...</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Functional Decomposition</h2>
+      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
+      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>ToyRelayController</td><td>Own OFF/ON relay hysteresis and map threshold-crossing transitions to active output</td><td>OFF, ON, active</td><td>level, onThreshold, offThreshold</td><td>state, active</td><td>RLY-001, RLY-002, RLY-003, RLY-004, RLY-005</td><td>hysteresis_cycle</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Spec-To-MBD Compliance Review</h2>
+      <p>This review gate is generated from requirement traces in the MBD source. Expected behavior remains in the sample specification; this table only shows model and scenario evidence.</p>
+      <table>
+        <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>RLY-001</code></td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.onThreshold-&gt;ToyRelayController.onThreshold, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:off_to_on, harness:ToyLevelSource, harness:ToyRelayHysteresis</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>RLY-002</code></td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.offThreshold-&gt;ToyRelayController.offThreshold, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:on_to_off, harness:ToyLevelSource, harness:ToyRelayHysteresis</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>RLY-003</code></td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:off_to_on, control:on_to_off, harness:ToyLevelSource, harness:ToyRelayHysteresis</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>RLY-004</code></td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.onThreshold-&gt;ToyRelayController.onThreshold, flow:ToyRelayHysteresis.offThreshold-&gt;ToyRelayController.offThreshold, harness:ToyLevelSource, harness:ToyRelayHysteresis</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>RLY-005</code></td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyRelayHysteresis.active-&gt;ScenarioReport.observedBehavior, control:off_to_on, control:on_to_off, harness:ToyRelayHysteresis</td><td>hysteresis_cycle</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Checklist</h2>
+      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements traceability</td><td>Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.</td><td>Reject broad component-level trace as proof.</td></tr>
+          <tr><td>Interface and data-flow review</td><td>Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.</td><td>Reject hidden harness shortcuts.</td></tr>
+          <tr><td>State/control behavior</td><td>States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.</td><td>Reject split or contradictory behavior.</td></tr>
+          <tr><td>Requirements-based scenario evidence</td><td>Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.</td><td>Reject pass/fail without expected behavior.</td></tr>
+          <tr><td>Modeling standards and readability</td><td>Names are stable, diagrams are readable, and views are simpler than the behavior under review.</td><td>Reject needless visual complexity.</td></tr>
+          <tr><td>Generated artifact boundary</td><td>Handoff files and preview C are generated outputs from the MBD source.</td><td>Reject manual synchronization.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Control Semantics Ownership</h2>
+      <p><code>mbd-control</code> is the behavior owner for state and output decisions. State diagrams, SCXML, Simulink, Modelica, preview C, reports, and this HTML page are derived review or handoff views.</p>
+      <p>Selection policy: lower numeric priority wins after state scope and guard match. This removes hidden dependence on parser or runtime list order.</p>
+    </section>
+    <section class="panel">
+      <h2>MBD Data Flow Diagram</h2>
+      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 450" role="img" aria-label="MBD data flow generated from mbd-flow">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 266 73 C 441 73, 441 73, 616 73" class="ir-flow-line"></path>
+        <text x="441" y="65" text-anchor="middle" class="signal-label">scenario input</text>
+        <path d="M 556 73 C 586 73, 586 143, 616 143" class="ir-flow-line"></path>
+        <text x="586" y="100" text-anchor="middle" class="signal-label">switch-on threshold</text>
+        <path d="M 556 143 C 586 143, 586 213, 616 213" class="ir-flow-line"></path>
+        <text x="586" y="170" text-anchor="middle" class="signal-label">switch-off threshold</text>
+        <path d="M 846 283 C 731 283, 731 353, 616 353" class="ir-flow-line"></path>
+        <text x="731" y="310" text-anchor="middle" class="signal-label">relay output</text>
+        <path d="M 846 353 C 876 353, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="205" text-anchor="middle" class="signal-label">reported active output</text>
+        <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyLevelSource.level</text>
+        <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Source</text>
+        <rect x="326" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="68" text-anchor="middle" class="node-title small">ToyRelayHysteresis.onThreshold</text>
+        <text x="441" y="88" text-anchor="middle" class="node-note">Parameter</text>
+        <rect x="326" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="441" y="138" text-anchor="middle" class="node-title small">ToyRelayHysteresis.offThreshold</text>
+        <text x="441" y="158" text-anchor="middle" class="node-note">Parameter</text>
+        <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyRelayController.level</text>
+        <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyRelayController.onThreshold</text>
+        <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyRelayController.offThreshold</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyRelayController.active</text>
+        <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="326" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="348" text-anchor="middle" class="node-title small">ToyRelayHysteresis.active</text>
+        <text x="731" y="368" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Report</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine Review Package</h2>
+      <p>State-machine review needs the transition diagram plus a table of guards, actions, traces, scenarios, and execution assumptions. This table is generated from <code>mbd-state</code> and <code>mbd-control</code> together.</p>
+      <table>
+        <thead><tr><th>Transition</th><th>Guard/Event</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>OFF -> ON</code></td><td>level &gt;= onThreshold</td><td>off_to_on (priority 10, owner ToyRelayController)</td><td>state=ON, active=true</td><td>RLY-001, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+          <tr><td><code>ON -> OFF</code></td><td>level &lt;= offThreshold</td><td>on_to_off (priority 20, owner ToyRelayController)</td><td>state=OFF, active=false</td><td>RLY-002, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>State Machine Diagram</h2>
+      <p>States and transitions are parsed from <code>mbd-state</code>. Review this together with the State Machine Review Package above; SCXML/Stateflow-oriented files are generated handoff views.</p>
+      <svg class="diagram" viewBox="0 0 1180 320" role="img" aria-label="State machine generated from mbd-state">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">level &gt;= onThreshold</text>
+        <path d="M 431 128 C 291 128, 291 128, 151 128" class="ir-state-line"></path>
+        <text x="291" y="118" text-anchor="middle" class="edge-note">level &lt;= offThreshold</text>
+        <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="103" text-anchor="middle" class="state-label">OFF</text>
+        <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="103" text-anchor="middle" class="state-label">ON</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Harness Boundary Diagram</h2>
+      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Harness boundary generated from mbd-harness">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test sequence</text>
+        <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="386" y="148" text-anchor="middle" class="node-title">ToyLevelSource</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">declared source</text>
+        <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyRelayHysteresis</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">controller boundary</text>
+        <rect x="784" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="884" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
+        <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
+        <line x1="730" y1="153" x2="784" y2="153" class="ir-arrow"></line>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Requirements Trace Matrix</h2>
+      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
+      <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
+          <tr><td>RLY-001</td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.onThreshold-&gt;ToyRelayController.onThreshold, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:off_to_on, harness:ToyLevelSource, harness:ToyRelayHysteresis</td></tr>
+          <tr><td>RLY-002</td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.offThreshold-&gt;ToyRelayController.offThreshold, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:on_to_off, harness:ToyLevelSource, harness:ToyRelayHysteresis</td></tr>
+          <tr><td>RLY-003</td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayController.active-&gt;ToyRelayHysteresis.active, control:off_to_on, control:on_to_off, harness:ToyLevelSource, harness:ToyRelayHysteresis</td></tr>
+          <tr><td>RLY-004</td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyLevelSource.level-&gt;ToyRelayController.level, flow:ToyRelayHysteresis.onThreshold-&gt;ToyRelayController.onThreshold, flow:ToyRelayHysteresis.offThreshold-&gt;ToyRelayController.offThreshold, harness:ToyLevelSource, harness:ToyRelayHysteresis</td></tr>
+          <tr><td>RLY-005</td><td>component:ToyRelayHysteresis, function:ToyRelayController, flow:ToyRelayHysteresis.active-&gt;ScenarioReport.observedBehavior, control:off_to_on, control:on_to_off, harness:ToyRelayHysteresis</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Markup Sections</h2>
+      <p>The source is the Markdown authoring file. The IR and diagrams are generated artifacts.</p>
+      <ul>
+        <li><code>mbd-component</code></li>
+        <li><code>mbd-registers</code></li>
+        <li><code>mbd-state</code></li>
+        <li><code>mbd-decomposition</code></li>
+        <li><code>mbd-flow</code></li>
+        <li><code>mbd-control</code></li>
+        <li><code>mbd-harness</code></li>
+      </ul>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Ports</h2>
+        <table><thead><tr><th>Dir</th><th>Name</th><th>Type</th><th>Default</th></tr></thead><tbody>
+          <tr><td>in</td><td>level</td><td>count</td><td>0</td></tr>
+          <tr><td>out</td><td>active</td><td>bool</td><td>false</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>State Handoff</h2>
+        <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>
+        <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>
+          <tr><td>OFF</td><td>ON</td><td>level &gt;= onThreshold</td></tr>
+          <tr><td>ON</td><td>OFF</td><td>level &lt;= offThreshold</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Control Decision Table</h2>
+        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>10</td><td>off_to_on</td><td>ToyRelayController</td><td>OFF</td><td>level &gt;= onThreshold</td><td>state=ON, active=true</td><td>RLY-001, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+          <tr><td>20</td><td>on_to_off</td><td>ToyRelayController</td><td>ON</td><td>level &lt;= offThreshold</td><td>state=OFF, active=false</td><td>RLY-002, RLY-003, RLY-005</td><td>hysteresis_cycle</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>Harness Boundary</h2>
+        <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyLevelSource</td><td>source</td><td>virtual_ic</td><td>RLY-001, RLY-002, RLY-003, RLY-004</td></tr>
+          <tr><td>ToyRelayHysteresis</td><td>controller</td><td>hal</td><td>RLY-001, RLY-002, RLY-003, RLY-004, RLY-005</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="panel">
+      <h2>Flow Handoff</h2>
+      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyLevelSource.level</td><td>ToyRelayController.level</td><td>scenario input</td><td>RLY-001, RLY-002, RLY-003, RLY-004</td></tr>
+          <tr><td>ToyRelayHysteresis.onThreshold</td><td>ToyRelayController.onThreshold</td><td>switch-on threshold</td><td>RLY-001, RLY-004</td></tr>
+          <tr><td>ToyRelayHysteresis.offThreshold</td><td>ToyRelayController.offThreshold</td><td>switch-off threshold</td><td>RLY-002, RLY-004</td></tr>
+          <tr><td>ToyRelayController.active</td><td>ToyRelayHysteresis.active</td><td>relay output</td><td>RLY-001, RLY-002, RLY-003</td></tr>
+          <tr><td>ToyRelayHysteresis.active</td><td>ScenarioReport.observedBehavior</td><td>reported active output</td><td>RLY-005</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel policy">
+      <h2>Verification Boundary</h2>
+      <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const panel = document.querySelector('[data-state-machine-review]');
+      if (!panel) return;
+      const initialState = "OFF";
+      const initialOutputs = {"active": "false"};
+      const steps = [{"actions": {"active": "true", "state": "ON"}, "condition": "level >= onThreshold", "outputs": {"active": "true"}, "source": "OFF", "state": "ON", "target": "ON"}, {"actions": {"active": "false", "state": "OFF"}, "condition": "level <= offThreshold", "outputs": {"active": "false"}, "source": "ON", "state": "OFF", "target": "OFF"}];
+      const stateTarget = panel.querySelector('[data-current-state]');
+      const outputsTarget = panel.querySelector('[data-current-outputs]');
+      const renderOutputs = (outputs) => Object.entries(outputs).map(([k, v]) => `${k}=${v}`).join(', ');
+      const setReviewState = (state, outputs) => {
+        stateTarget.textContent = state;
+        outputsTarget.textContent = renderOutputs(outputs);
+      };
+      panel.querySelectorAll('[data-step-index]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const step = steps[Number(button.dataset.stepIndex)];
+          setReviewState(step.state, step.outputs);
+          panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.toggle('active-step', item === button));
+        });
+      });
+      panel.querySelector('[data-reset-state]')?.addEventListener('click', () => {
+        setReviewState(initialState, initialOutputs);
+        panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.remove('active-step'));
+      });
+    })();
+  </script>
+</body>
+</html>

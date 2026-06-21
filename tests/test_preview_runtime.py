@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from veph.markup_parser import parse_markup
+from veph.preview_runtime import run_preview
 from veph.preview_runtime import run_preview_file
 from veph.sample_catalog import load_sample
 
@@ -139,3 +141,80 @@ def test_thermal_protection_fault_latch_and_recovery_scenarios_pass(tmp_path):
     assert final_step["controlRuleEvaluations"][0]["owner"] == "FaultLatchRecoveryManager"
     assert final_step["controlRuleEvaluations"][0]["stateScope"] == "FAULT_LATCHED"
     assert final_step["controlRuleEvaluations"][0]["scenarios"] == ["thermal_protection_recovery"]
+
+
+def test_preview_runtime_evaluates_logical_or_and_not_expressions():
+    model = parse_markup(
+        """# Logical Expressions
+
+```mbd-component
+component ToyLogic
+bus virtual mode=preview wordBits=8
+
+port in enable: bool = false
+port in force: bool = false
+port in inhibit: bool = false
+port out active: bool = false
+port out allowed: bool = false
+```
+
+```mbd-registers
+STATUS 0x01 ro 8
+  bit 0 active reset=0
+  bit 1 allowed reset=0
+```
+
+```mbd-state
+note: no state machine
+```
+
+```mbd-flow
+ToyLogic.enable -> Logic.enable: input
+ToyLogic.force -> Logic.force: input
+ToyLogic.inhibit -> Logic.inhibit: input
+Logic.active -> ToyLogic.active: output
+Logic.allowed -> ToyLogic.allowed: output
+```
+
+```mbd-control
+priority 10 rule active_if_enabled_or_forced: owner Logic from * when enable == true or force == true then active=true
+priority 20 rule allowed_if_not_inhibited: owner Logic from * when not inhibit then allowed=true
+```
+""",
+        ROOT / "samples" / "logical_expressions" / "model.mbd.md",
+    )
+
+    or_result = run_preview(
+        model,
+        {
+            "name": "logical_or_not",
+            "model": "ToyLogic",
+            "steps": [
+                {"atMs": 0, "setInput": {"name": "force", "value": True}},
+            ],
+            "expect": {
+                "finalState": "INITIAL",
+                "outputs": {"active": True, "allowed": False},
+            },
+        },
+    )
+
+    not_result = run_preview(
+        model,
+        {
+            "name": "logical_not",
+            "model": "ToyLogic",
+            "steps": [
+                {"atMs": 0, "setInput": {"name": "enable", "value": False}},
+            ],
+            "expect": {
+                "finalState": "INITIAL",
+                "outputs": {"active": False, "allowed": True},
+            },
+        },
+    )
+
+    assert or_result.passed is True
+    assert or_result.observed_behavior["appliedRules"] == ["active_if_enabled_or_forced"]
+    assert not_result.passed is True
+    assert not_result.observed_behavior["appliedRules"] == ["allowed_if_not_inhibited"]

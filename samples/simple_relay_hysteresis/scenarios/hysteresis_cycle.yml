@@ -1,0 +1,19 @@
+name: simple_relay_hysteresis_cycle
+model: ToyRelayHysteresis
+steps:
+  - atMs: 0
+    setInput:
+      name: level
+      value: 75
+  - atMs: 10
+    setInput:
+      name: level
+      value: 50
+  - atMs: 20
+    setInput:
+      name: level
+      value: 25
+expect:
+  finalState: "OFF"
+  outputs:
+    active: false

@@ -57,6 +57,7 @@ def test_cli_export_commands_use_only_model_and_output_arguments():
     assert set(EXPORT_COMMANDS) == {
         "export-docs",
         "export-demo",
+        "export-review-html",
         "export-mermaid",
         "export-plantuml",
         "export-scxml",
@@ -160,6 +161,55 @@ def test_simulink_export_reports_unsupported_expression_diagnostics():
 
     with pytest.raises(SimulinkSemanticExportError, match="highCooling.*unsupported condition.*\\+"):
         export_simulink_m(model)
+
+
+def test_simulink_export_structures_logical_or_and_not():
+    model = parse_markup(
+        """# Logical Handoff
+
+```mbd-component
+component LogicalHandoff
+bus virtual mode=preview wordBits=8
+
+port in enable: bool = false
+port in force: bool = false
+port in inhibit: bool = false
+port out active: bool = false
+port out allowed: bool = false
+```
+
+```mbd-registers
+STATUS 0x01 ro 8
+  bit 0 active reset=0
+  bit 1 allowed reset=0
+```
+
+```mbd-state
+note: no state machine
+```
+
+```mbd-flow
+LogicalHandoff.enable -> Logic.enable: input
+LogicalHandoff.force -> Logic.force: input
+LogicalHandoff.inhibit -> Logic.inhibit: input
+Logic.active -> LogicalHandoff.active: output
+Logic.allowed -> LogicalHandoff.allowed: output
+```
+
+```mbd-control
+priority 10 rule activeIfEnabledOrForced: owner Logic from * when enable == true or force == true then active=true
+priority 20 rule allowedIfNotInhibited: owner Logic from * when not inhibit then allowed=true
+```
+""",
+        ROOT / "samples" / "logical_handoff" / "model.mbd.md",
+    )
+
+    semantic_lines = _without_comment_lines(export_simulink_m(model))
+
+    assert "Rule_activeIfEnabledOrForced_OR" in semantic_lines
+    assert "set_param([model '/Rule_activeIfEnabledOrForced_OR'], 'Operator', 'OR')" in semantic_lines
+    assert "Rule_allowedIfNotInhibited_NOT" in semantic_lines
+    assert "set_param([model '/Rule_allowedIfNotInhibited_NOT'], 'Operator', 'NOT')" in semantic_lines
 
 
 def _without_comment_lines(text: str) -> str:

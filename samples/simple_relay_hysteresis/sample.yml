@@ -1,0 +1,33 @@
+id: simple_relay_hysteresis
+title: Simple Relay Hysteresis
+kind: minimal-mbd
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  hysteresis_cycle: scenarios/hysteresis_cycle.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+  convertedMbd: generated/from_spec.model.mbd.md
+  convertedReviewHtml: generated/from_spec_review.html
+reports:
+  hysteresis_cycle: reports/hysteresis_cycle.md
+specMbd:
+  component: ToyRelayHysteresis
+  scenario: hysteresis_cycle
+  parameterDefaults:
+    onThreshold: "70"
+    offThreshold: "30"
+  inputDefaults:
+    level: "0"
+  outputDefaults:
+    active: "false"

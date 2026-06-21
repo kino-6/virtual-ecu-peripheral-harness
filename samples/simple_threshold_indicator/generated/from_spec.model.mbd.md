@@ -1,6 +1,6 @@
 # Simple Threshold Indicator Specification
 
-Generated from Spec Mermaid Design Overview in `/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_threshold_indicator/spec.md`.
+Generated from Spec Mermaid Design Overview in `samples/simple_threshold_indicator/spec.md`.
 This file is deterministic authoring source for generated MBD review artifacts.
 
 ```mbd-component

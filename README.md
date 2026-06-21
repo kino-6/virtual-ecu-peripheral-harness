@@ -24,6 +24,7 @@ samples/<sample-id>/model.mbd.md
   -> internal IR snapshot
   -> samples/<sample-id>/generated/
       -> Markdown review document
+      -> HTML MBD review artifact, usually named demo.html for compatibility
       -> Mermaid / PlantUML preview diagrams
       -> Simulink model-generation .m script
       -> SCXML state-machine handoff
@@ -112,6 +113,17 @@ python -m veph run-preview \
 Legacy YAML preview commands may still exist, but new samples and public
 documentation should use `samples/<sample-id>/model.mbd.md`.
 
+## MBD Review Artifact
+
+`samples/<sample-id>/generated/demo.html` is kept as the compatibility filename,
+but its role is an HTML MBD review artifact. It should help a human answer:
+"does the MBD implement the specification as written?"
+
+The review artifact should lead with specification fidelity, model behavior,
+traceability, scenario/report evidence, and harness boundaries. Mermaid `.mmd`
+files are useful trace/debug sources, but they are not the primary visual review
+deliverable.
+
 ## Sample Workspace Layout
 
 ```text
@@ -132,6 +144,8 @@ samples/<sample-id>/
   Simulink `.m`, Modelica `.mo`, SCXML, and FMI metadata for the compact sample.
 - `samples/simple_threshold_indicator/`: intentionally tiny one-input,
   one-threshold, one-output MBD sample for checking the workflow shape.
+- `samples/simple_switch_selector/`: MathWorks/MAB-inspired minimal
+  compare-and-Switch sample for simple conditional parameter selection.
 - `samples/thermal_fan_control/generated/`: MBD handoff artifacts for the small
   thermal control validation sample.
 - `samples/thermal_fan_control/preview_c/`: preview-only synthetic ECU C

@@ -17,5 +17,17 @@ generated:
   simulink: generated/create_model.m
   fmi: generated/fmi.json
   demo: generated/demo.html
+  convertedMbd: generated/from_spec.model.mbd.md
+  convertedReviewHtml: generated/from_spec_review.html
 reports:
   full_cycle: reports/full_cycle.md
+specMbd:
+  component: ToyStateMachine
+  scenario: full_cycle
+  inputDefaults:
+    startCommand: "false"
+    finishCommand: "false"
+    resetCommand: "false"
+  outputDefaults:
+    busy: "false"
+    complete: "false"

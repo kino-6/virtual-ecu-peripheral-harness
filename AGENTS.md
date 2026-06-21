@@ -19,7 +19,8 @@ samples/<sample-id>/model.mbd.md
   -> internal IR snapshot
   -> exporters
       -> Markdown review document
-      -> rendered model visualization, usually generated demo HTML; Mermaid / PlantUML source for trace/debug diagrams
+      -> HTML MBD review artifact, often still named `demo.html` for compatibility
+      -> Mermaid / PlantUML source for trace/debug diagrams
       -> Simulink model-generation .m script
       -> SCXML or Stateflow-oriented handoff
       -> Modelica .mo text artifact
@@ -43,8 +44,13 @@ source of truth; keep legacy `.tmbd.yml` only under a sample `legacy/`
 directory as optional compatibility input. Internal IR is a tooling snapshot,
 not a public standard.
 
-When asked to see, review, or validate the MBD, provide a rendered model visualization, usually `samples/<sample-id>/generated/demo.html`; Mermaid `.mmd`
-is trace/debug source, not the primary deliverable. The visualization must show spec-level inputs, parameters, decisions, outputs, state/control behavior, and report or harness boundaries.
+When asked to see, review, or validate the MBD, provide an HTML MBD review
+artifact, usually `samples/<sample-id>/generated/demo.html`. The filename is a
+compatibility detail, not a casual-demo claim. Mermaid `.mmd` is trace/debug
+source, not the primary deliverable. The artifact must help a human answer:
+"does this MBD implement the specification?" Show spec inputs, parameters,
+decisions, outputs, state/control behavior, traceability, scenario/report
+evidence, and harness boundaries before tool-specific artifacts.
 
 ## Requirements And Process Policy
 
@@ -77,7 +83,7 @@ like "MBD", "validation", "product-like", "ASPICE-aware", "demo", or "report"
 could imply different rigor levels. Tests passing is necessary evidence, not a
 complete definition of done.
 
-Before calling a demo, report, MBD visualization, generated code, or trace
+Before calling a report, MBD review artifact, generated code, or trace
 artifact complete, run an agent-side reject loop. Compare it against the
 human-readable spec, reject broad trace coverage, hidden assumptions,
 over-complex visuals, and demo-convenient behavior absent from the spec. A
@@ -117,18 +123,14 @@ the main verification path.
 
 ## Implementation Preferences
 
-- Keep dependencies minimal.
+- Keep dependencies minimal and generated artifacts reproducible from markup.
 - Prefer explicit parser/IR/exporter tests for new syntax.
-- Keep generated artifacts reproducible from markup.
 - Avoid over-engineering physics or runtime semantics.
 - When adding a feature, update README, `docs/design_principles.md`, generated
   artifacts, and tests together.
-- Refactor regularly after tests are green. Keep refactors scoped, behavior
-  preserving, and separated from feature changes when practical.
+- Refactor regularly after tests are green; keep refactors scoped.
 
 ## Project Skills
-
-Project-local skills live under `.agents/skills/`:
 
 - `mbd-markup-authoring`: use for `samples/<sample-id>/model.mbd.md`, markup grammar,
   `markup_parser.py`, and `ir.py` work.
@@ -144,8 +146,6 @@ Project-local skills live under `.agents/skills/`:
   or generated code compete for behavior ownership.
 - `japanese-technical-review`: use when writing Japanese engineering review
   comments for MBD artifacts, specs, generated code, reports, or docs.
-
-Keep skills concise; move details into one-level `references/` files when needed.
 
 ## Git Workflow Policy
 

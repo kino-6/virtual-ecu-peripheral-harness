@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from veph.markup_parser import parse_markup_file
+from veph.markup_parser import parse_markup, parse_markup_file
 from veph.sample_catalog import load_sample
 
 
@@ -86,3 +86,43 @@ def test_thermal_protection_markup_matches_spec_recovery_and_trace_shape():
     assert all(control.owner for control in model.controls)
     assert {control.owner for control in model.controls} <= {function.name for function in model.functions}
     assert all(not ref.startswith("SYS-") for ref in model.component.trace)
+
+
+def test_markup_parser_supports_unary_not_expression():
+    model = parse_markup(
+        """# Logical Not
+
+```mbd-component
+component LogicalNot
+bus virtual mode=preview wordBits=8
+
+port in inhibit: bool = false
+port out active: bool = false
+```
+
+```mbd-registers
+STATUS 0x01 ro 8
+  bit 0 active reset=0
+```
+
+```mbd-state
+note: no state machine
+```
+
+```mbd-flow
+LogicalNot.inhibit -> Logic.inhibit: input
+Logic.active -> LogicalNot.active: output
+```
+
+```mbd-control
+priority 10 rule enable: owner Logic from * when not inhibit then active=true
+```
+""",
+        ROOT / "samples" / "logical_not" / "model.mbd.md",
+    )
+
+    expression = model.controls[0].condition_expr
+    assert expression.kind == "logical"
+    assert expression.operator == "not"
+    assert expression.operands[0].kind == "variable"
+    assert expression.operands[0].name == "inhibit"

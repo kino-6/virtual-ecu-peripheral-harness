@@ -1,0 +1,13 @@
+@startuml
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToyRelayHysteresis State Preview
+[*] --> OFF
+OFF --> ON : level >= onThreshold
+ON --> OFF : level <= offThreshold
+' Function ToyRelayController: owns OFF, ON, active trace RLY-001, RLY-002, RLY-003, RLY-004, RLY-005
+' Control off_to_on: owner ToyRelayController priority 10 from OFF
+' Trace off_to_on: RLY-001, RLY-003, RLY-005
+' Control on_to_off: owner ToyRelayController priority 20 from ON
+' Trace on_to_off: RLY-002, RLY-003, RLY-005
+@enduml

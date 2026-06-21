@@ -1,0 +1,11 @@
+@startuml
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToySwitchSelector State Preview
+[*] --> INITIAL
+' Function SwitchSelector: owns selectedValue trace SWS-001, SWS-002, SWS-003, SWS-004
+' Control select_high_value: owner SwitchSelector priority 10 from *
+' Trace select_high_value: SWS-001, SWS-003, SWS-004
+' Control select_low_value: owner SwitchSelector priority 20 from *
+' Trace select_low_value: SWS-002, SWS-003, SWS-004
+@enduml

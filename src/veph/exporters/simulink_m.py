@@ -104,12 +104,14 @@ def _validate_expression(expression: ExpressionIR, control: ControlRuleIR) -> No
             )
         return
     if expression.kind == "logical":
-        if expression.operator not in {"and", "or"}:
+        if expression.operator not in {"and", "or", "not"}:
             raise SimulinkSemanticExportError(
                 f"control rule {control.name!r} uses unsupported logical operator {expression.operator!r}"
             )
         if not expression.operands:
             raise SimulinkSemanticExportError(f"control rule {control.name!r} has an empty logical expression")
+        if expression.operator == "not" and len(expression.operands) != 1:
+            raise SimulinkSemanticExportError(f"control rule {control.name!r} has an invalid not expression")
         for operand in expression.operands:
             _validate_expression(operand, control)
         return
@@ -204,7 +206,8 @@ def _emit_expression(
         block = f"{safe_prefix}_{expression.operator.upper()}"
         lines.append(f"add_block('simulink/Logic and Bit Operations/Logical Operator', [model '/{block}']);")
         lines.append(f"set_param([model '/{block}'], 'Operator', '{expression.operator.upper()}');")
-        lines.append(f"set_param([model '/{block}'], 'Inputs', '{len(operand_blocks)}');")
+        if expression.operator != "not":
+            lines.append(f"set_param([model '/{block}'], 'Inputs', '{len(operand_blocks)}');")
         lines.append(f"set_param([model '/{block}'], 'Position', [590 {y} 660 {y + 40}]);")
         for port_index, operand_block in enumerate(operand_blocks, start=1):
             lines.append(f"add_line(model, '{operand_block}/1', '{block}/{port_index}', 'autorouting', 'on');")

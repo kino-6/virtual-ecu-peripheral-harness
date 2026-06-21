@@ -1,0 +1,321 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "8"
+    },
+    "name": "ToyRelayHysteresis",
+    "parameters": {
+      "offThreshold": {
+        "default": "30",
+        "name": "offThreshold",
+        "type": "count"
+      },
+      "onThreshold": {
+        "default": "70",
+        "name": "onThreshold",
+        "type": "count"
+      }
+    },
+    "trace": [
+      "RLY-001",
+      "RLY-002",
+      "RLY-003",
+      "RLY-004",
+      "RLY-005"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "active": "true",
+        "state": "ON"
+      },
+      "condition": "level >= onThreshold",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "level",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "level >= onThreshold",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": ">=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "onThreshold",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "level >= onThreshold",
+          "value": null
+        },
+        "source": "level >= onThreshold",
+        "value": null
+      },
+      "name": "off_to_on",
+      "owner": "ToyRelayController",
+      "priority": 10,
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "state_scope": "OFF",
+      "trace": [
+        "RLY-001",
+        "RLY-003",
+        "RLY-005"
+      ]
+    },
+    {
+      "actions": {
+        "active": "false",
+        "state": "OFF"
+      },
+      "condition": "level <= offThreshold",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "level",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "level <= offThreshold",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "<=",
+        "right": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "offThreshold",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "level <= offThreshold",
+          "value": null
+        },
+        "source": "level <= offThreshold",
+        "value": null
+      },
+      "name": "on_to_off",
+      "owner": "ToyRelayController",
+      "priority": 20,
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "state_scope": "ON",
+      "trace": [
+        "RLY-002",
+        "RLY-003",
+        "RLY-005"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "scenario input",
+      "source": "ToyLevelSource.level",
+      "target": "ToyRelayController.level",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004"
+      ]
+    },
+    {
+      "label": "switch-on threshold",
+      "source": "ToyRelayHysteresis.onThreshold",
+      "target": "ToyRelayController.onThreshold",
+      "trace": [
+        "RLY-001",
+        "RLY-004"
+      ]
+    },
+    {
+      "label": "switch-off threshold",
+      "source": "ToyRelayHysteresis.offThreshold",
+      "target": "ToyRelayController.offThreshold",
+      "trace": [
+        "RLY-002",
+        "RLY-004"
+      ]
+    },
+    {
+      "label": "relay output",
+      "source": "ToyRelayController.active",
+      "target": "ToyRelayHysteresis.active",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003"
+      ]
+    },
+    {
+      "label": "reported active output",
+      "source": "ToyRelayHysteresis.active",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "RLY-005"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        "level",
+        "onThreshold",
+        "offThreshold"
+      ],
+      "name": "ToyRelayController",
+      "outputs": [
+        "state",
+        "active"
+      ],
+      "owns": [
+        "OFF",
+        "ON",
+        "active"
+      ],
+      "responsibility": "Own OFF/ON relay hysteresis and map threshold-crossing transitions to active output",
+      "scenarios": [
+        "hysteresis_cycle"
+      ],
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004",
+        "RLY-005"
+      ]
+    }
+  ],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyLevelSource",
+      "role": "source",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyRelayHysteresis",
+      "role": "controller",
+      "trace": [
+        "RLY-001",
+        "RLY-002",
+        "RLY-003",
+        "RLY-004",
+        "RLY-005"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "RLY-001",
+      "RLY-002",
+      "RLY-003",
+      "RLY-004",
+      "RLY-005"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_relay_hysteresis/model.mbd.md"
+  },
+  "ports": {
+    "active": {
+      "default": "false",
+      "direction": "out",
+      "name": "active",
+      "type": "bool"
+    },
+    "level": {
+      "default": "0",
+      "direction": "in",
+      "name": "level",
+      "type": "count"
+    }
+  },
+  "registers": {
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "active": {
+          "bit": 0,
+          "bits": "0",
+          "name": "active",
+          "reset": "0"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyRelayHysteresis\ntrace RLY-001 RLY-002 RLY-003 RLY-004 RLY-005\nbus virtual mode=preview wordBits=8\nparameter onThreshold: count = 70\nparameter offThreshold: count = 30\n\nport in level: count = 0\nport out active: bool = false",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 0 active reset=0",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "OFF --> ON: level >= onThreshold\nON --> OFF: level <= offThreshold",
+      "language": "mbd-state"
+    },
+    {
+      "body": "function ToyRelayController: responsibility=Own OFF/ON relay hysteresis and map threshold-crossing transitions to active output; owns=OFF,ON,active; inputs=level,onThreshold,offThreshold; outputs=state,active; trace=RLY-001,RLY-002,RLY-003,RLY-004,RLY-005; scenarios=hysteresis_cycle",
+      "language": "mbd-decomposition"
+    },
+    {
+      "body": "ToyLevelSource.level -> ToyRelayController.level: scenario input trace RLY-001 RLY-002 RLY-003 RLY-004\nToyRelayHysteresis.onThreshold -> ToyRelayController.onThreshold: switch-on threshold trace RLY-001 RLY-004\nToyRelayHysteresis.offThreshold -> ToyRelayController.offThreshold: switch-off threshold trace RLY-002 RLY-004\nToyRelayController.active -> ToyRelayHysteresis.active: relay output trace RLY-001 RLY-002 RLY-003\nToyRelayHysteresis.active -> ScenarioReport.observedBehavior: reported active output trace RLY-005",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "priority 10 rule off_to_on: owner ToyRelayController from OFF when level >= onThreshold then state=ON, active=true trace RLY-001 RLY-003 RLY-005 scenarios hysteresis_cycle\npriority 20 rule on_to_off: owner ToyRelayController from ON when level <= offThreshold then state=OFF, active=false trace RLY-002 RLY-003 RLY-005 scenarios hysteresis_cycle",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToyLevelSource role=source boundary=virtual_ic trace RLY-001 RLY-002 RLY-003 RLY-004\necu ToyRelayHysteresis role=controller boundary=hal trace RLY-001 RLY-002 RLY-003 RLY-004 RLY-005",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_relay_hysteresis/model.mbd.md",
+  "title": "Simple Relay Hysteresis",
+  "transitions": [
+    {
+      "condition": "level >= onThreshold",
+      "source": "OFF",
+      "target": "ON"
+    },
+    {
+      "condition": "level <= offThreshold",
+      "source": "ON",
+      "target": "OFF"
+    }
+  ]
+}

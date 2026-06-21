@@ -1,0 +1,298 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "8"
+    },
+    "name": "ToySwitchSelector",
+    "parameters": {
+      "highValue": {
+        "default": "100",
+        "name": "highValue",
+        "type": "count"
+      },
+      "lowValue": {
+        "default": "25",
+        "name": "lowValue",
+        "type": "count"
+      }
+    },
+    "trace": [
+      "SWS-001",
+      "SWS-002",
+      "SWS-003",
+      "SWS-004"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "selectedValue": "highValue"
+      },
+      "condition": "selectHigh == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "selectHigh",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "selectHigh == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "selectHigh == true",
+          "value": true
+        },
+        "source": "selectHigh == true",
+        "value": null
+      },
+      "name": "select_high_value",
+      "owner": "SwitchSelector",
+      "priority": 10,
+      "scenarios": [
+        "select_high"
+      ],
+      "state_scope": "*",
+      "trace": [
+        "SWS-001",
+        "SWS-003",
+        "SWS-004"
+      ]
+    },
+    {
+      "actions": {
+        "selectedValue": "lowValue"
+      },
+      "condition": "selectHigh != true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "selectHigh",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "selectHigh != true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "!=",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "selectHigh != true",
+          "value": true
+        },
+        "source": "selectHigh != true",
+        "value": null
+      },
+      "name": "select_low_value",
+      "owner": "SwitchSelector",
+      "priority": 20,
+      "scenarios": [
+        "select_high"
+      ],
+      "state_scope": "*",
+      "trace": [
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "selector input",
+      "source": "ToySelectorSource.selectHigh",
+      "target": "SwitchSelector.selectHigh",
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003"
+      ]
+    },
+    {
+      "label": "high constant value",
+      "source": "ToySwitchSelector.highValue",
+      "target": "SwitchSelector.highValue",
+      "trace": [
+        "SWS-001",
+        "SWS-003"
+      ]
+    },
+    {
+      "label": "low constant value",
+      "source": "ToySwitchSelector.lowValue",
+      "target": "SwitchSelector.lowValue",
+      "trace": [
+        "SWS-002",
+        "SWS-003"
+      ]
+    },
+    {
+      "label": "selected output",
+      "source": "SwitchSelector.selectedValue",
+      "target": "ToySwitchSelector.selectedValue",
+      "trace": [
+        "SWS-001",
+        "SWS-002"
+      ]
+    },
+    {
+      "label": "reported selected value",
+      "source": "ToySwitchSelector.selectedValue",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "SWS-004"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        "selectHigh",
+        "highValue",
+        "lowValue"
+      ],
+      "name": "SwitchSelector",
+      "outputs": [
+        "selectedValue"
+      ],
+      "owns": [
+        "selectedValue"
+      ],
+      "responsibility": "Compare selectHigh and select highValue or lowValue using Switch-style simple conditional logic",
+      "scenarios": [
+        "select_high"
+      ],
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToySelectorSource",
+      "role": "source",
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToySwitchSelector",
+      "role": "controller",
+      "trace": [
+        "SWS-001",
+        "SWS-002",
+        "SWS-003",
+        "SWS-004"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "SWS-001",
+      "SWS-002",
+      "SWS-003",
+      "SWS-004"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_switch_selector/model.mbd.md"
+  },
+  "ports": {
+    "selectHigh": {
+      "default": "false",
+      "direction": "in",
+      "name": "selectHigh",
+      "type": "bool"
+    },
+    "selectedValue": {
+      "default": "25",
+      "direction": "out",
+      "name": "selectedValue",
+      "type": "count"
+    }
+  },
+  "registers": {
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "selectedValue": {
+          "bit": 0,
+          "bits": "0",
+          "name": "selectedValue",
+          "reset": "25"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToySwitchSelector\ntrace SWS-001 SWS-002 SWS-003 SWS-004\nbus virtual mode=preview wordBits=8\nparameter highValue: count = 100\nparameter lowValue: count = 25\n\nport in selectHigh: bool = false\nport out selectedValue: count = 25",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 0 selectedValue reset=25",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "note: no state machine; this sample reviews simple compare/switch data flow",
+      "language": "mbd-state"
+    },
+    {
+      "body": "function SwitchSelector: responsibility=Compare selectHigh and select highValue or lowValue using Switch-style simple conditional logic; owns=selectedValue; inputs=selectHigh,highValue,lowValue; outputs=selectedValue; trace=SWS-001,SWS-002,SWS-003,SWS-004; scenarios=select_high",
+      "language": "mbd-decomposition"
+    },
+    {
+      "body": "ToySelectorSource.selectHigh -> SwitchSelector.selectHigh: selector input trace SWS-001 SWS-002 SWS-003\nToySwitchSelector.highValue -> SwitchSelector.highValue: high constant value trace SWS-001 SWS-003\nToySwitchSelector.lowValue -> SwitchSelector.lowValue: low constant value trace SWS-002 SWS-003\nSwitchSelector.selectedValue -> ToySwitchSelector.selectedValue: selected output trace SWS-001 SWS-002\nToySwitchSelector.selectedValue -> ScenarioReport.observedBehavior: reported selected value trace SWS-004",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "priority 10 rule select_high_value: owner SwitchSelector from * when selectHigh == true then selectedValue=highValue trace SWS-001 SWS-003 SWS-004 scenarios select_high\npriority 20 rule select_low_value: owner SwitchSelector from * when selectHigh != true then selectedValue=lowValue trace SWS-002 SWS-003 SWS-004 scenarios select_high",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToySelectorSource role=source boundary=virtual_ic trace SWS-001 SWS-002 SWS-003\necu ToySwitchSelector role=controller boundary=hal trace SWS-001 SWS-002 SWS-003 SWS-004",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/simple_switch_selector/model.mbd.md",
+  "title": "Simple Switch Selector",
+  "transitions": []
+}
