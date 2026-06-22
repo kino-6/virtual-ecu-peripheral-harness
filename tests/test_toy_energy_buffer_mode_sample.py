@@ -110,7 +110,7 @@ def test_toy_energy_buffer_mode_spec_generates_reviewable_mbd():
         "supplyEnabled": "true",
         "chargeIndicator": "false",
     }
-    assert "仕様 vs 生成MBD" in review_html
+    assert "仕様 vs 生成MBD" not in review_html
     assert "1分レビュー" in review_html
     assert "状態図レビュー" in review_html
     assert review_html.index("状態図レビュー") < review_html.index("Harness検証結果")

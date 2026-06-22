@@ -359,24 +359,18 @@
       </div>
     </section>
     <section class="panel spec-first-review">
-      <h2>仕様 vs 生成MBD</h2>
-      <div class="review-badges">
-        <span>判定: <strong>PASS</strong></span>
-        <span>初期状態: <strong>IDLE</strong> / 生成 <strong>IDLE</strong> (一致)</span>
-        <span>シナリオ証跡: <strong>full_cycle (reports/full_cycle.md)</strong></span>
-      </div>
+      <h2>状態図レビュー</h2>
+      <p class="evidence-note">初期状態、遷移方向、ガード条件、出力効果だけを見る。Harnessと要求詳細は後段の補助証跡。</p>
       <h3>1分レビュー</h3>
       <table class="review-table compact">
         <thead><tr><th>状態図の観点</th><th>見るもの</th><th>結果</th></tr></thead>
         <tbody>
-          <tr><td>初期状態</td><td>仕様と生成MBDの開始状態</td><td>一致</td></tr>
-          <tr><td>状態遷移</td><td>3件の遷移方向とガード</td><td>生成 3件</td></tr>
-          <tr><td>出力効果</td><td>遷移表のstate/output action</td><td>busy, complete</td></tr>
-          <tr><td>未決事項</td><td>状態図から判断しないQA</td><td>1件</td></tr>
+          <tr><td>初期状態</td><td>開始状態</td><td>IDLE / IDLE (一致)</td></tr>
+          <tr><td>状態遷移</td><td>方向とガード</td><td>3 / 3件</td></tr>
+          <tr><td>出力効果</td><td>state / output action</td><td>busy, complete</td></tr>
+          <tr><td>未決事項</td><td>後段QA</td><td>1件</td></tr>
         </tbody>
       </table>
-      <h3>状態図レビュー</h3>
-      <p class="evidence-note">最初に状態、初期状態、遷移方向、ガード条件、出力効果だけを確認する。Harnessと要求一覧はこの状態図レビューの補助証跡として後段に置く。</p>
       <div class="review-compare">
         <div class="evidence-card">
           <h4>仕様の状態図</h4>
@@ -404,8 +398,8 @@
           </svg>
         </div>
         <div class="evidence-card">
-          <h4>生成MBDの状態図</h4>
-          <svg class="mini-state-diagram" viewBox="0 0 760 190" role="img" aria-label="生成MBDの状態図">
+          <h4>MBD状態図</h4>
+          <svg class="mini-state-diagram" viewBox="0 0 760 190" role="img" aria-label="MBD状態図">
         <defs>
           <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
@@ -431,9 +425,9 @@
       </div>
       <h3>状態遷移の確認</h3>
       <table class="review-table compact">
-        <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>
+        <thead><tr><th>仕様</th><th>MBD</th><th>Trace</th><th>判定</th></tr></thead>
         <tbody>
-          <tr><td><code>[*] -> IDLE</code></td><td>生成初期状態 <code>IDLE</code></td><td>仕様構造</td><td>一致</td></tr>
+          <tr><td><code>[*] -> IDLE</code></td><td>初期状態 <code>IDLE</code></td><td>仕様構造</td><td>一致</td></tr>
           <tr><td><code>IDLE -> RUNNING</code> / startCommand == true</td><td>IDLE -&gt; RUNNING / startCommand == true / state=RUNNING, busy=true, complete=false</td><td>SM-001, SM-004</td><td>一致</td></tr>
           <tr><td><code>RUNNING -> DONE</code> / finishCommand == true</td><td>RUNNING -&gt; DONE / finishCommand == true / state=DONE, busy=false, complete=true</td><td>SM-002, SM-004</td><td>一致</td></tr>
           <tr><td><code>DONE -> IDLE</code> / resetCommand == true</td><td>DONE -&gt; IDLE / resetCommand == true / state=IDLE, busy=false, complete=false</td><td>SM-003, SM-004</td><td>一致</td></tr>

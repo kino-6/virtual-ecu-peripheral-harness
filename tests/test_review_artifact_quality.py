@@ -18,6 +18,9 @@ def test_spec_first_review_html_stays_one_minute_readable():
     ]:
         html = _read(relative)
         assert_review_html_quality(html, require_harness=True)
+        assert "仕様 vs 生成MBD" not in html
+        assert "判定: <strong>PASS</strong>" not in html
+        assert "シナリオ証跡:" not in html
         assert html.index("状態図レビュー") < html.index("Harness検証結果")
         assert html.index("状態図レビュー") < html.index("要求ごとの確認")
 

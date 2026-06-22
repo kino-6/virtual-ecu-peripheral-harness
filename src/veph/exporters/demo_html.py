@@ -255,24 +255,16 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
     initial = spec["initial"] or (_ordered_states(model.transitions)[0] if model.transitions else "")
     generated_initial = _ordered_states(model.transitions)[0] if model.transitions else ""
     initial_status = "一致" if initial == generated_initial else "要確認"
-    scenario = ", ".join(f"{name} ({report})" for name, report in spec["scenarios"]) or "未定義"
-    review_status = _one_minute_status(initial_status, verification)
     return "\n".join(
         [
             '    <section class="panel spec-first-review">',
-            "      <h2>仕様 vs 生成MBD</h2>",
-            "      <div class=\"review-badges\">",
-            f"        <span>判定: <strong>{escape(review_status)}</strong></span>",
-            f"        <span>初期状態: <strong>{escape(initial)}</strong> / 生成 <strong>{escape(generated_initial)}</strong> ({escape(initial_status)})</span>",
-            f"        <span>シナリオ証跡: <strong>{escape(scenario)}</strong></span>",
-            "      </div>",
-            _one_minute_review_html(model, spec, verification, initial_status),
-            "      <h3>状態図レビュー</h3>",
-            "      <p class=\"evidence-note\">最初に状態、初期状態、遷移方向、ガード条件、出力効果だけを確認する。Harnessと要求一覧はこの状態図レビューの補助証跡として後段に置く。</p>",
+            "      <h2>状態図レビュー</h2>",
+            "      <p class=\"evidence-note\">初期状態、遷移方向、ガード条件、出力効果だけを見る。Harnessと要求詳細は後段の補助証跡。</p>",
+            _one_minute_review_html(model, spec, initial, generated_initial, initial_status),
             "      <div class=\"review-compare\">",
             _state_review_svg("仕様の状態図", spec["transitions"], initial),
             _state_review_svg(
-                "生成MBDの状態図",
+                "MBD状態図",
                 [
                     {"source": transition.source, "target": transition.target, "condition": transition.condition}
                     for transition in model.transitions
@@ -282,7 +274,7 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
             "      </div>",
             "      <h3>状態遷移の確認</h3>",
             "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>",
+            "        <thead><tr><th>仕様</th><th>MBD</th><th>Trace</th><th>判定</th></tr></thead>",
             "        <tbody>",
             flow_or_empty(transition_rows, colspan=4),
             "        </tbody>",
@@ -317,20 +309,11 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
     )
 
 
-def _one_minute_status(initial_status: str, verification: list[dict[str, object]]) -> str:
-    if initial_status != "一致":
-        return "要確認"
-    if not verification:
-        return "要確認"
-    if any(str(row.get("status", "")) != "PASS" for row in verification):
-        return "要確認"
-    return "PASS"
-
-
 def _one_minute_review_html(
     model: MbdModelIR,
     spec: dict[str, object],
-    verification: list[dict[str, object]],
+    initial: str,
+    generated_initial: str,
     initial_status: str,
 ) -> str:
     transition_count = len(
@@ -344,10 +327,10 @@ def _one_minute_review_html(
             "      <table class=\"review-table compact\">",
             "        <thead><tr><th>状態図の観点</th><th>見るもの</th><th>結果</th></tr></thead>",
             "        <tbody>",
-            f"          <tr><td>初期状態</td><td>仕様と生成MBDの開始状態</td><td>{escape(initial_status)}</td></tr>",
-            f"          <tr><td>状態遷移</td><td>{transition_count}件の遷移方向とガード</td><td>生成 {generated_count}件</td></tr>",
-            f"          <tr><td>出力効果</td><td>遷移表のstate/output action</td><td>{escape(_state_output_effect_summary(model))}</td></tr>",
-            f"          <tr><td>未決事項</td><td>状態図から判断しないQA</td><td>{open_count}件</td></tr>",
+            f"          <tr><td>初期状態</td><td>開始状態</td><td>{escape(initial)} / {escape(generated_initial)} ({escape(initial_status)})</td></tr>",
+            f"          <tr><td>状態遷移</td><td>方向とガード</td><td>{transition_count} / {generated_count}件</td></tr>",
+            f"          <tr><td>出力効果</td><td>state / output action</td><td>{escape(_state_output_effect_summary(model))}</td></tr>",
+            f"          <tr><td>未決事項</td><td>後段QA</td><td>{open_count}件</td></tr>",
             "        </tbody>",
             "      </table>",
         ]
@@ -491,7 +474,7 @@ def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, s
         return (
             "          <tr>"
             f"<td><code>[*] -> {escape(target)}</code></td>"
-            f"<td>生成初期状態 <code>{escape(generated_initial)}</code></td>"
+            f"<td>初期状態 <code>{escape(generated_initial)}</code></td>"
             "<td>仕様構造</td>"
             f"<td>{escape(status)}</td>"
             "</tr>"

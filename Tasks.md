@@ -16,6 +16,23 @@ Archived task history:
 Make spec-first state-machine review artifacts focus on the state diagram and
 transition behavior before Harness evidence or requirement detail.
 
+## Phase 49: Remove Noisy Generated-MBD Review Header
+
+Acceptance gates:
+
+- [x] State-machine `from_spec_review.html` starts with the state diagram review
+      question, not a broad "spec vs generated MBD" badge strip.
+- [x] PASS and scenario evidence remain available later as support evidence
+      instead of leading the first viewport.
+- [x] Tests reject reintroducing the old text-heavy generated-MBD header.
+
+Verification:
+
+- [x] Regenerate affected sample review HTML.
+- [x] Focused review artifact tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 48: State-Diagram-First Review Entry
 
 Acceptance gates:

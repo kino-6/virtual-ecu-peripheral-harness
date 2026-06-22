@@ -119,7 +119,7 @@ def test_simple_relay_hysteresis_spec_generates_reviewable_mbd():
     assert alignment.passed
     assert "parameter onThreshold: count = 70" in generated
     assert "port in level: count = 0" in generated
-    assert "仕様 vs 生成MBD" in review_html
+    assert "仕様 vs 生成MBD" not in review_html
     assert "1分レビュー" in review_html
     assert "状態図レビュー" in review_html
     assert review_html.index("状態図レビュー") < review_html.index("Harness検証結果")
