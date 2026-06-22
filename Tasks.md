@@ -28,7 +28,7 @@ PDCA backlog:
       review paths.
 - [x] Cycle 2: connect Sequence View expectations to preview scenarios without
       letting sequence diagrams own control semantics.
-- [ ] Cycle 3: add a minimal `validate-sample` command for sample-level
+- [x] Cycle 3: add a minimal `validate-sample` command for sample-level
       consistency checks.
 
 Acceptance gates:
@@ -38,7 +38,7 @@ Acceptance gates:
       evidence where required.
 - [x] Sequence View checks detect scenario expectation drift for at least one
       layered sample.
-- [ ] Sample validation CLI checks generated artifact determinism, spec-to-MBD
+- [x] Sample validation CLI checks generated artifact determinism, spec-to-MBD
       alignment, preview report pass/fail, and review HTML quality for one
       sample.
 - [ ] Remaining Budget Decisions are made after each green checkpoint.
@@ -47,9 +47,9 @@ Verification:
 
 - [x] Focused review artifact quality tests pass.
 - [x] Focused sequence/scenario tests pass.
-- [ ] Focused sample validation tests pass.
-- [ ] Full `pytest` passes.
-- [ ] `git diff --check` passes.
+- [x] Focused sample validation tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Phase 46: Timeboxed PDCA Goal Guardrail
 

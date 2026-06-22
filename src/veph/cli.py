@@ -26,6 +26,7 @@ from veph.requirements_support import (
     validate_traceability,
 )
 from veph.samples.requirements_scaffolds import SampleScaffoldError, generate_sample_mbd_scaffold
+from veph.sample_validation import validate_sample
 from veph.sample_catalog import SampleCatalogError, find_sample_by_spec, list_samples, load_sample
 from veph.scenario_runner import ScenarioError, run_scenario_file
 from veph.spec_mbd_alignment import SpecMbdAlignmentError, compare_spec_to_mbd, compare_spec_to_mbd_model
@@ -113,6 +114,11 @@ def build_parser() -> argparse.ArgumentParser:
     export_sample = subparsers.add_parser("export-sample", help="regenerate sample-local handoff artifacts")
     export_sample.add_argument("sample")
     export_sample.set_defaults(func=_export_sample)
+
+    validate_sample_cmd = subparsers.add_parser("validate-sample", help="validate sample-local generated artifacts")
+    validate_sample_cmd.add_argument("sample")
+    validate_sample_cmd.add_argument("--out", help="optional Markdown validation report path")
+    validate_sample_cmd.set_defaults(func=_validate_sample)
 
     extract_requirements_cmd = subparsers.add_parser(
         "extract-requirements",
@@ -305,6 +311,15 @@ def _export_sample(args: argparse.Namespace) -> None:
         written = export_code_preview(model, sample.paths.preview_code_dir)
         count += len(written)
     print(f"exported {count} sample artifact(s) for {sample.id}")
+
+
+def _validate_sample(args: argparse.Namespace) -> None:
+    report = validate_sample(args.sample)
+    if args.out:
+        _write_text(args.out, report.to_markdown())
+    print(f"{args.sample}: {'PASS' if report.passed else 'FAIL'}")
+    if not report.passed:
+        raise OSError("; ".join(report.issues))
 
 
 def _extract_requirements(args: argparse.Namespace) -> None:
