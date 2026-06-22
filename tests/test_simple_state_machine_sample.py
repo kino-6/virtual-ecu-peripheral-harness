@@ -192,16 +192,16 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
     assert "<td>IDLE</td><td>3</td>" in review_html
     assert "最終状態=IDLE, busy=False, complete=False" in review_html
     assert "要求ごとの確認" in review_html
-    assert "状態図の比較" in review_html
+    assert "状態図レビュー" in review_html
     assert "仕様の状態図" in review_html
     assert "生成MBDの状態図" in review_html
     assert "[*] -> IDLE" in review_html
     assert "生成初期状態" in review_html
-    assert "未解決QA" in review_html
+    assert "未解決QA / 対象外" in review_html
     assert "ガードが偽の場合" in review_html
     assert "State Machine Review Package" not in review_html
     assert "State Machine Transition Review" not in review_html
-    assert "遷移ごとの確認" in review_html
+    assert "状態遷移の確認" in review_html
     assert "対象外" in review_html
     assert "シナリオ" in review_html
     assert "reports/full_cycle.md" in review_html

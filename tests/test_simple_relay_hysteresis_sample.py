@@ -121,6 +121,9 @@ def test_simple_relay_hysteresis_spec_generates_reviewable_mbd():
     assert "port in level: count = 0" in generated
     assert "仕様 vs 生成MBD" in review_html
     assert "1分レビュー" in review_html
+    assert "状態図レビュー" in review_html
+    assert review_html.index("状態図レビュー") < review_html.index("Harness検証結果")
+    assert review_html.index("状態図レビュー") < review_html.index("要求ごとの確認")
     assert "Harness検証結果" in review_html
     assert "<strong>PASS</strong>" in review_html
     assert "最終状態=OFF, active=False" in review_html

@@ -13,10 +13,27 @@ Archived task history:
 
 ## Current Goal
 
-Run a 1h Goal PDCA loop from the current repository state: merge the current
-branch, then improve review quality checks, Sequence View to scenario
-expectation linkage, and sample-level validation while continuing after green
-checkpoints when useful cycles fit.
+Make spec-first state-machine review artifacts focus on the state diagram and
+transition behavior before Harness evidence or requirement detail.
+
+## Phase 48: State-Diagram-First Review Entry
+
+Acceptance gates:
+
+- [x] `from_spec_review.html` presents state diagram review before Harness
+      evidence and requirement detail for state-machine samples.
+- [x] The one-minute review focuses on initial state, transition direction,
+      guard conditions, and output effects rather than Harness summary text.
+- [x] Requirement rows and QA/unsupported details remain available but are
+      moved behind secondary detail sections.
+- [x] Tests reject ordering regressions where Harness or requirement detail
+      appears before the state diagram review.
+
+Verification:
+
+- [x] Focused state-machine review artifact tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Phase 47: One-Hour Review Quality PDCA Loop
 

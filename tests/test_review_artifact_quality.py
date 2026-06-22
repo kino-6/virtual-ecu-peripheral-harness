@@ -16,7 +16,10 @@ def test_spec_first_review_html_stays_one_minute_readable():
         "samples/simple_state_machine/generated/from_spec_review.html",
         "samples/toy_energy_buffer_mode/generated/from_spec_review.html",
     ]:
-        assert_review_html_quality(_read(relative), require_harness=True)
+        html = _read(relative)
+        assert_review_html_quality(html, require_harness=True)
+        assert html.index("状態図レビュー") < html.index("Harness検証結果")
+        assert html.index("状態図レビュー") < html.index("要求ごとの確認")
 
 
 def test_spec_mbd_viewer_html_omits_dense_matched_edge_dump():

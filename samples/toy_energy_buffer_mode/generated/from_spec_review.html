@@ -367,37 +367,16 @@
       </div>
       <h3>1分レビュー</h3>
       <table class="review-table compact">
-        <thead><tr><th>観点</th><th>見るもの</th><th>結果</th></tr></thead>
+        <thead><tr><th>状態図の観点</th><th>見るもの</th><th>結果</th></tr></thead>
         <tbody>
-          <tr><td>初期状態</td><td>仕様と生成MBD</td><td>一致</td></tr>
-          <tr><td>遷移</td><td>4件の仕様遷移</td><td>生成 4件</td></tr>
-          <tr><td>Harness</td><td>preview evidence</td><td>PASS / 3 step</td></tr>
-          <tr><td>未決</td><td>QA / 対象外</td><td>1件 / 0件</td></tr>
+          <tr><td>初期状態</td><td>仕様と生成MBDの開始状態</td><td>一致</td></tr>
+          <tr><td>状態遷移</td><td>4件の遷移方向とガード</td><td>生成 4件</td></tr>
+          <tr><td>出力効果</td><td>遷移表のstate/output action</td><td>supplyEnabled, chargeIndicator</td></tr>
+          <tr><td>未決事項</td><td>状態図から判断しないQA</td><td>1件</td></tr>
         </tbody>
       </table>
-      <section class="verification-summary">
-        <h3>Harness検証結果</h3>
-        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
-        <table class="review-table compact">
-          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>
-          <tbody>
-          <tr><td>source_loss_recovery</td><td><strong>PASS</strong></td><td>CHARGE</td><td>3</td><td>最終状態=CHARGE, supplyEnabled=False, chargeIndicator=True</td><td><code>reports/source_loss_recovery.md</code></td></tr>
-          </tbody>
-        </table>
-      </section>
-      <h3>要求ごとの確認</h3>
-      <table class="review-table compact">
-        <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>
-        <tbody>
-          <tr><td><code>EBUF-001</code></td><td>CHARGE -&gt; DISCHARGE。出力/状態更新: supplyEnabled=true, chargeIndicator=false。</td><td>charge_to_discharge / source_loss_recovery</td><td>一致</td></tr>
-          <tr><td><code>EBUF-002</code></td><td>DISCHARGE -&gt; EMPTY。出力/状態更新: supplyEnabled=false, chargeIndicator=false。</td><td>discharge_to_empty / source_loss_recovery</td><td>一致</td></tr>
-          <tr><td><code>EBUF-003</code></td><td>EMPTY -&gt; CHARGE。出力/状態更新: supplyEnabled=false, chargeIndicator=true。</td><td>empty_to_charge / source_loss_recovery</td><td>一致</td></tr>
-          <tr><td><code>EBUF-004</code></td><td>DISCHARGE -&gt; CHARGE。出力/状態更新: supplyEnabled=false, chargeIndicator=true。</td><td>discharge_to_charge / source_loss_recovery</td><td>一致</td></tr>
-          <tr><td><code>EBUF-005</code></td><td>入力、パラメータ、状態、出力をレビュー可能なMBD要素として分離する。</td><td>charge_to_discharge, discharge_to_empty, empty_to_charge, discharge_to_charge / source_loss_recovery</td><td>一致</td></tr>
-          <tr><td><code>EBUF-006</code></td><td>レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。</td><td>MBD要素あり / source_loss_recovery</td><td>一致</td></tr>
-        </tbody>
-      </table>
-      <h3>状態図の比較</h3>
+      <h3>状態図レビュー</h3>
+      <p class="evidence-note">最初に状態、初期状態、遷移方向、ガード条件、出力効果だけを確認する。Harnessと要求一覧はこの状態図レビューの補助証跡として後段に置く。</p>
       <div class="review-compare">
         <div class="evidence-card">
           <h4>仕様の状態図</h4>
@@ -454,7 +433,7 @@
           </svg>
         </div>
       </div>
-      <h3>遷移ごとの確認</h3>
+      <h3>状態遷移の確認</h3>
       <table class="review-table compact">
         <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>
         <tbody>
@@ -465,20 +444,45 @@
           <tr><td><code>DISCHARGE -> CHARGE</code> / externalPowerAvailable == true</td><td>DISCHARGE -&gt; CHARGE / externalPowerAvailable == true / state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-005</td><td>一致</td></tr>
         </tbody>
       </table>
-      <h3>未解決QA</h3>
-      <table class="review-table compact">
-        <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>
-        <tbody>
+      <section class="verification-summary">
+        <h3>Harness検証結果</h3>
+        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
+        <table class="review-table compact">
+          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>
+          <tbody>
+          <tr><td>source_loss_recovery</td><td><strong>PASS</strong></td><td>CHARGE</td><td>3</td><td>最終状態=CHARGE, supplyEnabled=False, chargeIndicator=True</td><td><code>reports/source_loss_recovery.md</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <details class="review-details">
+        <summary>要求ごとの確認</summary>
+        <table class="review-table compact">
+          <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>
+          <tbody>
+          <tr><td><code>EBUF-001</code></td><td>CHARGE -&gt; DISCHARGE。出力/状態更新: supplyEnabled=true, chargeIndicator=false。</td><td>charge_to_discharge / source_loss_recovery</td><td>一致</td></tr>
+          <tr><td><code>EBUF-002</code></td><td>DISCHARGE -&gt; EMPTY。出力/状態更新: supplyEnabled=false, chargeIndicator=false。</td><td>discharge_to_empty / source_loss_recovery</td><td>一致</td></tr>
+          <tr><td><code>EBUF-003</code></td><td>EMPTY -&gt; CHARGE。出力/状態更新: supplyEnabled=false, chargeIndicator=true。</td><td>empty_to_charge / source_loss_recovery</td><td>一致</td></tr>
+          <tr><td><code>EBUF-004</code></td><td>DISCHARGE -&gt; CHARGE。出力/状態更新: supplyEnabled=false, chargeIndicator=true。</td><td>discharge_to_charge / source_loss_recovery</td><td>一致</td></tr>
+          <tr><td><code>EBUF-005</code></td><td>入力、パラメータ、状態、出力をレビュー可能なMBD要素として分離する。</td><td>charge_to_discharge, discharge_to_empty, empty_to_charge, discharge_to_charge / source_loss_recovery</td><td>一致</td></tr>
+          <tr><td><code>EBUF-006</code></td><td>レポートに入力、手順、観測結果、期待結果、Pass/Failを分けて示す。</td><td>MBD要素あり / source_loss_recovery</td><td>一致</td></tr>
+          </tbody>
+        </table>
+      </details>
+      <details class="review-details">
+        <summary>未解決QA / 対象外</summary>
+        <table class="review-table compact">
+          <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>
+          <tbody>
           <tr><td>ガードが偽の場合は、プレビュー上は暗黙の自己保持として扱う。この解釈でよいか。</td><td>受け入れ前に人間が判断する。</td></tr>
-        </tbody>
-      </table>
-      <h3>対象外</h3>
-      <table class="review-table compact">
-        <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>
-        <tbody>
+          </tbody>
+        </table>
+        <table class="review-table compact">
+          <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>
+          <tbody>
           <tr><td colspan="2">None</td></tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </details>
     </section>
     <section class="panel policy">
       <h2>確認範囲</h2>

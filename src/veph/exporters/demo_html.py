@@ -267,15 +267,8 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
             f"        <span>シナリオ証跡: <strong>{escape(scenario)}</strong></span>",
             "      </div>",
             _one_minute_review_html(model, spec, verification, initial_status),
-            _spec_verification_summary_html(verification),
-            "      <h3>要求ごとの確認</h3>",
-            "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>",
-            "        <tbody>",
-            flow_or_empty(intent_rows, colspan=4),
-            "        </tbody>",
-            "      </table>",
-            "      <h3>状態図の比較</h3>",
+            "      <h3>状態図レビュー</h3>",
+            "      <p class=\"evidence-note\">最初に状態、初期状態、遷移方向、ガード条件、出力効果だけを確認する。Harnessと要求一覧はこの状態図レビューの補助証跡として後段に置く。</p>",
             "      <div class=\"review-compare\">",
             _state_review_svg("仕様の状態図", spec["transitions"], initial),
             _state_review_svg(
@@ -287,27 +280,38 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
                 generated_initial,
             ),
             "      </div>",
-            "      <h3>遷移ごとの確認</h3>",
+            "      <h3>状態遷移の確認</h3>",
             "      <table class=\"review-table compact\">",
             "        <thead><tr><th>仕様</th><th>生成MBD</th><th>Trace</th><th>判定</th></tr></thead>",
             "        <tbody>",
             flow_or_empty(transition_rows, colspan=4),
             "        </tbody>",
             "      </table>",
-            "      <h3>未解決QA</h3>",
-            "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>",
-            "        <tbody>",
+            _spec_verification_summary_html(verification),
+            "      <details class=\"review-details\">",
+            "        <summary>要求ごとの確認</summary>",
+            "        <table class=\"review-table compact\">",
+            "          <thead><tr><th>要求</th><th>意図</th><th>MBD / シナリオ</th><th>判定</th></tr></thead>",
+            "          <tbody>",
+            flow_or_empty(intent_rows, colspan=4),
+            "          </tbody>",
+            "        </table>",
+            "      </details>",
+            "      <details class=\"review-details\">",
+            "        <summary>未解決QA / 対象外</summary>",
+            "        <table class=\"review-table compact\">",
+            "          <thead><tr><th>確認事項</th><th>扱い</th></tr></thead>",
+            "          <tbody>",
             flow_or_empty(open_question_rows, colspan=2),
-            "        </tbody>",
-            "      </table>",
-            "      <h3>対象外</h3>",
-            "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>",
-            "        <tbody>",
+            "          </tbody>",
+            "        </table>",
+            "        <table class=\"review-table compact\">",
+            "          <thead><tr><th>対象外の挙動</th><th>レビュー上の扱い</th></tr></thead>",
+            "          <tbody>",
             flow_or_empty(unsupported_rows, colspan=2),
-            "        </tbody>",
-            "      </table>",
+            "          </tbody>",
+            "        </table>",
+            "      </details>",
             "    </section>",
         ]
     )
@@ -333,23 +337,28 @@ def _one_minute_review_html(
         [transition for transition in spec["transitions"] if transition["source"] != "[*]"]  # type: ignore[index]
     )
     generated_count = len(model.transitions)
-    scenario_summary = _verification_compact_summary(verification)
     open_count = len(spec["open_questions"])  # type: ignore[arg-type]
-    unsupported_count = len(spec["unsupported"])  # type: ignore[arg-type]
     return "\n".join(
         [
             "      <h3>1分レビュー</h3>",
             "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>観点</th><th>見るもの</th><th>結果</th></tr></thead>",
+            "        <thead><tr><th>状態図の観点</th><th>見るもの</th><th>結果</th></tr></thead>",
             "        <tbody>",
-            f"          <tr><td>初期状態</td><td>仕様と生成MBD</td><td>{escape(initial_status)}</td></tr>",
-            f"          <tr><td>遷移</td><td>{transition_count}件の仕様遷移</td><td>生成 {generated_count}件</td></tr>",
-            f"          <tr><td>Harness</td><td>preview evidence</td><td>{escape(scenario_summary)}</td></tr>",
-            f"          <tr><td>未決</td><td>QA / 対象外</td><td>{open_count}件 / {unsupported_count}件</td></tr>",
+            f"          <tr><td>初期状態</td><td>仕様と生成MBDの開始状態</td><td>{escape(initial_status)}</td></tr>",
+            f"          <tr><td>状態遷移</td><td>{transition_count}件の遷移方向とガード</td><td>生成 {generated_count}件</td></tr>",
+            f"          <tr><td>出力効果</td><td>遷移表のstate/output action</td><td>{escape(_state_output_effect_summary(model))}</td></tr>",
+            f"          <tr><td>未決事項</td><td>状態図から判断しないQA</td><td>{open_count}件</td></tr>",
             "        </tbody>",
             "      </table>",
         ]
     )
+
+
+def _state_output_effect_summary(model: MbdModelIR) -> str:
+    output_names = [port.name for port in model.ports.values() if port.direction == "out"]
+    if not output_names:
+        return "状態のみ"
+    return ", ".join(output_names[:3])
 
 
 def _verification_compact_summary(verification: list[dict[str, object]]) -> str:
