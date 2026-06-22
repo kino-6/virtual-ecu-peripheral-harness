@@ -13,10 +13,34 @@ Archived task history:
 
 ## Current Goal
 
-Make the spec-first review direction explicit and enforceable: `demo.html`
-remains a compatibility filename for an MBD review artifact, and Harness
-evidence remains a preview-only evidence layer rather than a substitute MBD
-verification backend.
+Make layered design review and generated-side consistency checks explicit:
+Component/Data Flow/Sequence views are design review inputs, Control Semantics
+owns executable state/control meaning, and Harness/preview C remain
+preview-only evidence for internally consistent handoff packages.
+
+## Phase 44: Design Layer Separation And Generated-Side Checks
+
+Acceptance gates:
+
+- [x] Review principles state that Component View, Data Flow View, Sequence
+      View, and Control Semantics View have separate review roles.
+- [x] Spec-to-MBD generation prefers explicit Data Flow View and Control
+      Semantics View sections while keeping legacy Design Overview samples
+      compatible.
+- [x] `simple_relay_hysteresis/spec.md` demonstrates the four-layer structure
+      without adding new requirements, thresholds, states, or Harness behavior.
+- [x] Tests prove Component/Sequence views do not silently become control
+      implementation and that only explicit control semantics drive
+      state/control generation.
+- [x] Generated relay review artifacts are regenerated from source.
+- [x] Agent-side reject loop confirms Harness and preview C are internal
+      consistency evidence, not production MBD verification.
+
+Verification:
+
+- [x] Focused spec conversion and simple relay tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Phase 40: Spec-First Demo And Harness Direction
 

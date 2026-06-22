@@ -1,6 +1,6 @@
 # Simple Relay Hysteresis Specification
 
-Generated from Spec Mermaid Design Overview and stateDiagram-v2 in `samples/simple_relay_hysteresis/spec.md`.
+Generated from Spec Data Flow View and Control Semantics View in `samples/simple_relay_hysteresis/spec.md`.
 This file is deterministic authoring source for generated MBD review artifacts.
 
 ```mbd-spec-review

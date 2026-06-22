@@ -18,6 +18,7 @@ from veph.spec_state_model import parse_spec_state_diagram
 from veph.spec_mbd_alignment import (
     SpecMbdAlignmentError,
     parse_spec_design_overview_flowchart,
+    spec_uses_layered_design_views,
 )
 
 
@@ -34,6 +35,8 @@ def generate_mbd_from_spec(
     flowchart = parse_spec_design_overview_flowchart(spec)
     transitions = parse_spec_state_diagram(spec)
     requirements = _requirement_ids(spec)
+    flow_source = _flow_source_description(spec)
+    state_source = _state_source_description(spec)
     decisions = decision_specs(flowchart)
     if not decisions:
         arithmetic_blocks = arithmetic_specs(flowchart)
@@ -48,7 +51,7 @@ def generate_mbd_from_spec(
                 input_defaults=input_defaults or {},
                 output_defaults=output_defaults or {},
                 scenario=scenario,
-                generated_header=_generated_header(spec, "Spec Mermaid Design Overview"),
+                generated_header=_generated_header(spec, flow_source),
                 component_header=_component_header(component_name, " ".join(requirements)),
             )
         if transitions:
@@ -62,7 +65,7 @@ def generate_mbd_from_spec(
                 input_defaults=input_defaults or {},
                 output_defaults=output_defaults or {},
                 scenario=scenario,
-                generated_header=_generated_header(spec, "Spec Mermaid Design Overview and stateDiagram-v2"),
+                generated_header=_generated_header(spec, f"{flow_source} and {state_source}"),
                 component_header=_component_header(component_name, " ".join(requirements)),
             )
         raise SpecMbdAlignmentError(f"no supported decision or state-machine node found in {spec}")
@@ -77,7 +80,7 @@ def generate_mbd_from_spec(
         input_defaults=input_defaults or {},
         output_defaults=output_defaults or {},
         scenario=scenario,
-        generated_header=_generated_header(spec, "Spec Mermaid Design Overview"),
+        generated_header=_generated_header(spec, flow_source),
         component_header=_component_header(component_name, " ".join(requirements)),
     )
 
@@ -98,3 +101,15 @@ def _component_header(component_name: str, trace_all: str) -> list[str]:
         f"trace {trace_all}".rstrip(),
         "bus virtual mode=preview wordBits=8",
     ]
+
+
+def _flow_source_description(spec: Path) -> str:
+    if spec_uses_layered_design_views(spec):
+        return "Spec Data Flow View"
+    return "Spec Mermaid Design Overview"
+
+
+def _state_source_description(spec: Path) -> str:
+    if spec_uses_layered_design_views(spec):
+        return "Control Semantics View"
+    return "stateDiagram-v2"

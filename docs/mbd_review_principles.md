@@ -22,6 +22,43 @@ Review generated MBD artifacts in this order:
 8. Generated handoff artifacts and preview C boundary.
 9. Known assumptions, unsupported semantics, and external verification needs.
 
+## Design Layer Separation
+
+Do not treat every Mermaid diagram in a specification as executable control
+semantics. For reviewable MBD handoff work, keep these layers distinct:
+
+- Component View: components, responsibilities, owned signals, and boundaries.
+- Data Flow View: ports, parameters, constants, signals, direction, and report
+  observation paths.
+- Sequence View: scenario order, stimulus, expected observations, and Harness
+  preview expectations.
+- Control Semantics View: states, transitions, guards, priorities, and actions
+  that may become `mbd-state` or `mbd-control`.
+
+Component, data-flow, and sequence diagrams are design review inputs. Only an
+explicit Control Semantics View, or the legacy Design Overview subset used by
+older samples, should drive executable state/control generation. Sequence
+diagrams may feed scenario expectations and reports, but shall not add control
+behavior missing from the MBD source.
+
+## Generated-Side Consistency Checks
+
+This repository does not verify production MBD semantics. Existing MBD tools
+remain the intended verification backends. The repository shall still verify
+that generated handoff packages are internally consistent before they are
+reviewed or handed off:
+
+- The parsed IR, generated review artifacts, handoff artifacts, Harness preview
+  reports, and preview C scaffold shall trace back to requirements and
+  specification views.
+- Exporter output shall be deterministic and regenerated from `.mbd.md` source.
+- Harness preview shall compare observed behavior with expected behavior that
+  comes from requirements, specification, and MBD control semantics.
+- Preview C shall remain HAL-boundary, preview-only scaffold and may be
+  syntax-checked or smoke-tested when a local toolchain is available.
+- Scenario YAML, Python preview code, virtual IC fixtures, or generated preview
+  C shall not compensate for missing MBD semantics.
+
 ## Checklist
 
 - Requirements traceability: each claimed requirement shall link to concrete

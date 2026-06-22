@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from veph.spec_mbd_alignment import SpecMbdAlignmentError
+from veph.spec_mbd_alignment import SpecMbdAlignmentError, mermaid_bodies_for_section
 
 
 @dataclass(frozen=True)
@@ -233,6 +233,9 @@ def _dedupe_advanced_notes(notes: list[AdvancedStateSpec]) -> list[AdvancedState
 
 def _mermaid_bodies(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
+    control_bodies = list(mermaid_bodies_for_section(text, path, "Control Semantics View"))
+    if control_bodies:
+        return control_bodies
     return [match.group("body").strip() for match in STATE_FENCE_RE.finditer(text)]
 
 

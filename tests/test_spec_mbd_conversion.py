@@ -53,6 +53,79 @@ def test_state_machine_spec_conversion_carries_review_context():
     assert "open-question SMQ-001" in mbd_text
 
 
+def test_layered_spec_uses_data_flow_and_control_semantics_only(tmp_path):
+    spec = tmp_path / "spec.md"
+    spec.write_text(
+        """# Layered Relay Specification
+
+## Intent
+
+- `LAY-001`: `OFF --> ON` shall set `active=true` when `level >= onThreshold`.
+- `LAY-002`: `ON --> OFF` shall set `active=false` when `level <= offThreshold`.
+- `LAY-003`: The preview report shall show observed behavior.
+
+## Component View
+
+```mermaid
+flowchart LR
+  source[ToyLevelSource] --> shortcut{component shortcut should not execute?}
+  shortcut --> bogus[Output active = true]
+```
+
+## Data Flow View
+
+```mermaid
+flowchart LR
+  source[ToyLevelSource] -->|level| level[Input Port: level]
+  on[Parameter: onThreshold] --> controller[ToyRelayController]
+  off[Parameter: offThreshold] --> controller
+  level --> controller
+  controller --> active[Output active]
+  active --> report[ScenarioReport.observedBehavior]
+```
+
+## Sequence View
+
+```mermaid
+sequenceDiagram
+  participant Source as ToyLevelSource
+  participant Controller as ToyRelayController
+  Source->>Controller: level >= onThreshold
+  Controller-->>Source: preview expects active=true
+```
+
+## Control Semantics View
+
+```mermaid
+stateDiagram-v2
+  [*] --> OFF
+  OFF --> ON: level >= onThreshold
+  ON --> OFF: level <= offThreshold
+```
+""",
+        encoding="utf-8",
+    )
+
+    mbd_text = generate_mbd_from_spec(
+        spec,
+        component_name="ToyLayeredRelay",
+        parameter_defaults={"onThreshold": "70", "offThreshold": "30"},
+        input_defaults={"level": "0"},
+        output_defaults={"active": "false"},
+        scenario="layered_relay",
+    )
+    model = parse_markup(mbd_text, tmp_path / "from_spec.model.mbd.md")
+    report = compare_spec_to_mbd_model(spec, model, model.source_path)
+
+    assert report.passed
+    assert "Generated from Spec Data Flow View and Control Semantics View" in mbd_text
+    assert "component shortcut should not execute" not in mbd_text
+    assert "sequenceDiagram" not in mbd_text
+    assert "OFF --> ON: level >= onThreshold" in mbd_text
+    assert "ON --> OFF: level <= offThreshold" in mbd_text
+    assert [control.name for control in model.controls] == ["off_to_on", "on_to_off"]
+
+
 def test_state_machine_spec_conversion_supports_entry_during_exit_actions(tmp_path):
     spec = tmp_path / "spec.md"
     spec.write_text(

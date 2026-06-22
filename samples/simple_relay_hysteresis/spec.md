@@ -32,7 +32,21 @@ uses those public design ideas without copying any real hardware details.
 state is the memory element under review. No physical plant, timing solver,
 real register map, production ECU code, or certified code generator is claimed.
 
-## Design Overview
+## Component View
+
+```mermaid
+flowchart LR
+  source[ToyLevelSource] --> controller[ToyRelayController]
+  controller --> model[ToyRelayHysteresis]
+  model --> report[ScenarioReport]
+```
+
+`ToyLevelSource` supplies fictional scenario stimulus. `ToyRelayController`
+owns OFF/ON state memory, threshold guards, and `active` output decisions.
+`ToyRelayHysteresis` is the reviewable model boundary. `ScenarioReport`
+records observed preview behavior only.
+
+## Data Flow View
 
 ```mermaid
 flowchart LR
@@ -47,6 +61,28 @@ flowchart LR
 The model has one scenario-controlled numeric input, two numeric parameters,
 one boolean output, and two states. Hysteresis is represented as explicit
 state-dependent transitions rather than a hidden runtime shortcut.
+
+## Sequence View
+
+```mermaid
+sequenceDiagram
+  participant Source as ToyLevelSource
+  participant Controller as ToyRelayController
+  participant Report as ScenarioReport
+  Source->>Controller: level below onThreshold
+  Controller-->>Report: active remains false
+  Source->>Controller: level >= onThreshold
+  Controller-->>Report: OFF -> ON, active=true
+  Source->>Controller: level between thresholds
+  Controller-->>Report: state/output hold
+  Source->>Controller: level <= offThreshold
+  Controller-->>Report: ON -> OFF, active=false
+```
+
+The sequence view defines reviewable scenario expectations for the Harness
+preview. It is not a separate source of control rules.
+
+## Control Semantics View
 
 ```mermaid
 stateDiagram-v2

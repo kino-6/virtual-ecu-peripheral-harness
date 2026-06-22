@@ -166,7 +166,7 @@ def parse_spec_design_overview(path: str | Path) -> SemanticGraph:
 def parse_spec_design_overview_flowchart(path: str | Path) -> MermaidFlowchart:
     spec_path = Path(path)
     text = spec_path.read_text(encoding="utf-8")
-    body = _extract_design_overview_mermaid(text, spec_path)
+    body = _extract_design_flowchart_mermaid(text, spec_path)
     return parse_mermaid_flowchart_model(body, spec_path)
 
 
@@ -210,14 +210,37 @@ def parse_mermaid_flowchart_model(body: str, source_path: Path | None = None) ->
     return MermaidFlowchart(nodes=nodes, edges=tuple(edges))
 
 
-def _extract_design_overview_mermaid(text: str, source_path: Path) -> str:
-    header = re.search(r"^##\s+Design Overview\s*$", text, re.MULTILINE)
+def mermaid_bodies_for_section(text: str, source_path: Path, section: str) -> tuple[str, ...]:
+    header = re.search(rf"^##\s+{re.escape(section)}\s*$", text, re.MULTILINE)
     if header is None:
-        raise SpecMbdAlignmentError(f"missing Design Overview section in {source_path}")
-    match = MERMAID_FENCE_RE.search(text, pos=header.end())
-    if match is None:
-        raise SpecMbdAlignmentError(f"missing Mermaid fence after Design Overview in {source_path}")
-    return match.group("body").strip()
+        return ()
+    next_header = re.search(r"^##\s+", text[header.end() :], re.MULTILINE)
+    end = header.end() + next_header.start() if next_header is not None else len(text)
+    section_text = text[header.end() : end]
+    return tuple(match.group("body").strip() for match in MERMAID_FENCE_RE.finditer(section_text))
+
+
+def spec_uses_layered_design_views(path: str | Path) -> bool:
+    text = Path(path).read_text(encoding="utf-8")
+    return bool(
+        re.search(r"^##\s+Data Flow View\s*$", text, re.MULTILINE)
+        or re.search(r"^##\s+Control Semantics View\s*$", text, re.MULTILINE)
+    )
+
+
+def _extract_design_flowchart_mermaid(text: str, source_path: Path) -> str:
+    for section in ("Data Flow View", "Design Overview"):
+        for body in mermaid_bodies_for_section(text, source_path, section):
+            if _is_flowchart_mermaid(body):
+                return body
+    raise SpecMbdAlignmentError(
+        f"missing Mermaid flowchart in Data Flow View or Design Overview section in {source_path}"
+    )
+
+
+def _is_flowchart_mermaid(body: str) -> bool:
+    first_line = next((line.strip() for line in body.splitlines() if line.strip()), "")
+    return first_line in {"flowchart LR", "flowchart TD", "graph LR", "graph TD"}
 
 
 def _parse_mermaid_endpoint(text: str) -> MermaidNode:

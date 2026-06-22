@@ -58,5 +58,8 @@ def test_agent_rules_and_review_principles_guard_demo_and_harness_boundaries():
 
     assert "not a casual visual demo" in agents
     assert "Harness evidence lane" in principles
+    assert "## Design Layer Separation" in principles
+    assert "explicit Control Semantics View" in principles
+    assert "## Generated-Side Consistency Checks" in principles
     assert "Control decisions, state transitions, and output decisions" in quality_gate_skill
     assert "Reject harness shortcuts" in mbd_review_skill
