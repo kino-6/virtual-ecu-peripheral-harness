@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToyEnergyBufferMode MBD Review Artifact</title>
+  <style>
+:root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5f6f76;
+      --line: #c7d2d6;
+      --panel: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+      --accent-soft: #dcebea;
+      --warn: #8a4b25;
+      --warn-soft: #f6e7d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-copy, .hero-facts, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .hero-copy { padding: 28px; }
+    .hero-copy p {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    p, span, li, td, th { color: var(--muted); }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      background: var(--line);
+    }
+    .hero-facts div {
+      background: var(--panel);
+      padding: 18px;
+    }
+    .hero-facts strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .hero-facts span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+    .state-review {
+      border-color: #9fb2b7;
+      background: #fbfdfd;
+    }
+    .spec-first-review {
+      border-color: #7aa0a7;
+      background: #fbfdfd;
+    }
+    .review-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      min-width: 0;
+    }
+    .evidence-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .mini-state-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .initial-dot {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+    .review-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .review-badges span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 11px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .state-playback {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+      gap: 14px;
+      margin: 16px 0;
+      align-items: stretch;
+    }
+    .playback-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+    .playback-status span {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .playback-status strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .playback-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+    .playback-buttons button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .playback-buttons button:hover, .playback-buttons button.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .playback-buttons span, .playback-buttons small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .review-table.compact {
+      font-size: 13px;
+    }
+    .review-notes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .review-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+    }
+    .diagram {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+      margin-top: 16px;
+      background: #f9fbfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .node, .state {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 2;
+    }
+    .mbd-block {
+      fill: #ffffff;
+      stroke: #78909a;
+      stroke-width: 2;
+      filter: drop-shadow(0 2px 2px rgba(23, 32, 38, 0.08));
+    }
+    .initial { fill: var(--accent-soft); stroke: var(--accent); }
+    .arrow, .state-arrow {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .state-arrow { stroke: #475569; marker-end: url(#stateArrow); }
+    .signal-line {
+      stroke: #256f3f;
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#signalArrow);
+    }
+    .ir-arrow, .ir-flow-line, .ir-state-line {
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .ir-flow-line { stroke: #256f3f; }
+    .ir-state-line { stroke: #475569; }
+    .rule-condition {
+      fill: #f8fafc;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .rule-node {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.8;
+    }
+    .rule-action {
+      fill: #ffffff;
+      stroke: #9fb2b7;
+      stroke-width: 1.5;
+    }
+    .input-port { fill: #ffffff; stroke: #256f3f; stroke-width: 2; }
+    .output-port { fill: #256f3f; stroke: #256f3f; stroke-width: 2; }
+    .node-title, .state-label {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-title.small { font-size: 12px; }
+    .block-title {
+      fill: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .block-kind {
+      fill: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .port-label {
+      fill: #334155;
+      font-size: 11px;
+    }
+    .signal-label {
+      fill: #1f5f36;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-note, .edge-note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .edge-label {
+      fill: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); font-weight: 700; }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .policy {
+      border-color: #e0c3a8;
+      background: var(--warn-soft);
+    }
+    .policy h2 { color: var(--warn); }
+    @media (max-width: 840px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .state-playback, .review-notes, .review-compare { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 10px; }
+      .hero-copy, .panel { padding: 16px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p>Author in text. Review against the specification.</p>
+        <h1>ToyEnergyBufferMode MBD Review Artifact</h1>
+        <span>Generated from Mermaid-like Markdown markup. Use this page to ask whether the MBD matches the specification; external MBD tools remain the verification backend.</span>
+      </div>
+      <div class="hero-facts" aria-label="model facts">
+        <div><strong>4</strong><span>ports</span></div>
+        <div><strong>1</strong><span>functions</span></div>
+        <div><strong>4</strong><span>control rules</span></div>
+        <div><strong>3</strong><span>harness boundaries</span></div>
+      </div>
+    </section>
+
+    <section class="panel review-gate">
+      <h2>Human Review Question</h2>
+      <p><strong>Does the generated MBD represent the specification as written?</strong> Review this artifact from top to bottom before opening tool-specific handoff files.</p>
+      <table>
+        <thead><tr><th>Concern</th><th>Generated evidence in this artifact</th></tr></thead>
+        <tbody>
+          <tr><td>Specification fidelity</td><td>6 requirement trace(s), spec-to-MBD compliance rows, and model-level diagrams.</td></tr>
+          <tr><td>Model behavior</td><td>4 priority-ordered control rule(s); state machine is present.</td></tr>
+          <tr><td>Scenario evidence</td><td>1 declared scenario link(s). Reports must separately show inputs, steps, observed behavior, expected behavior, and result.</td></tr>
+          <tr><td>Harness evidence</td><td>3 declared boundary item(s). Harness does not own control decisions; scenario YAML cannot add control behavior.</td></tr>
+          <tr><td>Boundary</td><td>Generated handoff artifacts and Python preview are evidence aids only; the MBD source remains the authoring source.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Review Evidence Map</h2>
+      <p>This page is organized around the reviewer question, not around file formats. Tool-specific artifacts are supporting evidence.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>Evidence source</th><th>What the reviewer checks</th></tr></thead>
+        <tbody>
+          <tr><td>Specification intent</td><td>sample spec / requirement IDs</td><td>Check that names, states, inputs, outputs, and expected behavior match the human-readable spec.</td></tr>
+          <tr><td>Functional decomposition</td><td>1 function(s)</td><td>Check responsibility allocation before inspecting detailed logic.</td></tr>
+          <tr><td>Interface and data flow</td><td>4 port(s), 6 flow(s)</td><td>Check signal direction and harness/report boundaries.</td></tr>
+          <tr><td>State/control semantics</td><td>4 transition(s), 4 control rule(s)</td><td>Check guard conditions, state scope, actions, priority, and unsupported assumptions.</td></tr>
+          <tr><td>Scenario/report evidence</td><td>scenario links on functions and controls</td><td>Check expected-vs-observed behavior outside this static page in generated reports.</td></tr>
+          <tr><td>Harness evidence</td><td>3 declared boundary item(s)</td><td>Check that Harness is a preview evidence layer and scenario YAML cannot add control behavior.</td></tr>
+          <tr><td>Tool handoff</td><td>Simulink, SCXML, Modelica, FMI metadata</td><td>Check that semantics are structurally exported where supported, not only preserved as comments.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel state-review" data-state-machine-review>
+      <h2>State Machine Transition Review</h2>
+      <p>This is the state-machine review surface. Review the transition table first, then use the diagram as supporting evidence.</p>
+      <table class="review-table compact">
+        <thead><tr><th>Review basis</th><th>What this artifact exposes</th></tr></thead>
+        <tbody>
+          <tr><td>Finite modes and initial/default state</td><td>Initial state, state inventory, and outgoing transition coverage.</td></tr>
+          <tr><td>Trigger / guard / effect semantics</td><td>Each transition row separates guard/event text from state and output actions.</td></tr>
+          <tr><td>Transition-system completeness</td><td>Transition matrix and guard diagnostics expose missing else/self-hold assumptions and multiple outgoing transitions.</td></tr>
+          <tr><td>Executable handoff boundary</td><td>SCXML/Stateflow-oriented handoff is generated separately; this page is the human review surface.</td></tr>
+          <tr><td>Scenario-based validation</td><td>Interactive step buttons let reviewers walk the expected path and compare state/output effects.</td></tr>
+        </tbody>
+      </table>
+      <div class="review-badges">
+        <span>Initial state: <strong data-current-state>CHARGE</strong></span>
+        <span>3 states</span>
+        <span>4 transitions</span>
+        <span>4 control rules</span>
+      </div>
+      <div class="state-playback">
+        <div class="playback-status">
+          <span>Current outputs</span>
+          <strong data-current-outputs>supplyEnabled=false, chargeIndicator=true</strong>
+        </div>
+        <div class="playback-buttons">
+          <button type="button" data-step-index="0">CHARGE -&gt; DISCHARGE <span>externalPowerAvailable == false and emptyDetected == false</span><small>state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</small></button>
+          <button type="button" data-step-index="1">DISCHARGE -&gt; EMPTY <span>emptyDetected == true</span><small>state=EMPTY, supplyEnabled=false, chargeIndicator=false</small></button>
+          <button type="button" data-step-index="2">EMPTY -&gt; CHARGE <span>externalPowerAvailable == true</span><small>state=CHARGE, supplyEnabled=false, chargeIndicator=true</small></button>
+          <button type="button" data-step-index="3">DISCHARGE -&gt; CHARGE <span>externalPowerAvailable == true</span><small>state=CHARGE, supplyEnabled=false, chargeIndicator=true</small></button>
+          <button type="button" data-reset-state>Reset</button>
+        </div>
+      </div>
+      <h3>State Inventory</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Role</th><th>Incoming</th><th>Outgoing</th><th>Owned output effects</th><th>Review finding</th></tr></thead>
+        <tbody>
+          <tr><td><code>CHARGE</code></td><td>initial/default</td><td>2</td><td>1</td><td>chargeIndicator, supplyEnabled</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>DISCHARGE</code></td><td>reachable</td><td>1</td><td>2</td><td>chargeIndicator, supplyEnabled</td><td>Declared path is reviewable.</td></tr>
+          <tr><td><code>EMPTY</code></td><td>reachable</td><td>1</td><td>1</td><td>chargeIndicator, supplyEnabled</td><td>Declared path is reviewable.</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Table</h3>
+      <table class="review-table">
+        <thead><tr><th>Transition</th><th>Trigger / Guard</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>CHARGE -> DISCHARGE</code></td><td>externalPowerAvailable == false and emptyDetected == false</td><td>power_removed_discharge (priority 10, owner ToyEnergyBufferModeController)</td><td>state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>EBUF-001, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>DISCHARGE -> EMPTY</code></td><td>emptyDetected == true</td><td>discharge_empty (priority 20, owner ToyEnergyBufferModeController)</td><td>state=EMPTY, supplyEnabled=false, chargeIndicator=false</td><td>EBUF-002, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EMPTY -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>empty_reconnect_charge (priority 30, owner ToyEnergyBufferModeController)</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-003, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>DISCHARGE -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>discharge_reconnect_charge (priority 40, owner ToyEnergyBufferModeController)</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-006</td><td>source_loss_recovery</td></tr>
+        </tbody>
+      </table>
+      <h3>Transition Matrix</h3>
+      <table class="review-table compact transition-matrix">
+        <thead><tr><th>Source \ Target</th><th>CHARGE</th><th>DISCHARGE</th><th>EMPTY</th></tr></thead>
+        <tbody>
+          <tr><th>CHARGE</th><td>-</td><td>externalPowerAvailable == false and emptyDetected == false / state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>-</td></tr>
+          <tr><th>DISCHARGE</th><td>externalPowerAvailable == true / state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>-</td><td>emptyDetected == true / state=EMPTY, supplyEnabled=false, chargeIndicator=false</td></tr>
+          <tr><th>EMPTY</th><td>externalPowerAvailable == true / state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>-</td><td>-</td></tr>
+        </tbody>
+      </table>
+      <h3>Guard Diagnostics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Outgoing guards</th><th>Determinism / completeness check</th><th>Required reviewer decision</th></tr></thead>
+        <tbody>
+          <tr><td><code>CHARGE</code></td><td>externalPowerAvailable == false and emptyDetected == false</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+          <tr><td><code>DISCHARGE</code></td><td>emptyDetected == true, externalPowerAvailable == true</td><td>Multiple outgoing guards; overlap analysis is not proven by this subset.</td><td>Review guard mutual exclusivity and priority order.</td></tr>
+          <tr><td><code>EMPTY</code></td><td>externalPowerAvailable == true</td><td>Single guarded outgoing transition; false case is implicit self-hold.</td><td>Confirm self-hold is intended or add an explicit else rule.</td></tr>
+        </tbody>
+      </table>
+      <h3>Action Semantics</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Action class</th><th>Current support</th><th>Review implication</th></tr></thead>
+        <tbody>
+          <tr><td>Transition action</td><td>Supported through <code>mbd-control</code> actions on the selected transition.</td><td>State and output effects must appear in the transition row.</td></tr>
+          <tr><td>Entry / during / exit action</td><td>Unsupported in this preview subset.</td><td>Do not infer hidden Stateflow-style entry, during, or exit behavior.</td></tr>
+          <tr><td>Output timing</td><td>Outputs are reviewed as transition effects in the discrete scenario step.</td><td>Treat this as preview semantics; tool-backed timing verification is external.</td></tr>
+        </tbody>
+      </table>
+      <h3>Scenario Walk-Through</h3>
+      <table class="review-table compact">
+        <thead><tr><th>Step</th><th>Expected source state</th><th>Input / event</th><th>Selected transition</th><th>Expected target state</th><th>Expected output effect</th><th>Trace</th><th>Scenario</th><th>Report evidence</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>CHARGE</code></td><td>externalPowerAvailable == false and emptyDetected == false</td><td>power_removed_discharge</td><td><code>DISCHARGE</code></td><td>state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>EBUF-001, EBUF-006</td><td>source_loss_recovery</td><td>reports/source_loss_recovery.md</td></tr>
+          <tr><td>2</td><td><code>DISCHARGE</code></td><td>emptyDetected == true</td><td>discharge_empty</td><td><code>EMPTY</code></td><td>state=EMPTY, supplyEnabled=false, chargeIndicator=false</td><td>EBUF-002, EBUF-006</td><td>source_loss_recovery</td><td>reports/source_loss_recovery.md</td></tr>
+          <tr><td>3</td><td><code>EMPTY</code></td><td>externalPowerAvailable == true</td><td>empty_reconnect_charge</td><td><code>CHARGE</code></td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-003, EBUF-006</td><td>source_loss_recovery</td><td>reports/source_loss_recovery.md</td></tr>
+          <tr><td>4</td><td><code>DISCHARGE</code></td><td>externalPowerAvailable == true</td><td>discharge_reconnect_charge</td><td><code>CHARGE</code></td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-006</td><td>source_loss_recovery</td><td>reports/source_loss_recovery.md</td></tr>
+        </tbody>
+      </table>
+      <h3>Compact State Summary</h3>
+      <table class="review-table compact">
+        <thead><tr><th>State</th><th>Allowed guard(s)</th><th>Output effect after transition</th></tr></thead>
+        <tbody>
+          <tr><td>CHARGE</td><td>externalPowerAvailable == false and emptyDetected == false</td><td>DISCHARGE: state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td></tr>
+          <tr><td>DISCHARGE</td><td>emptyDetected == true, externalPowerAvailable == true</td><td>EMPTY: state=EMPTY, supplyEnabled=false, chargeIndicator=false; CHARGE: state=CHARGE, supplyEnabled=false, chargeIndicator=true</td></tr>
+          <tr><td>EMPTY</td><td>externalPowerAvailable == true</td><td>CHARGE: state=CHARGE, supplyEnabled=false, chargeIndicator=true</td></tr>
+        </tbody>
+      </table>
+      <div class="review-notes">
+        <p><strong>Review gates:</strong> every state has an explicit outgoing rule for the intended path; every transition has one owning control rule; every effect is visible as state/output actions; every behavior row has requirement and scenario evidence.</p>
+        <p><strong>Unsupported in this slice:</strong> hierarchy, parallel states, history, time events, entry/exit/do actions, backtracking flowcharts, and multiple enabled outgoing transitions from the same state.</p>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Pipeline</h2>
+      <p>The reviewer follows the generated chain from requirements to MBD IR, handoff artifacts, preview C, harness scenarios, and reports.</p>
+      <svg class="diagram" viewBox="0 0 1180 230" role="img" aria-label="MBD review pipeline from requirements to generated artifacts">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <line x1="220" y1="111" x2="260" y2="111" class="ir-arrow"></line>
+        <line x1="440" y1="111" x2="480" y2="111" class="ir-arrow"></line>
+        <line x1="660" y1="111" x2="700" y2="111" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="69" class="ir-arrow"></line>
+        <line x1="880" y1="111" x2="920" y2="163" class="ir-arrow"></line>
+        <rect x="40" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="140" y="106" text-anchor="middle" class="node-title">Requirements</text>
+        <text x="140" y="128" text-anchor="middle" class="node-note">IDs and intent</text>
+        <rect x="260" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="360" y="106" text-anchor="middle" class="node-title">Specification</text>
+        <text x="360" y="128" text-anchor="middle" class="node-note">demo assumptions</text>
+        <rect x="480" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="580" y="106" text-anchor="middle" class="node-title">MBD Source</text>
+        <text x="580" y="128" text-anchor="middle" class="node-note">model.mbd.md</text>
+        <rect x="700" y="76" width="200" height="70" rx="8" class="node"></rect>
+        <text x="800" y="106" text-anchor="middle" class="node-title">MBD IR</text>
+        <text x="800" y="128" text-anchor="middle" class="node-note">parsed semantics</text>
+        <rect x="920" y="34" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="64" text-anchor="middle" class="node-title">Handoff Artifacts</text>
+        <text x="1020" y="86" text-anchor="middle" class="node-note">MBD tools</text>
+        <rect x="920" y="128" width="200" height="70" rx="8" class="node"></rect>
+        <text x="1020" y="158" text-anchor="middle" class="node-title">Harness Reports</text>
+        <text x="1020" y="180" text-anchor="middle" class="node-note">preview evidence</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Spec-Oriented Model Review Diagram</h2>
+      <p>Generated from parsed ports, functional allocation, flows, harness boundaries, and report endpoints. Use this view to check whether the MBD shape matches the specification-level Mermaid design overview before detailed control-rule review.</p>
+      <svg class="diagram" viewBox="0 0 1180 300" role="img" aria-label="Design overview generated from MBD source">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="115" width="190" height="70" rx="8" class="node"></rect>
+        <text x="137" y="145" text-anchor="middle" class="node-title small">ToyPowerSource</text>
+        <text x="137" y="177" text-anchor="middle" class="node-note">scenario source</text>
+        <rect x="536" y="115" width="230" height="70" rx="8" class="node"></rect>
+        <text x="651" y="145" text-anchor="middle" class="node-title small">ToyEnergyBufferModeCont...</text>
+        <text x="651" y="177" text-anchor="middle" class="node-note">function</text>
+        <rect x="1036" y="115" width="130" height="70" rx="8" class="node"></rect>
+        <text x="1101" y="145" text-anchor="middle" class="node-title small">ScenarioReport.observed...</text>
+        <text x="1101" y="177" text-anchor="middle" class="node-note">report</text>
+        <rect x="266" y="52" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="77" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="95" text-anchor="middle" class="node-title small">externalPowerAvailable</text>
+        <text x="371" y="114" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="87" class="ir-arrow"></line>
+        <text x="249" y="110" text-anchor="middle" class="edge-note">externalPowerAvailable</text>
+        <line x1="476" y1="87" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="266" y="126" width="210" height="70" rx="8" class="node"></rect>
+        <text x="371" y="151" text-anchor="middle" class="node-title small">Input Port</text>
+        <text x="371" y="169" text-anchor="middle" class="node-title small">emptyDetected</text>
+        <text x="371" y="188" text-anchor="middle" class="node-note">model input</text>
+        <line x1="232" y1="150" x2="266" y2="161" class="ir-arrow"></line>
+        <text x="249" y="148" text-anchor="middle" class="edge-note">emptyDetected</text>
+        <line x1="476" y1="161" x2="536" y2="150" class="ir-arrow"></line>
+        <rect x="806" y="88" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="118" text-anchor="middle" class="node-title small">Output supplyEnabled</text>
+        <text x="901" y="150" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="150" x2="806" y2="123" class="ir-arrow"></line>
+        <line x1="996" y1="123" x2="1036" y2="150" class="ir-arrow"></line>
+        <rect x="806" y="182" width="190" height="70" rx="8" class="node"></rect>
+        <text x="901" y="212" text-anchor="middle" class="node-title small">Output chargeIndicator</text>
+        <text x="901" y="244" text-anchor="middle" class="node-note">model output</text>
+        <line x1="766" y1="150" x2="806" y2="217" class="ir-arrow"></line>
+        <line x1="996" y1="217" x2="1036" y2="150" class="ir-arrow"></line>
+      </svg>
+    </section>
+
+    <section class="panel">
+      <h2>Functional Architecture</h2>
+      <p>Generated from <code>mbd-decomposition</code>. Each block owns signals or states and links to requirements and scenarios.</p>
+      <svg class="diagram" viewBox="0 0 1180 168" role="img" aria-label="Functional decomposition generated from mbd-decomposition">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="44" width="300" height="58" rx="8" class="node"></rect>
+        <text x="58" y="66" class="node-title small">ToyEnergyBufferModeController</text>
+        <text x="58" y="87" class="node-note">owns CHARGE, DISCHARGE, EMPTY, supplyEna...</text>
+        <line x1="342" y1="73" x2="396" y2="73" class="ir-arrow"></line>
+        <rect x="396" y="44" width="316" height="58" rx="8" class="rule-condition"></rect>
+        <text x="412" y="68" class="node-note">in externalPowerAvailable, emptyDetected</text>
+        <text x="412" y="88" class="node-note">out state, supplyEnabled, chargeIndicator</text>
+        <line x1="712" y1="73" x2="766" y2="73" class="ir-arrow"></line>
+        <rect x="766" y="44" width="350" height="58" rx="8" class="rule-action"></rect>
+        <text x="782" y="68" class="node-note">trace EBUF-001, EBUF-002, EBUF-003, EBU...</text>
+        <text x="782" y="88" class="edge-note">Own the CHARGE/DISCHARGE/EMPTY lifecycle and map sour...</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Functional Decomposition</h2>
+      <p>This is the first architecture review view: responsibilities, owned signals, interfaces, requirement trace, and scenario evidence are allocated before detailed control rules.</p>
+      <table><thead><tr><th>Function</th><th>Responsibility</th><th>Owns</th><th>Inputs</th><th>Outputs</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>ToyEnergyBufferModeController</td><td>Own the CHARGE/DISCHARGE/EMPTY lifecycle and map source availability plus empty detection to supply and charge indication outputs</td><td>CHARGE, DISCHARGE, EMPTY, supplyEnabled, chargeIndicator</td><td>externalPowerAvailable, emptyDetected</td><td>state, supplyEnabled, chargeIndicator</td><td>EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006</td><td>source_loss_recovery</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Spec-To-MBD Compliance Review</h2>
+      <p>This review gate is generated from requirement traces in the MBD source. Expected behavior remains in the sample specification; this table only shows model and scenario evidence.</p>
+      <table>
+        <thead><tr><th>Requirement</th><th>MBD evidence</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>EBUF-001</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:power_removed_discharge, harness:ToyPowerSource, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EBUF-002</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:discharge_empty, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EBUF-003</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:empty_reconnect_charge, harness:ToyPowerSource, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EBUF-004</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:discharge_reconnect_charge, harness:ToyPowerSource, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EBUF-005</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, harness:ToyPowerSource, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EBUF-006</code></td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyEnergyBufferMode.supplyEnabled-&gt;ScenarioReport.observedBehavior, flow:ToyEnergyBufferMode.chargeIndicator-&gt;ScenarioReport.observedBehavior, control:power_removed_discharge, control:discharge_empty, control:empty_reconnect_charge, control:discharge_reconnect_charge, harness:ToyEnergyBufferMode</td><td>source_loss_recovery</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>MBD Review Checklist</h2>
+      <p>Lightweight review gates adapted from MBD traceability, requirements-based verification, modeling standards, and design-review practice.</p>
+      <table>
+        <thead><tr><th>Review area</th><th>What to check</th><th>Reject when</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements traceability</td><td>Each claim links to concrete MBD elements, scenarios, reports, or generated artifacts.</td><td>Reject broad component-level trace as proof.</td></tr>
+          <tr><td>Interface and data-flow review</td><td>Inputs, outputs, virtual ICs, HAL boundaries, actuators, and reports are directionally clear.</td><td>Reject hidden harness shortcuts.</td></tr>
+          <tr><td>State/control behavior</td><td>States, guard conditions, actions, latches, recovery rules, and unsupported timing assumptions are reviewable together.</td><td>Reject split or contradictory behavior.</td></tr>
+          <tr><td>Requirements-based scenario evidence</td><td>Scenarios show model inputs, steps, observed behavior, expected behavior, and pass/fail.</td><td>Reject pass/fail without expected behavior.</td></tr>
+          <tr><td>Modeling standards and readability</td><td>Names are stable, diagrams are readable, and views are simpler than the behavior under review.</td><td>Reject needless visual complexity.</td></tr>
+          <tr><td>Generated artifact boundary</td><td>Handoff files and preview C are generated outputs from the MBD source.</td><td>Reject manual synchronization.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Control Semantics Ownership</h2>
+      <p><code>mbd-control</code> is the behavior owner for state and output decisions. State diagrams, SCXML, Simulink, Modelica, preview C, reports, and this HTML page are derived review or handoff views.</p>
+      <p>Selection policy: lower numeric priority wins after state scope and guard match. This removes hidden dependence on parser or runtime list order.</p>
+    </section>
+    <section class="panel">
+      <h2>MBD Data Flow Diagram</h2>
+      <p>Signals cross the virtual IC, HAL, controller, actuator, and report boundaries without modifying ECU logic for harness convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 520" role="img" aria-label="MBD data flow generated from mbd-flow">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 266 73 C 441 73, 441 73, 616 73" class="ir-flow-line"></path>
+        <text x="441" y="65" text-anchor="middle" class="signal-label">source availability</text>
+        <path d="M 266 143 C 441 143, 441 143, 616 143" class="ir-flow-line"></path>
+        <text x="441" y="135" text-anchor="middle" class="signal-label">empty indication</text>
+        <path d="M 846 213 C 731 213, 731 283, 616 283" class="ir-flow-line"></path>
+        <text x="731" y="240" text-anchor="middle" class="signal-label">supply command</text>
+        <path d="M 846 353 C 731 353, 731 423, 616 423" class="ir-flow-line"></path>
+        <text x="731" y="380" text-anchor="middle" class="signal-label">charge indication</text>
+        <path d="M 846 283 C 876 283, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="170" text-anchor="middle" class="signal-label">reported supply command</text>
+        <path d="M 846 423 C 876 423, 876 73, 906 73" class="ir-flow-line"></path>
+        <text x="876" y="240" text-anchor="middle" class="signal-label">reported charge indication</text>
+        <rect x="36" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="68" text-anchor="middle" class="node-title small">ToyPowerSource.externalPowerAvail...</text>
+        <text x="151" y="88" text-anchor="middle" class="node-note">Virtual Source</text>
+        <rect x="36" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="151" y="138" text-anchor="middle" class="node-title small">ToyEmptyMonitor.emptyDetected</text>
+        <text x="151" y="158" text-anchor="middle" class="node-note">Virtual Source</text>
+        <rect x="616" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="68" text-anchor="middle" class="node-title small">ToyEnergyBufferModeController.ext...</text>
+        <text x="731" y="88" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="116" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="138" text-anchor="middle" class="node-title small">ToyEnergyBufferModeController.emp...</text>
+        <text x="731" y="158" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="186" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="208" text-anchor="middle" class="node-title small">ToyEnergyBufferModeController.sup...</text>
+        <text x="731" y="228" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="256" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="278" text-anchor="middle" class="node-title small">ToyEnergyBufferMode.supplyEnabled</text>
+        <text x="731" y="298" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="326" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="348" text-anchor="middle" class="node-title small">ToyEnergyBufferModeController.cha...</text>
+        <text x="731" y="368" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="616" y="396" width="230" height="54" rx="8" class="node"></rect>
+        <text x="731" y="418" text-anchor="middle" class="node-title small">ToyEnergyBufferMode.chargeIndicat...</text>
+        <text x="731" y="438" text-anchor="middle" class="node-note">Controller</text>
+        <rect x="906" y="46" width="230" height="54" rx="8" class="node"></rect>
+        <text x="1021" y="68" text-anchor="middle" class="node-title small">ScenarioReport.observedBehavior</text>
+        <text x="1021" y="88" text-anchor="middle" class="node-note">Report</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>State Machine Review Package</h2>
+      <p>State-machine review needs the transition diagram plus a table of guards, actions, traces, scenarios, and execution assumptions. This table is generated from <code>mbd-state</code> and <code>mbd-control</code> together.</p>
+      <table>
+        <thead><tr><th>Transition</th><th>Guard/Event</th><th>Owning rule</th><th>Actions</th><th>Trace</th><th>Scenario evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>CHARGE -> DISCHARGE</code></td><td>externalPowerAvailable == false and emptyDetected == false</td><td>power_removed_discharge (priority 10, owner ToyEnergyBufferModeController)</td><td>state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>EBUF-001, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>DISCHARGE -> EMPTY</code></td><td>emptyDetected == true</td><td>discharge_empty (priority 20, owner ToyEnergyBufferModeController)</td><td>state=EMPTY, supplyEnabled=false, chargeIndicator=false</td><td>EBUF-002, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>EMPTY -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>empty_reconnect_charge (priority 30, owner ToyEnergyBufferModeController)</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-003, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td><code>DISCHARGE -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>discharge_reconnect_charge (priority 40, owner ToyEnergyBufferModeController)</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-006</td><td>source_loss_recovery</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>State Machine Diagram</h2>
+      <p>States and transitions are parsed from <code>mbd-state</code>. Review this together with the State Machine Review Package above; SCXML/Stateflow-oriented files are generated handoff views.</p>
+      <svg class="diagram" viewBox="0 0 1180 320" role="img" aria-label="State machine generated from mbd-state">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <path d="M 256 96 C 291 96, 291 96, 326 96" class="ir-state-line"></path>
+        <text x="291" y="86" text-anchor="middle" class="edge-note">externalPowerAvailable == false and empty...</text>
+        <path d="M 536 96 C 571 96, 571 96, 606 96" class="ir-state-line"></path>
+        <text x="571" y="86" text-anchor="middle" class="edge-note">emptyDetected == true</text>
+        <path d="M 711 128 C 431 128, 431 128, 151 128" class="ir-state-line"></path>
+        <text x="431" y="118" text-anchor="middle" class="edge-note">externalPowerAvailable == true</text>
+        <path d="M 431 128 C 291 128, 291 128, 151 128" class="ir-state-line"></path>
+        <text x="291" y="118" text-anchor="middle" class="edge-note">externalPowerAvailable == true</text>
+        <rect x="46" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="151" y="103" text-anchor="middle" class="state-label">CHARGE</text>
+        <rect x="326" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="431" y="103" text-anchor="middle" class="state-label">DISCHARGE</text>
+        <rect x="606" y="64" width="210" height="64" rx="8" class="state"></rect>
+        <text x="711" y="103" text-anchor="middle" class="state-label">EMPTY</text>
+      </svg>
+    </section>
+    <section class="panel policy">
+      <h2>Harness Evidence Boundary</h2>
+      <p>Harness is a preview evidence layer. It supplies scenario stimulus, declared virtual IC/HAL boundaries, observed behavior, and report evidence; it is not the MBD verification backend.</p>
+      <p>Harness does not own control decisions, state transitions, output decisions, thresholds, recovery rules, or product behavior. Those decisions must come from the spec, MBD source, <code>mbd-control</code>, and functional decomposition; scenario YAML cannot add control behavior.</p>
+      <p>Declared Harness boundary items: <code>ToyPowerSource, ToyEmptyMonitor, ToyEnergyBufferMode</code>. Preview reports show what this Harness observed; formal verification remains external MBD/product-test infrastructure.</p>
+    </section>
+    <section class="panel">
+      <h2>Harness Boundary Diagram</h2>
+      <p>The harness surrounds the controller through HAL-style boundaries; it does not edit controller logic for simulation convenience.</p>
+      <svg class="diagram" viewBox="0 0 1180 310" role="img" aria-label="Harness boundary generated from mbd-harness">
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f5d62"></path>
+          </marker>
+        </defs>
+        <rect x="42" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="142" y="148" text-anchor="middle" class="node-title">Scenario Steps</text>
+        <text x="142" y="170" text-anchor="middle" class="node-note">test sequence</text>
+        <rect x="286" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="386" y="148" text-anchor="middle" class="node-title">ToyPowerSource, ToyEmptyMonitor</text>
+        <text x="386" y="170" text-anchor="middle" class="node-note">declared source</text>
+        <rect x="530" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="630" y="148" text-anchor="middle" class="node-title">ToyEnergyBufferMode</text>
+        <text x="630" y="170" text-anchor="middle" class="node-note">controller boundary</text>
+        <rect x="784" y="118" width="200" height="70" rx="8" class="node"></rect>
+        <text x="884" y="148" text-anchor="middle" class="node-title">Scenario Report</text>
+        <text x="884" y="170" text-anchor="middle" class="node-note">evidence</text>
+        <line x1="242" y1="153" x2="286" y2="153" class="ir-arrow"></line>
+        <line x1="486" y1="153" x2="530" y2="153" class="ir-arrow"></line>
+        <line x1="730" y1="153" x2="784" y2="153" class="ir-arrow"></line>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2>Requirements Trace Matrix</h2>
+      <p>Each row links a requirement ID to the parsed MBD elements that carry it. This is evidence for review, not a certification claim.</p>
+      <table><thead><tr><th>Requirement</th><th>MBD elements</th></tr></thead><tbody>
+          <tr><td>EBUF-001</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:power_removed_discharge, harness:ToyPowerSource, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td></tr>
+          <tr><td>EBUF-002</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:discharge_empty, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td></tr>
+          <tr><td>EBUF-003</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:empty_reconnect_charge, harness:ToyPowerSource, harness:ToyEnergyBufferMode</td></tr>
+          <tr><td>EBUF-004</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, control:discharge_reconnect_charge, harness:ToyPowerSource, harness:ToyEnergyBufferMode</td></tr>
+          <tr><td>EBUF-005</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyPowerSource.externalPowerAvailable-&gt;ToyEnergyBufferModeController.externalPowerAvailable, flow:ToyEmptyMonitor.emptyDetected-&gt;ToyEnergyBufferModeController.emptyDetected, flow:ToyEnergyBufferModeController.supplyEnabled-&gt;ToyEnergyBufferMode.supplyEnabled, flow:ToyEnergyBufferModeController.chargeIndicator-&gt;ToyEnergyBufferMode.chargeIndicator, harness:ToyPowerSource, harness:ToyEmptyMonitor, harness:ToyEnergyBufferMode</td></tr>
+          <tr><td>EBUF-006</td><td>component:ToyEnergyBufferMode, function:ToyEnergyBufferModeController, flow:ToyEnergyBufferMode.supplyEnabled-&gt;ScenarioReport.observedBehavior, flow:ToyEnergyBufferMode.chargeIndicator-&gt;ScenarioReport.observedBehavior, control:power_removed_discharge, control:discharge_empty, control:empty_reconnect_charge, control:discharge_reconnect_charge, harness:ToyEnergyBufferMode</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Markup Sections</h2>
+      <p>The source is the Markdown authoring file. The IR and diagrams are generated artifacts.</p>
+      <ul>
+        <li><code>mbd-component</code></li>
+        <li><code>mbd-registers</code></li>
+        <li><code>mbd-state</code></li>
+        <li><code>mbd-decomposition</code></li>
+        <li><code>mbd-flow</code></li>
+        <li><code>mbd-control</code></li>
+        <li><code>mbd-harness</code></li>
+      </ul>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Ports</h2>
+        <table><thead><tr><th>Dir</th><th>Name</th><th>Type</th><th>Default</th></tr></thead><tbody>
+          <tr><td>in</td><td>externalPowerAvailable</td><td>bool</td><td>true</td></tr>
+          <tr><td>in</td><td>emptyDetected</td><td>bool</td><td>false</td></tr>
+          <tr><td>out</td><td>supplyEnabled</td><td>bool</td><td>false</td></tr>
+          <tr><td>out</td><td>chargeIndicator</td><td>bool</td><td>true</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>State Handoff</h2>
+        <p>Lifecycle/topology view derived from the control decision table; executable behavior is owned by <code>mbd-control</code>.</p>
+        <table><thead><tr><th>From</th><th>To</th><th>Condition</th></tr></thead><tbody>
+          <tr><td>CHARGE</td><td>DISCHARGE</td><td>externalPowerAvailable == false and emptyDetected == false</td></tr>
+          <tr><td>DISCHARGE</td><td>EMPTY</td><td>emptyDetected == true</td></tr>
+          <tr><td>EMPTY</td><td>CHARGE</td><td>externalPowerAvailable == true</td></tr>
+          <tr><td>DISCHARGE</td><td>CHARGE</td><td>externalPowerAvailable == true</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="grid">
+      <section class="panel">
+        <h2>Control Decision Table</h2>
+        <p>Selection policy: lower numeric priority wins after state scope and guard match.</p>
+        <table><thead><tr><th>Priority</th><th>Rule</th><th>Owner</th><th>State scope</th><th>Guard</th><th>Actions</th><th>Trace</th><th>Scenarios</th></tr></thead><tbody>
+          <tr><td>10</td><td>power_removed_discharge</td><td>ToyEnergyBufferModeController</td><td>CHARGE</td><td>externalPowerAvailable == false and emptyDetected == false</td><td>state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>EBUF-001, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td>20</td><td>discharge_empty</td><td>ToyEnergyBufferModeController</td><td>DISCHARGE</td><td>emptyDetected == true</td><td>state=EMPTY, supplyEnabled=false, chargeIndicator=false</td><td>EBUF-002, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td>30</td><td>empty_reconnect_charge</td><td>ToyEnergyBufferModeController</td><td>EMPTY</td><td>externalPowerAvailable == true</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-003, EBUF-006</td><td>source_loss_recovery</td></tr>
+          <tr><td>40</td><td>discharge_reconnect_charge</td><td>ToyEnergyBufferModeController</td><td>DISCHARGE</td><td>externalPowerAvailable == true</td><td>state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-006</td><td>source_loss_recovery</td></tr>
+        </tbody></table>
+      </section>
+      <section class="panel">
+        <h2>Harness Boundary</h2>
+        <table><thead><tr><th>Name</th><th>Role</th><th>Boundary</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyPowerSource</td><td>source</td><td>virtual_ic</td><td>EBUF-001, EBUF-003, EBUF-004, EBUF-005</td></tr>
+          <tr><td>ToyEmptyMonitor</td><td>source</td><td>virtual_ic</td><td>EBUF-001, EBUF-002, EBUF-005</td></tr>
+          <tr><td>ToyEnergyBufferMode</td><td>controller</td><td>hal</td><td>EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006</td></tr>
+        </tbody></table>
+      </section>
+    </section>
+    <section class="panel">
+      <h2>Flow Handoff</h2>
+      <table><thead><tr><th>Source</th><th>Target</th><th>Label</th><th>Trace</th></tr></thead><tbody>
+          <tr><td>ToyPowerSource.externalPowerAvailable</td><td>ToyEnergyBufferModeController.externalPowerAvailable</td><td>source availability</td><td>EBUF-001, EBUF-003, EBUF-004, EBUF-005</td></tr>
+          <tr><td>ToyEmptyMonitor.emptyDetected</td><td>ToyEnergyBufferModeController.emptyDetected</td><td>empty indication</td><td>EBUF-001, EBUF-002, EBUF-005</td></tr>
+          <tr><td>ToyEnergyBufferModeController.supplyEnabled</td><td>ToyEnergyBufferMode.supplyEnabled</td><td>supply command</td><td>EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005</td></tr>
+          <tr><td>ToyEnergyBufferModeController.chargeIndicator</td><td>ToyEnergyBufferMode.chargeIndicator</td><td>charge indication</td><td>EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005</td></tr>
+          <tr><td>ToyEnergyBufferMode.supplyEnabled</td><td>ScenarioReport.observedBehavior</td><td>reported supply command</td><td>EBUF-006</td></tr>
+          <tr><td>ToyEnergyBufferMode.chargeIndicator</td><td>ScenarioReport.observedBehavior</td><td>reported charge indication</td><td>EBUF-006</td></tr>
+      </tbody></table>
+    </section>
+    <section class="panel policy">
+      <h2>Verification Boundary</h2>
+      <p>Use generated Simulink, Modelica, SCXML, and FMI-oriented artifacts for MBD tool handoff. Python remains preview-only.</p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const panel = document.querySelector('[data-state-machine-review]');
+      if (!panel) return;
+      const initialState = "CHARGE";
+      const initialOutputs = {"chargeIndicator": "true", "supplyEnabled": "false"};
+      const steps = [{"actions": {"chargeIndicator": "false", "state": "DISCHARGE", "supplyEnabled": "true"}, "condition": "externalPowerAvailable == false and emptyDetected == false", "outputs": {"chargeIndicator": "false", "supplyEnabled": "true"}, "source": "CHARGE", "state": "DISCHARGE", "target": "DISCHARGE"}, {"actions": {"chargeIndicator": "false", "state": "EMPTY", "supplyEnabled": "false"}, "condition": "emptyDetected == true", "outputs": {"chargeIndicator": "false", "supplyEnabled": "false"}, "source": "DISCHARGE", "state": "EMPTY", "target": "EMPTY"}, {"actions": {"chargeIndicator": "true", "state": "CHARGE", "supplyEnabled": "false"}, "condition": "externalPowerAvailable == true", "outputs": {"chargeIndicator": "true", "supplyEnabled": "false"}, "source": "EMPTY", "state": "CHARGE", "target": "CHARGE"}, {"actions": {"chargeIndicator": "true", "state": "CHARGE", "supplyEnabled": "false"}, "condition": "externalPowerAvailable == true", "outputs": {"chargeIndicator": "true", "supplyEnabled": "false"}, "source": "DISCHARGE", "state": "CHARGE", "target": "CHARGE"}];
+      const stateTarget = panel.querySelector('[data-current-state]');
+      const outputsTarget = panel.querySelector('[data-current-outputs]');
+      const renderOutputs = (outputs) => Object.entries(outputs).map(([k, v]) => `${k}=${v}`).join(', ');
+      const setReviewState = (state, outputs) => {
+        stateTarget.textContent = state;
+        outputsTarget.textContent = renderOutputs(outputs);
+      };
+      panel.querySelectorAll('[data-step-index]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const step = steps[Number(button.dataset.stepIndex)];
+          setReviewState(step.state, step.outputs);
+          panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.toggle('active-step', item === button));
+        });
+      });
+      panel.querySelector('[data-reset-state]')?.addEventListener('click', () => {
+        setReviewState(initialState, initialOutputs);
+        panel.querySelectorAll('[data-step-index]').forEach((item) => item.classList.remove('active-step'));
+      });
+    })();
+  </script>
+</body>
+</html>

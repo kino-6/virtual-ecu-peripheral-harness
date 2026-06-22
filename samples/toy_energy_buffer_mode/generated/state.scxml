@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="CHARGE">
+  <!-- Generated state-machine handoff from samples/toy_energy_buffer_mode/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006 -->
+  <!-- priority 10 power_removed_discharge owner ToyEnergyBufferModeController from CHARGE when externalPowerAvailable == false and emptyDetected == false trace EBUF-001, EBUF-006 scenarios source_loss_recovery -->
+  <!-- priority 20 discharge_empty owner ToyEnergyBufferModeController from DISCHARGE when emptyDetected == true trace EBUF-002, EBUF-006 scenarios source_loss_recovery -->
+  <!-- priority 30 empty_reconnect_charge owner ToyEnergyBufferModeController from EMPTY when externalPowerAvailable == true trace EBUF-003, EBUF-006 scenarios source_loss_recovery -->
+  <!-- priority 40 discharge_reconnect_charge owner ToyEnergyBufferModeController from DISCHARGE when externalPowerAvailable == true trace EBUF-004, EBUF-006 scenarios source_loss_recovery -->
+  <!-- function ToyEnergyBufferModeController owns CHARGE, DISCHARGE, EMPTY, supplyEnabled, chargeIndicator trace EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006 -->
+  <state id="CHARGE">
+    <transition event="externalPowerAvailable == false and emptyDetected == false" target="DISCHARGE" />
+  </state>
+  <state id="DISCHARGE">
+    <transition event="emptyDetected == true" target="EMPTY" />
+    <transition event="externalPowerAvailable == true" target="CHARGE" />
+  </state>
+  <state id="EMPTY">
+    <transition event="externalPowerAvailable == true" target="CHARGE" />
+  </state>
+</scxml>

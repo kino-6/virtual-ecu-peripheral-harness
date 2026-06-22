@@ -1,0 +1,19 @@
+@startuml
+' Generated preview from Mermaid-like MBD markup.
+' Existing MBD tools are the intended verification backends.
+title ToyEnergyBufferMode State Preview
+[*] --> CHARGE
+CHARGE --> DISCHARGE : externalPowerAvailable == false and emptyDetected == false
+DISCHARGE --> EMPTY : emptyDetected == true
+EMPTY --> CHARGE : externalPowerAvailable == true
+DISCHARGE --> CHARGE : externalPowerAvailable == true
+' Function ToyEnergyBufferModeController: owns CHARGE, DISCHARGE, EMPTY, supplyEnabled, chargeIndicator trace EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006
+' Control power_removed_discharge: owner ToyEnergyBufferModeController priority 10 from CHARGE
+' Trace power_removed_discharge: EBUF-001, EBUF-006
+' Control discharge_empty: owner ToyEnergyBufferModeController priority 20 from DISCHARGE
+' Trace discharge_empty: EBUF-002, EBUF-006
+' Control empty_reconnect_charge: owner ToyEnergyBufferModeController priority 30 from EMPTY
+' Trace empty_reconnect_charge: EBUF-003, EBUF-006
+' Control discharge_reconnect_charge: owner ToyEnergyBufferModeController priority 40 from DISCHARGE
+' Trace discharge_reconnect_charge: EBUF-004, EBUF-006
+@enduml

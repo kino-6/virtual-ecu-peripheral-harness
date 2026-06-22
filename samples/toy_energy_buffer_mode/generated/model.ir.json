@@ -1,0 +1,511 @@
+{
+  "component": {
+    "bus": {
+      "mode": "preview",
+      "type": "virtual",
+      "wordBits": "8"
+    },
+    "name": "ToyEnergyBufferMode",
+    "parameters": {},
+    "trace": [
+      "EBUF-001",
+      "EBUF-002",
+      "EBUF-003",
+      "EBUF-004",
+      "EBUF-005",
+      "EBUF-006"
+    ]
+  },
+  "controls": [
+    {
+      "actions": {
+        "chargeIndicator": "false",
+        "state": "DISCHARGE",
+        "supplyEnabled": "true"
+      },
+      "condition": "externalPowerAvailable == false and emptyDetected == false",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "logical",
+        "left": null,
+        "name": "",
+        "operands": [
+          {
+            "diagnostic": "",
+            "kind": "comparison",
+            "left": {
+              "diagnostic": "",
+              "kind": "variable",
+              "left": null,
+              "name": "externalPowerAvailable",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "externalPowerAvailable == false and emptyDetected == false",
+              "value": null
+            },
+            "name": "",
+            "operands": [],
+            "operator": "==",
+            "right": {
+              "diagnostic": "",
+              "kind": "boolean",
+              "left": null,
+              "name": "",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "externalPowerAvailable == false and emptyDetected == false",
+              "value": false
+            },
+            "source": "externalPowerAvailable == false and emptyDetected == false",
+            "value": null
+          },
+          {
+            "diagnostic": "",
+            "kind": "comparison",
+            "left": {
+              "diagnostic": "",
+              "kind": "variable",
+              "left": null,
+              "name": "emptyDetected",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "externalPowerAvailable == false and emptyDetected == false",
+              "value": null
+            },
+            "name": "",
+            "operands": [],
+            "operator": "==",
+            "right": {
+              "diagnostic": "",
+              "kind": "boolean",
+              "left": null,
+              "name": "",
+              "operands": [],
+              "operator": "",
+              "right": null,
+              "source": "externalPowerAvailable == false and emptyDetected == false",
+              "value": false
+            },
+            "source": "externalPowerAvailable == false and emptyDetected == false",
+            "value": null
+          }
+        ],
+        "operator": "and",
+        "right": null,
+        "source": "externalPowerAvailable == false and emptyDetected == false",
+        "value": null
+      },
+      "name": "power_removed_discharge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 10,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "state_scope": "CHARGE",
+      "trace": [
+        "EBUF-001",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "false",
+        "state": "EMPTY",
+        "supplyEnabled": "false"
+      },
+      "condition": "emptyDetected == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "emptyDetected",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "emptyDetected == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "emptyDetected == true",
+          "value": true
+        },
+        "source": "emptyDetected == true",
+        "value": null
+      },
+      "name": "discharge_empty",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 20,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "state_scope": "DISCHARGE",
+      "trace": [
+        "EBUF-002",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "true",
+        "state": "CHARGE",
+        "supplyEnabled": "false"
+      },
+      "condition": "externalPowerAvailable == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "externalPowerAvailable",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "externalPowerAvailable == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "externalPowerAvailable == true",
+          "value": true
+        },
+        "source": "externalPowerAvailable == true",
+        "value": null
+      },
+      "name": "empty_reconnect_charge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 30,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "state_scope": "EMPTY",
+      "trace": [
+        "EBUF-003",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "true",
+        "state": "CHARGE",
+        "supplyEnabled": "false"
+      },
+      "condition": "externalPowerAvailable == true",
+      "condition_expr": {
+        "diagnostic": "",
+        "kind": "comparison",
+        "left": {
+          "diagnostic": "",
+          "kind": "variable",
+          "left": null,
+          "name": "externalPowerAvailable",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "externalPowerAvailable == true",
+          "value": null
+        },
+        "name": "",
+        "operands": [],
+        "operator": "==",
+        "right": {
+          "diagnostic": "",
+          "kind": "boolean",
+          "left": null,
+          "name": "",
+          "operands": [],
+          "operator": "",
+          "right": null,
+          "source": "externalPowerAvailable == true",
+          "value": true
+        },
+        "source": "externalPowerAvailable == true",
+        "value": null
+      },
+      "name": "discharge_reconnect_charge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 40,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "state_scope": "DISCHARGE",
+      "trace": [
+        "EBUF-004",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "label": "source availability",
+      "source": "ToyPowerSource.externalPowerAvailable",
+      "target": "ToyEnergyBufferModeController.externalPowerAvailable",
+      "trace": [
+        "EBUF-001",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005"
+      ]
+    },
+    {
+      "label": "empty indication",
+      "source": "ToyEmptyMonitor.emptyDetected",
+      "target": "ToyEnergyBufferModeController.emptyDetected",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-005"
+      ]
+    },
+    {
+      "label": "supply command",
+      "source": "ToyEnergyBufferModeController.supplyEnabled",
+      "target": "ToyEnergyBufferMode.supplyEnabled",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005"
+      ]
+    },
+    {
+      "label": "charge indication",
+      "source": "ToyEnergyBufferModeController.chargeIndicator",
+      "target": "ToyEnergyBufferMode.chargeIndicator",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005"
+      ]
+    },
+    {
+      "label": "reported supply command",
+      "source": "ToyEnergyBufferMode.supplyEnabled",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "EBUF-006"
+      ]
+    },
+    {
+      "label": "reported charge indication",
+      "source": "ToyEnergyBufferMode.chargeIndicator",
+      "target": "ScenarioReport.observedBehavior",
+      "trace": [
+        "EBUF-006"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        "externalPowerAvailable",
+        "emptyDetected"
+      ],
+      "name": "ToyEnergyBufferModeController",
+      "outputs": [
+        "state",
+        "supplyEnabled",
+        "chargeIndicator"
+      ],
+      "owns": [
+        "CHARGE",
+        "DISCHARGE",
+        "EMPTY",
+        "supplyEnabled",
+        "chargeIndicator"
+      ],
+      "responsibility": "Own the CHARGE/DISCHARGE/EMPTY lifecycle and map source availability plus empty detection to supply and charge indication outputs",
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "harness_devices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyPowerSource",
+      "role": "source",
+      "trace": [
+        "EBUF-001",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyEmptyMonitor",
+      "role": "source",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-005"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyEnergyBufferMode",
+      "role": "controller",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "metadata": {
+    "irRole": "internal snapshot",
+    "requirementRefs": [
+      "EBUF-001",
+      "EBUF-002",
+      "EBUF-003",
+      "EBUF-004",
+      "EBUF-005",
+      "EBUF-006"
+    ],
+    "sourceFormat": "mbd-markdown",
+    "sourcePath": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/toy_energy_buffer_mode/model.mbd.md"
+  },
+  "ports": {
+    "chargeIndicator": {
+      "default": "true",
+      "direction": "out",
+      "name": "chargeIndicator",
+      "type": "bool"
+    },
+    "emptyDetected": {
+      "default": "false",
+      "direction": "in",
+      "name": "emptyDetected",
+      "type": "bool"
+    },
+    "externalPowerAvailable": {
+      "default": "true",
+      "direction": "in",
+      "name": "externalPowerAvailable",
+      "type": "bool"
+    },
+    "supplyEnabled": {
+      "default": "false",
+      "direction": "out",
+      "name": "supplyEnabled",
+      "type": "bool"
+    }
+  },
+  "registers": {
+    "STATUS": {
+      "access": "ro",
+      "address": "0x01",
+      "fields": {
+        "chargeIndicator": {
+          "bit": 1,
+          "bits": "1",
+          "name": "chargeIndicator",
+          "reset": "1"
+        },
+        "supplyEnabled": {
+          "bit": 0,
+          "bits": "0",
+          "name": "supplyEnabled",
+          "reset": "0"
+        }
+      },
+      "name": "STATUS",
+      "width": 8
+    }
+  },
+  "sections": [
+    {
+      "body": "component ToyEnergyBufferMode\ntrace EBUF-001 EBUF-002 EBUF-003 EBUF-004 EBUF-005 EBUF-006\nbus virtual mode=preview wordBits=8\n\nport in externalPowerAvailable: bool = true\nport in emptyDetected: bool = false\nport out supplyEnabled: bool = false\nport out chargeIndicator: bool = true",
+      "language": "mbd-component"
+    },
+    {
+      "body": "STATUS 0x01 ro 8\n  bit 0 supplyEnabled reset=0\n  bit 1 chargeIndicator reset=1",
+      "language": "mbd-registers"
+    },
+    {
+      "body": "CHARGE --> DISCHARGE: externalPowerAvailable == false and emptyDetected == false\nDISCHARGE --> EMPTY: emptyDetected == true\nEMPTY --> CHARGE: externalPowerAvailable == true\nDISCHARGE --> CHARGE: externalPowerAvailable == true",
+      "language": "mbd-state"
+    },
+    {
+      "body": "function ToyEnergyBufferModeController: responsibility=Own the CHARGE/DISCHARGE/EMPTY lifecycle and map source availability plus empty detection to supply and charge indication outputs; owns=CHARGE,DISCHARGE,EMPTY,supplyEnabled,chargeIndicator; inputs=externalPowerAvailable,emptyDetected; outputs=state,supplyEnabled,chargeIndicator; trace=EBUF-001,EBUF-002,EBUF-003,EBUF-004,EBUF-005,EBUF-006; scenarios=source_loss_recovery",
+      "language": "mbd-decomposition"
+    },
+    {
+      "body": "ToyPowerSource.externalPowerAvailable -> ToyEnergyBufferModeController.externalPowerAvailable: source availability trace EBUF-001 EBUF-003 EBUF-004 EBUF-005\nToyEmptyMonitor.emptyDetected -> ToyEnergyBufferModeController.emptyDetected: empty indication trace EBUF-001 EBUF-002 EBUF-005\nToyEnergyBufferModeController.supplyEnabled -> ToyEnergyBufferMode.supplyEnabled: supply command trace EBUF-001 EBUF-002 EBUF-003 EBUF-004 EBUF-005\nToyEnergyBufferModeController.chargeIndicator -> ToyEnergyBufferMode.chargeIndicator: charge indication trace EBUF-001 EBUF-002 EBUF-003 EBUF-004 EBUF-005\nToyEnergyBufferMode.supplyEnabled -> ScenarioReport.observedBehavior: reported supply command trace EBUF-006\nToyEnergyBufferMode.chargeIndicator -> ScenarioReport.observedBehavior: reported charge indication trace EBUF-006",
+      "language": "mbd-flow"
+    },
+    {
+      "body": "priority 10 rule power_removed_discharge: owner ToyEnergyBufferModeController from CHARGE when externalPowerAvailable == false and emptyDetected == false then state=DISCHARGE, supplyEnabled=true, chargeIndicator=false trace EBUF-001 EBUF-006 scenarios source_loss_recovery\npriority 20 rule discharge_empty: owner ToyEnergyBufferModeController from DISCHARGE when emptyDetected == true then state=EMPTY, supplyEnabled=false, chargeIndicator=false trace EBUF-002 EBUF-006 scenarios source_loss_recovery\npriority 30 rule empty_reconnect_charge: owner ToyEnergyBufferModeController from EMPTY when externalPowerAvailable == true then state=CHARGE, supplyEnabled=false, chargeIndicator=true trace EBUF-003 EBUF-006 scenarios source_loss_recovery\npriority 40 rule discharge_reconnect_charge: owner ToyEnergyBufferModeController from DISCHARGE when externalPowerAvailable == true then state=CHARGE, supplyEnabled=false, chargeIndicator=true trace EBUF-004 EBUF-006 scenarios source_loss_recovery",
+      "language": "mbd-control"
+    },
+    {
+      "body": "device ToyPowerSource role=source boundary=virtual_ic trace EBUF-001 EBUF-003 EBUF-004 EBUF-005\ndevice ToyEmptyMonitor role=source boundary=virtual_ic trace EBUF-001 EBUF-002 EBUF-005\necu ToyEnergyBufferMode role=controller boundary=hal trace EBUF-001 EBUF-002 EBUF-003 EBUF-004 EBUF-005 EBUF-006",
+      "language": "mbd-harness"
+    }
+  ],
+  "source_path": "/Users/kinoshitayuki/work/virtual-ecu-peripheral-harness/samples/toy_energy_buffer_mode/model.mbd.md",
+  "title": "Toy Energy Buffer Mode",
+  "transitions": [
+    {
+      "condition": "externalPowerAvailable == false and emptyDetected == false",
+      "source": "CHARGE",
+      "target": "DISCHARGE"
+    },
+    {
+      "condition": "emptyDetected == true",
+      "source": "DISCHARGE",
+      "target": "EMPTY"
+    },
+    {
+      "condition": "externalPowerAvailable == true",
+      "source": "EMPTY",
+      "target": "CHARGE"
+    },
+    {
+      "condition": "externalPowerAvailable == true",
+      "source": "DISCHARGE",
+      "target": "CHARGE"
+    }
+  ]
+}

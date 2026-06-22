@@ -1,0 +1,107 @@
+flowchart LR
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_power_removed_discharge{"externalPowerAvailable == false and emptyDetected == false?"}
+  action_power_removed_discharge["State DISCHARGE<br/>Output supplyEnabled = true<br/>Output chargeIndicator = false"]
+  input_externalPowerAvailable["Input Port: externalPowerAvailable"]
+  input_externalPowerAvailable --> decision_power_removed_discharge
+  input_emptyDetected["Input Port: emptyDetected"]
+  input_emptyDetected --> decision_power_removed_discharge
+  decision_power_removed_discharge -->|"true / power_removed_discharge"| action_power_removed_discharge
+  decision_discharge_empty{"emptyDetected == true?"}
+  action_discharge_empty["State EMPTY<br/>Output supplyEnabled = false<br/>Output chargeIndicator = false"]
+  input_emptyDetected["Input Port: emptyDetected"]
+  input_emptyDetected --> decision_discharge_empty
+  decision_discharge_empty -->|"true / discharge_empty"| action_discharge_empty
+  decision_empty_reconnect_charge{"externalPowerAvailable == true?"}
+  action_empty_reconnect_charge["State CHARGE<br/>Output supplyEnabled = false<br/>Output chargeIndicator = true"]
+  input_externalPowerAvailable["Input Port: externalPowerAvailable"]
+  input_externalPowerAvailable --> decision_empty_reconnect_charge
+  decision_empty_reconnect_charge -->|"true / empty_reconnect_charge"| action_empty_reconnect_charge
+  decision_discharge_reconnect_charge{"externalPowerAvailable == true?"}
+  action_discharge_reconnect_charge["State CHARGE<br/>Output supplyEnabled = false<br/>Output chargeIndicator = true"]
+  input_externalPowerAvailable["Input Port: externalPowerAvailable"]
+  input_externalPowerAvailable --> decision_discharge_reconnect_charge
+  decision_discharge_reconnect_charge -->|"true / discharge_reconnect_charge"| action_discharge_reconnect_charge
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
+  ToyPowerSource_externalPowerAvailable["ToyPowerSource.externalPowerAvailable"]
+  ToyEnergyBufferModeController_externalPowerAvailable["ToyEnergyBufferModeController.externalPowerAvailable"]
+  %% Trace: EBUF-001, EBUF-003, EBUF-004, EBUF-005
+  %% ToyPowerSource_externalPowerAvailable --> ToyEnergyBufferModeController_externalPowerAvailable
+  ToyPowerSource_externalPowerAvailable -->|"source availability"| ToyEnergyBufferModeController_externalPowerAvailable
+  ToyEmptyMonitor_emptyDetected["ToyEmptyMonitor.emptyDetected"]
+  ToyEnergyBufferModeController_emptyDetected["ToyEnergyBufferModeController.emptyDetected"]
+  %% Trace: EBUF-001, EBUF-002, EBUF-005
+  %% ToyEmptyMonitor_emptyDetected --> ToyEnergyBufferModeController_emptyDetected
+  ToyEmptyMonitor_emptyDetected -->|"empty indication"| ToyEnergyBufferModeController_emptyDetected
+  ToyEnergyBufferModeController_supplyEnabled["ToyEnergyBufferModeController.supplyEnabled"]
+  ToyEnergyBufferMode_supplyEnabled["ToyEnergyBufferMode.supplyEnabled"]
+  %% Trace: EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005
+  %% ToyEnergyBufferModeController_supplyEnabled --> ToyEnergyBufferMode_supplyEnabled
+  ToyEnergyBufferModeController_supplyEnabled -->|"supply command"| ToyEnergyBufferMode_supplyEnabled
+  ToyEnergyBufferModeController_chargeIndicator["ToyEnergyBufferModeController.chargeIndicator"]
+  ToyEnergyBufferMode_chargeIndicator["ToyEnergyBufferMode.chargeIndicator"]
+  %% Trace: EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005
+  %% ToyEnergyBufferModeController_chargeIndicator --> ToyEnergyBufferMode_chargeIndicator
+  ToyEnergyBufferModeController_chargeIndicator -->|"charge indication"| ToyEnergyBufferMode_chargeIndicator
+  ToyEnergyBufferMode_supplyEnabled["ToyEnergyBufferMode.supplyEnabled"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: EBUF-006
+  %% ToyEnergyBufferMode_supplyEnabled --> ScenarioReport_observedBehavior
+  ToyEnergyBufferMode_supplyEnabled -->|"reported supply command"| ScenarioReport_observedBehavior
+  ToyEnergyBufferMode_chargeIndicator["ToyEnergyBufferMode.chargeIndicator"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: EBUF-006
+  %% ToyEnergyBufferMode_chargeIndicator --> ScenarioReport_observedBehavior
+  ToyEnergyBufferMode_chargeIndicator -->|"reported charge indication"| ScenarioReport_observedBehavior
+  function_ToyEnergyBufferModeController["ToyEnergyBufferModeController<br/>Own the CHARGE/DISCHARGE/EMPTY lifecycle and map source availability plus empty detection to supply and charge indication outputs"]
+  %% Function Trace: EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006
+  state["state"]
+  function_ToyEnergyBufferModeController -->|"owns"| state
+  supplyEnabled["supplyEnabled"]
+  function_ToyEnergyBufferModeController -->|"owns"| supplyEnabled
+  chargeIndicator["chargeIndicator"]
+  function_ToyEnergyBufferModeController -->|"owns"| chargeIndicator
+  rule_power_removed_discharge{"priority 10<br/>rule power_removed_discharge<br/>owner ToyEnergyBufferModeController<br/>from CHARGE"}
+  %% Trace: EBUF-001, EBUF-006
+  %% Scenarios: source_loss_recovery
+  state["state"]
+  rule_power_removed_discharge -->|"externalPowerAvailable == false and emptyDetected == false"| state
+  supplyEnabled["supplyEnabled"]
+  rule_power_removed_discharge -->|"externalPowerAvailable == false and emptyDetected == false"| supplyEnabled
+  chargeIndicator["chargeIndicator"]
+  rule_power_removed_discharge -->|"externalPowerAvailable == false and emptyDetected == false"| chargeIndicator
+  rule_discharge_empty{"priority 20<br/>rule discharge_empty<br/>owner ToyEnergyBufferModeController<br/>from DISCHARGE"}
+  %% Trace: EBUF-002, EBUF-006
+  %% Scenarios: source_loss_recovery
+  state["state"]
+  rule_discharge_empty -->|"emptyDetected == true"| state
+  supplyEnabled["supplyEnabled"]
+  rule_discharge_empty -->|"emptyDetected == true"| supplyEnabled
+  chargeIndicator["chargeIndicator"]
+  rule_discharge_empty -->|"emptyDetected == true"| chargeIndicator
+  rule_empty_reconnect_charge{"priority 30<br/>rule empty_reconnect_charge<br/>owner ToyEnergyBufferModeController<br/>from EMPTY"}
+  %% Trace: EBUF-003, EBUF-006
+  %% Scenarios: source_loss_recovery
+  state["state"]
+  rule_empty_reconnect_charge -->|"externalPowerAvailable == true"| state
+  supplyEnabled["supplyEnabled"]
+  rule_empty_reconnect_charge -->|"externalPowerAvailable == true"| supplyEnabled
+  chargeIndicator["chargeIndicator"]
+  rule_empty_reconnect_charge -->|"externalPowerAvailable == true"| chargeIndicator
+  rule_discharge_reconnect_charge{"priority 40<br/>rule discharge_reconnect_charge<br/>owner ToyEnergyBufferModeController<br/>from DISCHARGE"}
+  %% Trace: EBUF-004, EBUF-006
+  %% Scenarios: source_loss_recovery
+  state["state"]
+  rule_discharge_reconnect_charge -->|"externalPowerAvailable == true"| state
+  supplyEnabled["supplyEnabled"]
+  rule_discharge_reconnect_charge -->|"externalPowerAvailable == true"| supplyEnabled
+  chargeIndicator["chargeIndicator"]
+  rule_discharge_reconnect_charge -->|"externalPowerAvailable == true"| chargeIndicator
+  ToyPowerSource["ToyPowerSource<br/>virtual_ic"]
+  %% Trace: EBUF-001, EBUF-003, EBUF-004, EBUF-005
+  ToyEmptyMonitor["ToyEmptyMonitor<br/>virtual_ic"]
+  %% Trace: EBUF-001, EBUF-002, EBUF-005
+  ToyEnergyBufferMode["ToyEnergyBufferMode<br/>hal"]
+  %% Trace: EBUF-001, EBUF-002, EBUF-003, EBUF-004, EBUF-005, EBUF-006

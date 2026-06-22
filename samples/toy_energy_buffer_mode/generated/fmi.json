@@ -1,0 +1,198 @@
+{
+  "component": "ToyEnergyBufferMode",
+  "controlRules": [
+    {
+      "actions": {
+        "chargeIndicator": "false",
+        "state": "DISCHARGE",
+        "supplyEnabled": "true"
+      },
+      "condition": "externalPowerAvailable == false and emptyDetected == false",
+      "name": "power_removed_discharge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 10,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "stateScope": "CHARGE",
+      "trace": [
+        "EBUF-001",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "false",
+        "state": "EMPTY",
+        "supplyEnabled": "false"
+      },
+      "condition": "emptyDetected == true",
+      "name": "discharge_empty",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 20,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "stateScope": "DISCHARGE",
+      "trace": [
+        "EBUF-002",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "true",
+        "state": "CHARGE",
+        "supplyEnabled": "false"
+      },
+      "condition": "externalPowerAvailable == true",
+      "name": "empty_reconnect_charge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 30,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "stateScope": "EMPTY",
+      "trace": [
+        "EBUF-003",
+        "EBUF-006"
+      ]
+    },
+    {
+      "actions": {
+        "chargeIndicator": "true",
+        "state": "CHARGE",
+        "supplyEnabled": "false"
+      },
+      "condition": "externalPowerAvailable == true",
+      "name": "discharge_reconnect_charge",
+      "owner": "ToyEnergyBufferModeController",
+      "priority": 40,
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "stateScope": "DISCHARGE",
+      "trace": [
+        "EBUF-004",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "externalPowerAvailable",
+        "emptyDetected"
+      ],
+      "name": "ToyEnergyBufferModeController",
+      "outputs": [
+        "state",
+        "supplyEnabled",
+        "chargeIndicator"
+      ],
+      "owns": [
+        "CHARGE",
+        "DISCHARGE",
+        "EMPTY",
+        "supplyEnabled",
+        "chargeIndicator"
+      ],
+      "responsibility": "Own the CHARGE/DISCHARGE/EMPTY lifecycle and map source availability plus empty detection to supply and charge indication outputs",
+      "scenarios": [
+        "source_loss_recovery"
+      ],
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyPowerSource",
+      "role": "source",
+      "trace": [
+        "EBUF-001",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyEmptyMonitor",
+      "role": "source",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-005"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyEnergyBufferMode",
+      "role": "controller",
+      "trace": [
+        "EBUF-001",
+        "EBUF-002",
+        "EBUF-003",
+        "EBUF-004",
+        "EBUF-005",
+        "EBUF-006"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "true",
+      "name": "externalPowerAvailable",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "emptyDetected",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "false",
+      "name": "supplyEnabled",
+      "type": "bool"
+    },
+    {
+      "default": "true",
+      "name": "chargeIndicator",
+      "type": "bool"
+    }
+  ],
+  "parameters": [],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "STATUS"
+    }
+  ],
+  "requirementRefs": [
+    "EBUF-001",
+    "EBUF-002",
+    "EBUF-003",
+    "EBUF-004",
+    "EBUF-005",
+    "EBUF-006"
+  ],
+  "source": "samples/toy_energy_buffer_mode/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "CHARGE",
+    "DISCHARGE",
+    "EMPTY"
+  ]
+}

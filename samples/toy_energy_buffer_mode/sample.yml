@@ -1,0 +1,32 @@
+id: toy_energy_buffer_mode
+title: Toy Energy Buffer Mode
+kind: source-informed-mbd
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  source_loss_recovery: scenarios/source_loss_recovery.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/demo.html
+  convertedMbd: generated/from_spec.model.mbd.md
+  convertedReviewHtml: generated/from_spec_review.html
+reports:
+  source_loss_recovery: reports/source_loss_recovery.md
+specMbd:
+  component: ToyEnergyBufferMode
+  scenario: source_loss_recovery
+  inputDefaults:
+    externalPowerAvailable: "true"
+    emptyDetected: "false"
+  outputDefaults:
+    supplyEnabled: "false"
+    chargeIndicator: "true"

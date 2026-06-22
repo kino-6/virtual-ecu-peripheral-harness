@@ -13,10 +13,39 @@ Archived task history:
 
 ## Current Goal
 
-Make layered design review and generated-side consistency checks explicit:
-Component/Data Flow/Sequence views are design review inputs, Control Semantics
-owns executable state/control meaning, and Harness/preview C remain
-preview-only evidence for internally consistent handoff packages.
+Use the clean layered-review baseline to add a source-informed, useful
+fictional MBD sample. The new sample should translate public MathWorks MBD
+patterns into this repository's text-first workflow without copying real
+hardware, claiming tool qualification, or treating Harness preview as formal
+verification.
+
+## Phase 45: Source-Informed State Transition PDCA Sample
+
+Acceptance gates:
+
+- [x] Use MathWorks official documentation as design inspiration for state
+      transition tables, operating modes, and requirements-based harness
+      assessment; cite the sources in the sample specification.
+- [x] Add a fictional `toy_energy_buffer_mode` sample with requirements,
+      Component/Data Flow/Sequence/Control Semantics views, MBD source,
+      scenario, report, and generated handoff artifacts.
+- [x] Keep the example synthetic: no real battery model, physical plant,
+      register map, production ECU behavior, or copied MathWorks model data.
+- [x] Preview Harness evidence shows scenario stimulus, observed behavior,
+      expected behavior, pass/fail, and boundary evidence without owning
+      control semantics.
+- [x] Tests cover parser/model shape, spec-to-MBD conversion, deterministic
+      generated artifacts, preview scenario pass/fail evidence, and sample
+      catalog discovery.
+- [x] Agent-side review confirms the first review path can be understood in
+      about one minute and that external MBD/product-test verification remains
+      explicitly out of scope.
+
+Verification:
+
+- [x] Focused new sample tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Phase 44: Design Layer Separation And Generated-Side Checks
 
