@@ -13,11 +13,31 @@ Archived task history:
 
 ## Current Goal
 
-Use the clean layered-review baseline to add a source-informed, useful
-fictional MBD sample. The new sample should translate public MathWorks MBD
-patterns into this repository's text-first workflow without copying real
-hardware, claiming tool qualification, or treating Harness preview as formal
-verification.
+Prevent repeated under-use of explicit timeboxed Goals. When the user gives a
+budget such as "2h Goal" and asks for autonomous PDCA, Codex should treat the
+budget as usable work time, continue after green checkpoints, and stop only for
+an explicit stop condition.
+
+## Phase 46: Timeboxed PDCA Goal Guardrail
+
+Acceptance gates:
+
+- [x] `AGENTS.md` states that timeboxed Goals use the timebox as work budget,
+      not merely as a deadline.
+- [x] `AGENTS.md` states that a green checkpoint is not the end of a timeboxed
+      Goal when useful follow-up cycles fit the remaining budget.
+- [x] A project-local `timeboxed-pdca-goal` Skill exists and triggers on
+      "1h Goal", "2h Goal", "時間を余らせるな", "自律的にPlan", and
+      "PDCAで回す".
+- [x] The Skill requires a Remaining Budget Decision after every green
+      checkpoint and defines explicit stop conditions.
+- [x] Tests reject removal of the AGENTS rule or Skill trigger language.
+
+Verification:
+
+- [x] Focused project philosophy tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
 
 ## Phase 45: Source-Informed State Transition PDCA Sample
 

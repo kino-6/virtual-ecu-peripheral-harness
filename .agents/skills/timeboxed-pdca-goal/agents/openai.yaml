@@ -1,0 +1,4 @@
+interface:
+  display_name: "Timeboxed PDCA Goal"
+  short_description: "Use timeboxed goals as work budget, not just deadlines"
+  default_prompt: "Use $timeboxed-pdca-goal for this timeboxed Goal; continue through PDCA cycles instead of stopping at the first green checkpoint."

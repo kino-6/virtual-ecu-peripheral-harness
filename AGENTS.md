@@ -97,6 +97,27 @@ behavior, MBD element, harness/scenario, observed behavior, expected behavior,
 and pass/fail. If not, update `Tasks.md` with the failed gate and iterate.
 Use `docs/mbd_review_principles.md` as the lightweight review checklist.
 
+## Timeboxed Goal Policy
+
+When the user says "1h Goal", "2h Goal", "timebox", "時間枠",
+"時間を余らせるな", "自律的にPlan", "PDCAで回す", or equivalent, treat
+the stated time as usable work budget, not merely a deadline.
+
+A green checkpoint is a checkpoint, not the end of a timeboxed Goal. After each
+green checkpoint, run a Remaining Budget Decision:
+
+1. Estimate remaining time/budget.
+2. Identify the next highest-value PDCA cycle.
+3. Continue with the next cycle unless blocked, unsafe, explicitly stopped by
+   the user, or too small to fit a useful cycle.
+
+Do not mark a timeboxed Goal complete after only one vertical slice when
+substantial budget remains and useful follow-up work exists. Completion requires
+one of: the requested timebox is mostly consumed, at least two PDCA cycles are
+complete and no valuable next cycle fits, explicit user stop, or a real blocker.
+The final answer must say which cycles were completed, why work stopped, and
+what useful next cycles remain.
+
 ## Harness Evidence Boundary
 
 Harness is a preview evidence layer. It supplies scenario stimulus, fictional
@@ -164,6 +185,9 @@ the main verification path.
   trace reports, generated handoff artifacts, preview C, or harness evidence.
 - `mbd-control-semantics`: use when `mbd-state`, `mbd-control`, preview runtime,
   or generated code compete for behavior ownership.
+- `timeboxed-pdca-goal`: use when the user gives a timeboxed or budgeted goal,
+  says time is being left unused, asks for autonomous planning, or asks Codex to
+  run PDCA cycles without stopping at the first green checkpoint.
 - `japanese-technical-review`: use when writing Japanese engineering review
   comments for MBD artifacts, specs, generated code, reports, or docs.
 

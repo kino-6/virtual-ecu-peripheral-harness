@@ -63,3 +63,29 @@ def test_agent_rules_and_review_principles_guard_demo_and_harness_boundaries():
     assert "## Generated-Side Consistency Checks" in principles
     assert "Control decisions, state transitions, and output decisions" in quality_gate_skill
     assert "Reject harness shortcuts" in mbd_review_skill
+
+
+def test_timeboxed_goal_policy_prevents_stopping_at_first_green_checkpoint():
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    skill = (ROOT / ".agents" / "skills" / "timeboxed-pdca-goal" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    skill_ui = (
+        ROOT / ".agents" / "skills" / "timeboxed-pdca-goal" / "agents" / "openai.yaml"
+    ).read_text(encoding="utf-8")
+
+    for text in [agents, skill]:
+        assert "Timeboxed" in text
+        assert "2h Goal" in text
+        assert "時間を余らせるな" in text
+        assert "自律的にPlan" in text
+        assert "PDCAで回す" in text
+        assert "green checkpoint" in text
+        assert "Remaining Budget Decision" in text
+        assert "not the end of a timeboxed Goal" in text
+
+    assert "usable work budget, not merely a deadline" in agents
+    assert "Do not stop" in skill
+    assert "one vertical slice" in skill
+    assert "If more than roughly 25%" in skill
+    assert "Timeboxed PDCA Goal" in skill_ui
