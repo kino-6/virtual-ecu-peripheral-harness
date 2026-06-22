@@ -13,10 +13,43 @@ Archived task history:
 
 ## Current Goal
 
-Prevent repeated under-use of explicit timeboxed Goals. When the user gives a
-budget such as "2h Goal" and asks for autonomous PDCA, Codex should treat the
-budget as usable work time, continue after green checkpoints, and stop only for
-an explicit stop condition.
+Run a 1h Goal PDCA loop from the current repository state: merge the current
+branch, then improve review quality checks, Sequence View to scenario
+expectation linkage, and sample-level validation while continuing after green
+checkpoints when useful cycles fit.
+
+## Phase 47: One-Hour Review Quality PDCA Loop
+
+PDCA backlog:
+
+- [x] Cycle 0: push/merge current branch, push `main`, and create a fresh topic
+      branch.
+- [x] Cycle 1: add automated review artifact quality checks for one-minute
+      review paths.
+- [ ] Cycle 2: connect Sequence View expectations to preview scenarios without
+      letting sequence diagrams own control semantics.
+- [ ] Cycle 3: add a minimal `validate-sample` command for sample-level
+      consistency checks.
+
+Acceptance gates:
+
+- [x] Review HTML quality checks reject missing one-minute markers, missing
+      PASS/alignment signals, dense first-read evidence, and missing Harness
+      evidence where required.
+- [ ] Sequence View checks detect scenario expectation drift for at least one
+      layered sample.
+- [ ] Sample validation CLI checks generated artifact determinism, spec-to-MBD
+      alignment, preview report pass/fail, and review HTML quality for one
+      sample.
+- [ ] Remaining Budget Decisions are made after each green checkpoint.
+
+Verification:
+
+- [x] Focused review artifact quality tests pass.
+- [ ] Focused sequence/scenario tests pass.
+- [ ] Focused sample validation tests pass.
+- [ ] Full `pytest` passes.
+- [ ] `git diff --check` passes.
 
 ## Phase 46: Timeboxed PDCA Goal Guardrail
 
