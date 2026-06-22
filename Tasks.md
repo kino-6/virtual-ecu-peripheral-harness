@@ -26,7 +26,7 @@ PDCA backlog:
       branch.
 - [x] Cycle 1: add automated review artifact quality checks for one-minute
       review paths.
-- [ ] Cycle 2: connect Sequence View expectations to preview scenarios without
+- [x] Cycle 2: connect Sequence View expectations to preview scenarios without
       letting sequence diagrams own control semantics.
 - [ ] Cycle 3: add a minimal `validate-sample` command for sample-level
       consistency checks.
@@ -36,7 +36,7 @@ Acceptance gates:
 - [x] Review HTML quality checks reject missing one-minute markers, missing
       PASS/alignment signals, dense first-read evidence, and missing Harness
       evidence where required.
-- [ ] Sequence View checks detect scenario expectation drift for at least one
+- [x] Sequence View checks detect scenario expectation drift for at least one
       layered sample.
 - [ ] Sample validation CLI checks generated artifact determinism, spec-to-MBD
       alignment, preview report pass/fail, and review HTML quality for one
@@ -46,7 +46,7 @@ Acceptance gates:
 Verification:
 
 - [x] Focused review artifact quality tests pass.
-- [ ] Focused sequence/scenario tests pass.
+- [x] Focused sequence/scenario tests pass.
 - [ ] Focused sample validation tests pass.
 - [ ] Full `pytest` passes.
 - [ ] `git diff --check` passes.
