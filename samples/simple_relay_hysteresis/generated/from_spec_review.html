@@ -417,20 +417,22 @@
       </div>
       <h3>状態遷移の確認</h3>
       <table class="review-table compact">
-        <thead><tr><th>仕様</th><th>MBD</th><th>Trace</th><th>判定</th></tr></thead>
+        <thead><tr><th>遷移</th><th>条件</th><th>出力</th><th>判定</th></tr></thead>
         <tbody>
-          <tr><td><code>[*] -> OFF</code></td><td>初期状態 <code>OFF</code></td><td>仕様構造</td><td>一致</td></tr>
-          <tr><td><code>OFF -> ON</code> / level &gt;= onThreshold</td><td>OFF -&gt; ON / level &gt;= onThreshold / state=ON, active=true</td><td>RLY-001, RLY-003</td><td>一致</td></tr>
-          <tr><td><code>ON -> OFF</code> / level &lt;= offThreshold</td><td>ON -&gt; OFF / level &lt;= offThreshold / state=OFF, active=false</td><td>RLY-002, RLY-003</td><td>一致</td></tr>
+          <tr><td><code>[*] -> OFF</code></td><td>初期</td><td><code>OFF</code></td><td>一致</td></tr>
+          <tr><td><code>OFF -> ON</code></td><td>level &gt;= onThreshold(70)</td><td>active=true</td><td>一致</td></tr>
+          <tr><td><code>ON -> OFF</code></td><td>level &lt;= offThreshold(30)</td><td>active=false</td><td>一致</td></tr>
         </tbody>
       </table>
       <section class="verification-summary">
         <h3>Harnessテスト要約</h3>
-        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
+        <p>preview証跡。制御判断はMBD source側。</p>
         <table class="review-table compact">
-          <thead><tr><th>テスト</th><th>型</th><th>刺激</th><th>期待</th><th>判定</th><th>証跡</th></tr></thead>
+          <thead><tr><th>テスト</th><th>刺激</th><th>期待</th><th>判定</th></tr></thead>
           <tbody>
-          <tr><td>hysteresis_cycle</td><td>閾値/ヒステリシス</td><td>level=75 -&gt; level=50 -&gt; level=25</td><td>OFF-&gt;ON-&gt;OFF; onThreshold=70, offThreshold=30; 中間保持含む; final=OFF; active=false</td><td><strong>PASS</strong></td><td><code>reports/hysteresis_cycle.md</code></td></tr>
+          <tr><td>hysteresis_cycle</td><td>level=75</td><td>OFF-&gt;ON; active=true</td><td><strong>PASS</strong></td></tr>
+          <tr><td></td><td>level=50</td><td>ON保持; active=true</td><td><strong>PASS</strong></td></tr>
+          <tr><td></td><td>level=25</td><td>ON-&gt;OFF; active=false</td><td><strong>PASS</strong></td></tr>
           </tbody>
         </table>
       </section>

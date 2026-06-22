@@ -429,22 +429,24 @@
       </div>
       <h3>状態遷移の確認</h3>
       <table class="review-table compact">
-        <thead><tr><th>仕様</th><th>MBD</th><th>Trace</th><th>判定</th></tr></thead>
+        <thead><tr><th>遷移</th><th>条件</th><th>出力</th><th>判定</th></tr></thead>
         <tbody>
-          <tr><td><code>[*] -> CHARGE</code></td><td>初期状態 <code>CHARGE</code></td><td>仕様構造</td><td>一致</td></tr>
-          <tr><td><code>CHARGE -> DISCHARGE</code> / externalPowerAvailable == false and emptyDetected == false</td><td>CHARGE -&gt; DISCHARGE / externalPowerAvailable == false and emptyDetected == false / state=DISCHARGE, supplyEnabled=true, chargeIndicator=false</td><td>EBUF-001, EBUF-005</td><td>一致</td></tr>
-          <tr><td><code>DISCHARGE -> EMPTY</code> / emptyDetected == true</td><td>DISCHARGE -&gt; EMPTY / emptyDetected == true / state=EMPTY, supplyEnabled=false, chargeIndicator=false</td><td>EBUF-002, EBUF-005</td><td>一致</td></tr>
-          <tr><td><code>EMPTY -> CHARGE</code> / externalPowerAvailable == true</td><td>EMPTY -&gt; CHARGE / externalPowerAvailable == true / state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-003, EBUF-005</td><td>一致</td></tr>
-          <tr><td><code>DISCHARGE -> CHARGE</code> / externalPowerAvailable == true</td><td>DISCHARGE -&gt; CHARGE / externalPowerAvailable == true / state=CHARGE, supplyEnabled=false, chargeIndicator=true</td><td>EBUF-004, EBUF-005</td><td>一致</td></tr>
+          <tr><td><code>[*] -> CHARGE</code></td><td>初期</td><td><code>CHARGE</code></td><td>一致</td></tr>
+          <tr><td><code>CHARGE -> DISCHARGE</code></td><td>externalPowerAvailable == false and emptyDetected == false</td><td>supplyEnabled=true, chargeIndicator=false</td><td>一致</td></tr>
+          <tr><td><code>DISCHARGE -> EMPTY</code></td><td>emptyDetected == true</td><td>supplyEnabled=false, chargeIndicator=false</td><td>一致</td></tr>
+          <tr><td><code>EMPTY -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>supplyEnabled=false, chargeIndicator=true</td><td>一致</td></tr>
+          <tr><td><code>DISCHARGE -> CHARGE</code></td><td>externalPowerAvailable == true</td><td>supplyEnabled=false, chargeIndicator=true</td><td>一致</td></tr>
         </tbody>
       </table>
       <section class="verification-summary">
         <h3>Harnessテスト要約</h3>
-        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
+        <p>preview証跡。制御判断はMBD source側。</p>
         <table class="review-table compact">
-          <thead><tr><th>テスト</th><th>型</th><th>刺激</th><th>期待</th><th>判定</th><th>証跡</th></tr></thead>
+          <thead><tr><th>テスト</th><th>刺激</th><th>期待</th><th>判定</th></tr></thead>
           <tbody>
-          <tr><td>source_loss_recovery</td><td>状態遷移</td><td>externalPowerAvailable=false -&gt; emptyDetected=true -&gt; externalPowerAvailable=true</td><td>CHARGE-&gt;DISCHARGE-&gt;EMPTY-&gt;CHARGE; final=CHARGE; supplyEnabled=false, chargeIndicator=true</td><td><strong>PASS</strong></td><td><code>reports/source_loss_recovery.md</code></td></tr>
+          <tr><td>source_loss_recovery</td><td>externalPowerAvailable=false</td><td>CHARGE-&gt;DISCHARGE; supplyEnabled=true, chargeIndicator=false</td><td><strong>PASS</strong></td></tr>
+          <tr><td></td><td>emptyDetected=true</td><td>DISCHARGE-&gt;EMPTY; supplyEnabled=false, chargeIndicator=false</td><td><strong>PASS</strong></td></tr>
+          <tr><td></td><td>externalPowerAvailable=true</td><td>EMPTY-&gt;CHARGE; supplyEnabled=false, chargeIndicator=true</td><td><strong>PASS</strong></td></tr>
           </tbody>
         </table>
       </section>

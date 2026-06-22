@@ -118,9 +118,9 @@ def test_toy_energy_buffer_mode_spec_generates_reviewable_mbd():
     assert "Harnessテスト要約" in review_html
     assert "<strong>PASS</strong>" in review_html
     assert "状態遷移" in review_html
-    assert "externalPowerAvailable=false -&gt; emptyDetected=true -&gt; externalPowerAvailable=true" in review_html
-    assert "CHARGE-&gt;DISCHARGE-&gt;EMPTY-&gt;CHARGE" in review_html
-    assert "final=CHARGE; supplyEnabled=false, chargeIndicator=true" in review_html
+    assert "externalPowerAvailable=false</td><td>CHARGE-&gt;DISCHARGE; supplyEnabled=true, chargeIndicator=false" in review_html
+    assert "emptyDetected=true</td><td>DISCHARGE-&gt;EMPTY; supplyEnabled=false, chargeIndicator=false" in review_html
+    assert "externalPowerAvailable=true</td><td>EMPTY-&gt;CHARGE; supplyEnabled=false, chargeIndicator=true" in review_html
     assert "機能:" not in review_html
     assert "信号線:" not in review_html
     assert "Harness:" not in review_html

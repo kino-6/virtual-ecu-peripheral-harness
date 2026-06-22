@@ -6,7 +6,6 @@ from pathlib import Path
 
 import yaml
 
-from veph.control_semantics import find_threshold_pair
 from veph.ir import MbdModelIR
 
 
@@ -25,9 +24,6 @@ def spec_verification_data(model: MbdModelIR, spec: dict[str, object]) -> list[d
         if report_path is not None and report_path.exists():
             text = report_path.read_text(encoding="utf-8")
             row.update(_parse_preview_report_summary(text))
-            row["test_type"] = _test_type(model)
-            row["stimulus"] = _stimulus_summary(row)
-            row["expected"] = _expected_summary(model, row)
         rows.append(row)
     return rows
 
@@ -43,14 +39,14 @@ def spec_verification_summary_html(rows: list[dict[str, object]]) -> str:
                 "      </section>",
             ]
         )
-    body = "\n".join(_spec_verification_row(row) for row in rows)
+    body = "\n".join(_spec_verification_rows(row) for row in rows)
     return "\n".join(
         [
             '      <section class="verification-summary">',
             "        <h3>Harnessテスト要約</h3>",
-            "        <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>",
+            "        <p>preview証跡。制御判断はMBD source側。</p>",
             "        <table class=\"review-table compact\">",
-            "          <thead><tr><th>テスト</th><th>型</th><th>刺激</th><th>期待</th><th>判定</th><th>証跡</th></tr></thead>",
+            "          <thead><tr><th>テスト</th><th>刺激</th><th>期待</th><th>判定</th></tr></thead>",
             "          <tbody>",
             body,
             "          </tbody>",
@@ -83,12 +79,14 @@ def _parse_preview_report_summary(text: str) -> dict[str, object]:
     steps = len(re.findall(r"^\s*-\s*atMs:", scenario_steps, re.MULTILINE))
     observed = _yaml_section(text, "Observed Behavior")
     expected = _yaml_section(text, "Expected Behavior")
+    preview_steps = _yaml_section(text, "Per-Step Preview Execution")
     return {
         "status": status,
         "final_state": final_state,
         "checks": checks,
         "observed": observed,
         "expected_behavior": expected,
+        "preview_steps": preview_steps,
         "scenario_steps": _safe_yaml_load(scenario_steps, []),
         "steps": str(steps) if steps else "",
     }
@@ -126,29 +124,41 @@ def _safe_yaml_load(text: str, fallback: object) -> object:
     return fallback if loaded is None else loaded
 
 
-def _spec_verification_row(row: dict[str, object]) -> str:
+def _spec_verification_rows(row: dict[str, object]) -> str:
+    preview_steps = row.get("preview_steps")
+    if isinstance(preview_steps, list) and preview_steps:
+        return "\n".join(
+            _spec_verification_step_row(row, step, index)
+            for index, step in enumerate(preview_steps)
+        )
+    return _spec_verification_summary_row(row)
+
+
+def _spec_verification_summary_row(row: dict[str, object]) -> str:
     status = str(row.get("status", "未確認"))
     status_label = "PASS" if status == "PASS" else ("FAIL" if status == "FAIL" else "未確認")
     return (
         "          <tr>"
         f"<td>{escape(str(row.get('scenario', '')))}</td>"
-        f"<td>{escape(str(row.get('test_type', 'シナリオ')))}</td>"
-        f"<td>{escape(str(row.get('stimulus', '')))}</td>"
-        f"<td>{escape(str(row.get('expected', '')))}</td>"
+        f"<td>{escape(_stimulus_summary(row))}</td>"
+        f"<td>{escape(_expected_summary(row))}</td>"
         f"<td><strong>{escape(status_label)}</strong></td>"
-        f"<td><code>{escape(str(row.get('report', '')))}</code></td>"
         "</tr>"
     )
 
 
-def _test_type(model: MbdModelIR) -> str:
-    if find_threshold_pair(model.controls) is not None or any(
-        "threshold" in name.lower() for name in model.component.parameters
-    ):
-        return "閾値/ヒステリシス"
-    if model.transitions:
-        return "状態遷移"
-    return "信号判定"
+def _spec_verification_step_row(row: dict[str, object], step: object, index: int) -> str:
+    status = str(row.get("status", "未確認"))
+    status_label = "PASS" if status == "PASS" else ("FAIL" if status == "FAIL" else "未確認")
+    scenario = str(row.get("scenario", "")) if index == 0 else ""
+    return (
+        "          <tr>"
+        f"<td>{escape(scenario)}</td>"
+        f"<td>{escape(_step_stimulus(step))}</td>"
+        f"<td>{escape(_step_expected(step))}</td>"
+        f"<td><strong>{escape(status_label)}</strong></td>"
+        "</tr>"
+    )
 
 
 def _stimulus_summary(row: dict[str, object]) -> str:
@@ -168,17 +178,8 @@ def _stimulus_summary(row: dict[str, object]) -> str:
     return " -> ".join(values)
 
 
-def _expected_summary(model: MbdModelIR, row: dict[str, object]) -> str:
+def _expected_summary(row: dict[str, object]) -> str:
     parts: list[str] = []
-    path = _transition_path(model, row)
-    if path:
-        parts.append(path)
-    if _test_type(model) == "閾値/ヒステリシス":
-        thresholds = _threshold_summary(model)
-        if thresholds:
-            parts.append(thresholds)
-        if _step_count(row) > _applied_rule_count(row):
-            parts.append("中間保持含む")
     expected = row.get("expected_behavior")
     if isinstance(expected, dict):
         final_state = expected.get("finalState") or row.get("final_state")
@@ -194,68 +195,36 @@ def _expected_summary(model: MbdModelIR, row: dict[str, object]) -> str:
     return "; ".join(part for part in parts if part)
 
 
-def _transition_path(model: MbdModelIR, row: dict[str, object]) -> str:
-    observed = row.get("observed")
-    if not isinstance(observed, dict):
-        return _transition_path_from_model(model, _step_count(row))
-    applied_rules = observed.get("appliedRules")
-    if not isinstance(applied_rules, list):
-        return _transition_path_from_model(model, _step_count(row))
-    controls = {control.name: control for control in model.controls}
-    states: list[str] = []
-    for name in applied_rules:
-        control = controls.get(str(name))
-        if control is None:
-            continue
-        target = control.actions.get("state", "")
-        if not target:
-            continue
-        if not states:
-            states.append(control.state_scope)
-        states.append(target)
-    return "->".join(states) if states else _transition_path_from_model(model, len(applied_rules))
-
-
-def _transition_path_from_model(model: MbdModelIR, limit: int) -> str:
-    transitions = model.transitions[:limit] if limit > 0 else model.transitions
-    states: list[str] = []
-    for transition in transitions:
-        if transition.source == "[*]":
-            continue
-        if not states:
-            states.append(transition.source)
-        states.append(transition.target)
-    return "->".join(states)
-
-
-def _threshold_summary(model: MbdModelIR) -> str:
-    threshold_names = [name for name in model.component.parameters if "threshold" in name.lower()]
-    if threshold_names:
-        return ", ".join(
-            f"{name}={model.component.parameters[name].default}" for name in threshold_names
-        )
-    pair = find_threshold_pair(model.controls)
-    if pair is None:
+def _step_stimulus(step: object) -> str:
+    if not isinstance(step, dict):
         return ""
-    names = [
-        name
-        for name in model.component.parameters
-        if any(name in re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", control.condition) for control in pair)
-    ]
-    if not names:
+    scenario_input = step.get("scenarioInput")
+    if not isinstance(scenario_input, dict):
         return ""
-    return ", ".join(f"{name}={model.component.parameters[name].default}" for name in names)
+    name = str(scenario_input.get("name", ""))
+    value = _format_value(scenario_input.get("value"))
+    return f"{name}={value}" if name else value
 
 
-def _step_count(row: dict[str, object]) -> int:
-    steps = row.get("scenario_steps")
-    return len(steps) if isinstance(steps, list) else 0
+def _step_expected(step: object) -> str:
+    if not isinstance(step, dict):
+        return ""
+    before = step.get("before")
+    after = step.get("after")
+    before_state = before.get("state") if isinstance(before, dict) else ""
+    after_state = after.get("state") if isinstance(after, dict) else ""
+    transition = (
+        f"{_format_value(before_state)}保持"
+        if before_state == after_state
+        else f"{_format_value(before_state)}->{_format_value(after_state)}"
+    )
+    outputs = after.get("outputs") if isinstance(after, dict) else {}
+    output_text = _mapping_summary(outputs) if isinstance(outputs, dict) else ""
+    return f"{transition}; {output_text}" if output_text else transition
 
 
-def _applied_rule_count(row: dict[str, object]) -> int:
-    observed = row.get("observed")
-    applied = observed.get("appliedRules") if isinstance(observed, dict) else []
-    return len(applied) if isinstance(applied, list) else 0
+def _mapping_summary(values: dict[object, object]) -> str:
+    return ", ".join(f"{name}={_format_value(value)}" for name, value in values.items())
 
 
 def _check_summary(checks: list[object]) -> str:

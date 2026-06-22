@@ -189,9 +189,9 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
     assert "1分レビュー" in review_html
     assert "Harnessテスト要約" in review_html
     assert "<strong>PASS</strong>" in review_html
-    assert "startCommand=true -&gt; finishCommand=true -&gt; resetCommand=true" in review_html
-    assert "IDLE-&gt;RUNNING-&gt;DONE-&gt;IDLE" in review_html
-    assert "final=IDLE; busy=false, complete=false" in review_html
+    assert "startCommand=true</td><td>IDLE-&gt;RUNNING; busy=true, complete=false" in review_html
+    assert "finishCommand=true</td><td>RUNNING-&gt;DONE; busy=false, complete=true" in review_html
+    assert "resetCommand=true</td><td>DONE-&gt;IDLE; busy=false, complete=false" in review_html
     assert "要求ごとの確認" in review_html
     assert "状態図レビュー" in review_html
     assert "仕様の状態図" in review_html
@@ -205,9 +205,7 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
     assert "状態遷移の確認" in review_html
     assert "対象外" in review_html
     assert "シナリオ" in review_html
-    assert "reports/full_cycle.md" in review_html
     assert "idle_to_running" in review_html
-    assert "SM-001, SM-004" in review_html
     assert "機能:" not in review_html
     assert "信号線:" not in review_html
     assert "Harness:" not in review_html

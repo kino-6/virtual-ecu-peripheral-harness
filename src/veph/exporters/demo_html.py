@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from html import escape
 
 from veph.control_semantics import (
@@ -21,7 +22,6 @@ from veph.exporters.html_helpers import (
     svg_node as _svg_node,
 )
 from veph.exporters.state_review_html import (
-    control_actions as _control_actions,
     control_rule_for_transition as _control_rule_for_transition,
     ir_state_machine_review_dashboard as _ir_state_machine_review_dashboard,
     ir_state_machine_review_package as _ir_state_machine_review_package,
@@ -274,7 +274,7 @@ def _ir_spec_first_state_machine_review(model: MbdModelIR) -> str:
             "      </div>",
             "      <h3>状態遷移の確認</h3>",
             "      <table class=\"review-table compact\">",
-            "        <thead><tr><th>仕様</th><th>MBD</th><th>Trace</th><th>判定</th></tr></thead>",
+            "        <thead><tr><th>遷移</th><th>条件</th><th>出力</th><th>判定</th></tr></thead>",
             "        <tbody>",
             flow_or_empty(transition_rows, colspan=4),
             "        </tbody>",
@@ -474,8 +474,8 @@ def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, s
         return (
             "          <tr>"
             f"<td><code>[*] -> {escape(target)}</code></td>"
-            f"<td>初期状態 <code>{escape(generated_initial)}</code></td>"
-            "<td>仕様構造</td>"
+            "<td>初期</td>"
+            f"<td><code>{escape(generated_initial)}</code></td>"
             f"<td>{escape(status)}</td>"
             "</tr>"
         )
@@ -490,23 +490,33 @@ def _spec_transition_compare_row(model: MbdModelIR, spec_transition: dict[str, s
         None,
     )
     rule = _control_rule_for_transition(model.controls, transition) if transition is not None else None
-    generated = (
-        f"{transition.source} -> {transition.target} / {transition.condition}"
-        if transition is not None
-        else "Missing generated transition"
-    )
-    actions = _control_actions(rule)
-    trace = ", ".join(rule.trace) if rule is not None and rule.trace else "Missing trace"
     status = "一致" if transition is not None and rule is not None and rule.trace else "要確認"
-    generated_summary = f"{generated} / {actions}" if transition is not None else generated
     return (
         "          <tr>"
-        f"<td><code>{escape(source)} -> {escape(target)}</code> / {escape(condition)}</td>"
-        f"<td>{escape(generated_summary)}</td>"
-        f"<td>{escape(trace)}</td>"
+        f"<td><code>{escape(source)} -> {escape(target)}</code></td>"
+        f"<td>{escape(_condition_summary(model, condition))}</td>"
+        f"<td>{escape(_output_actions(rule))}</td>"
         f"<td>{escape(status)}</td>"
         "</tr>"
     )
+
+
+def _condition_summary(model: MbdModelIR, condition: str) -> str:
+    text = condition
+    for name, parameter in model.component.parameters.items():
+        text = re.sub(rf"\b{re.escape(name)}\b", f"{name}({parameter.default})", text)
+    return text
+
+
+def _output_actions(rule: ControlRuleIR | None) -> str:
+    if rule is None:
+        return "未生成"
+    outputs = [
+        f"{name}={value}"
+        for name, value in rule.actions.items()
+        if name != "state"
+    ]
+    return ", ".join(outputs) if outputs else "状態のみ"
 
 
 def _ja_requirement_summary(spec: dict[str, object], requirement: str) -> str:

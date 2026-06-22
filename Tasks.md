@@ -16,6 +16,24 @@ Archived task history:
 Make spec-first state-machine review artifacts focus on the state diagram and
 transition behavior before Harness evidence or requirement detail.
 
+## Phase 51: Compact Transition And Harness Tables
+
+Acceptance gates:
+
+- [x] State transition confirmation uses compact transition, guard, output, and
+      verdict columns instead of duplicating spec-vs-MBD text.
+- [x] Harness test summary splits long scenario summaries into short per-step
+      stimulus and expected-behavior rows.
+- [x] Threshold/hysteresis review shows hold behavior as its own row.
+- [x] Tests reject returning to long single-row scenario summaries.
+
+Verification:
+
+- [x] Regenerate affected sample review HTML.
+- [x] Focused review artifact tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 50: Concise Test Summary By Behavior Type
 
 Acceptance gates:

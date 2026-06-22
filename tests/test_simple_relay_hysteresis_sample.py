@@ -126,12 +126,11 @@ def test_simple_relay_hysteresis_spec_generates_reviewable_mbd():
     assert review_html.index("状態図レビュー") < review_html.index("要求ごとの確認")
     assert "Harnessテスト要約" in review_html
     assert "<strong>PASS</strong>" in review_html
-    assert "閾値/ヒステリシス" in review_html
-    assert "level=75 -&gt; level=50 -&gt; level=25" in review_html
-    assert "onThreshold=70, offThreshold=30" in review_html
-    assert "OFF-&gt;ON-&gt;OFF" in review_html
-    assert "中間保持含む" in review_html
-    assert "final=OFF; active=false" in review_html
+    assert "level &gt;= onThreshold(70)" in review_html
+    assert "level &lt;= offThreshold(30)" in review_html
+    assert "level=75</td><td>OFF-&gt;ON; active=true" in review_html
+    assert "level=50</td><td>ON保持; active=true" in review_html
+    assert "level=25</td><td>ON-&gt;OFF; active=false" in review_html
     assert "OFF -&gt; ON" in review_html
     assert "ON -&gt; OFF" in review_html
     assert "ガードが偽の場合" in review_html
