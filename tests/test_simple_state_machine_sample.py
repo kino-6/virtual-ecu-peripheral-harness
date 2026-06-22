@@ -187,10 +187,11 @@ def test_simple_state_machine_spec_generates_reviewable_mbd():
     }
     assert "仕様 vs 生成MBD" not in review_html
     assert "1分レビュー" in review_html
-    assert "Harness検証結果" in review_html
+    assert "Harnessテスト要約" in review_html
     assert "<strong>PASS</strong>" in review_html
-    assert "<td>IDLE</td><td>3</td>" in review_html
-    assert "最終状態=IDLE, busy=False, complete=False" in review_html
+    assert "startCommand=true -&gt; finishCommand=true -&gt; resetCommand=true" in review_html
+    assert "IDLE-&gt;RUNNING-&gt;DONE-&gt;IDLE" in review_html
+    assert "final=IDLE; busy=false, complete=false" in review_html
     assert "要求ごとの確認" in review_html
     assert "状態図レビュー" in review_html
     assert "仕様の状態図" in review_html

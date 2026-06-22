@@ -425,12 +425,12 @@
         </tbody>
       </table>
       <section class="verification-summary">
-        <h3>Harness検証結果</h3>
+        <h3>Harnessテスト要約</h3>
         <p>Harnessはpreview証跡です。制御判断はMBD source側の責務です。</p>
         <table class="review-table compact">
-          <thead><tr><th>シナリオ</th><th>結果</th><th>最終状態</th><th>ステップ</th><th>主な確認</th><th>レポート</th></tr></thead>
+          <thead><tr><th>テスト</th><th>型</th><th>刺激</th><th>期待</th><th>判定</th><th>証跡</th></tr></thead>
           <tbody>
-          <tr><td>hysteresis_cycle</td><td><strong>PASS</strong></td><td>OFF</td><td>3</td><td>最終状態=OFF, active=False</td><td><code>reports/hysteresis_cycle.md</code></td></tr>
+          <tr><td>hysteresis_cycle</td><td>閾値/ヒステリシス</td><td>level=75 -&gt; level=50 -&gt; level=25</td><td>OFF-&gt;ON-&gt;OFF; onThreshold=70, offThreshold=30; 中間保持含む; final=OFF; active=false</td><td><strong>PASS</strong></td><td><code>reports/hysteresis_cycle.md</code></td></tr>
           </tbody>
         </table>
       </section>

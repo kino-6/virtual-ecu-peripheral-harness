@@ -16,6 +16,24 @@ Archived task history:
 Make spec-first state-machine review artifacts focus on the state diagram and
 transition behavior before Harness evidence or requirement detail.
 
+## Phase 50: Concise Test Summary By Behavior Type
+
+Acceptance gates:
+
+- [x] Harness preview evidence is shown as a concise test summary, not a
+      scenario-file/status dump.
+- [x] Threshold/hysteresis tests show input values and threshold parameters.
+- [x] State-transition tests show stimulus sequence and expected transition
+      path.
+- [x] Tests reject returning to final-state-only review text.
+
+Verification:
+
+- [x] Regenerate affected sample review HTML.
+- [x] Focused review artifact tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 49: Remove Noisy Generated-MBD Review Header
 
 Acceptance gates:
