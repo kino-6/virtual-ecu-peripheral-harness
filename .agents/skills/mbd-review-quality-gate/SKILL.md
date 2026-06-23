@@ -16,6 +16,8 @@ not a casual visual demo.
 Use `docs/mbd_review_principles.md` as the project checklist. Apply it in the
 commercial-tool-free MVP context; do not claim tool qualification, ISO 26262,
 ASPICE, Simulink, Stateflow, Modelica, or FMI compliance.
+When reducing noisy generated HTML, follow that document's Compact Review
+Tables guidance before inventing a new table shape.
 
 ## Parallel Review Lanes
 

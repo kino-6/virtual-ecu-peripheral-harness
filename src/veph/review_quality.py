@@ -13,7 +13,7 @@ class ReviewQualityReport:
 
 ONE_MINUTE_MARKERS = ("1分レビュー", "One-Minute Review")
 HARNESS_MARKERS = ("Harnessテスト要約", "Harness検証結果", "Harness Evidence", "Harness Boundary Evidence")
-PASS_MARKERS = ("<strong>PASS</strong>", "Alignment: PASS", "Result: **PASS**")
+PASS_MARKERS = ("<strong>PASS</strong>", "Alignment: PASS", "Review: PASS", "Result: **PASS**")
 DENSE_FIRST_READ_MARKERS = ("機能:", "信号線:", "Harness:", "Matched edges")
 
 

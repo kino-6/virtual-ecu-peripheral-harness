@@ -75,6 +75,8 @@ def test_simple_threshold_generated_artifacts_are_deterministic():
 
     viewer = expected_outputs[sample.paths.generated["specMbdViewer"]]
     assert "One-Minute Review" in viewer
+    assert "sampleValue=9</td><td>active=false; state=IDLE" in viewer
+    assert "sampleValue=10</td><td>active=true; state=ACTIVE" in viewer
     assert "Matched edges" not in viewer
 
 

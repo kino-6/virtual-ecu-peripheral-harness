@@ -16,6 +16,24 @@ Archived task history:
 Make spec-first state-machine review artifacts focus on the state diagram and
 transition behavior before Harness evidence or requirement detail.
 
+## Phase 52: Compact Review Pattern Rollout
+
+Acceptance gates:
+
+- [x] Threshold and switch `spec_mbd_viewer.html` use behavior-first rows
+      instead of leading with matched node/edge counts.
+- [x] Threshold review shows boundary-value cases.
+- [x] Switch review shows branch condition and selected output value.
+- [x] The compact table pattern is recorded in the project review principles
+      referenced by the review-quality Skill.
+
+Verification:
+
+- [x] Regenerate affected sample viewer HTML.
+- [x] Focused viewer/sample tests pass.
+- [x] Full `pytest` passes.
+- [x] `git diff --check` passes.
+
 ## Phase 51: Compact Transition And Harness Tables
 
 Acceptance gates:

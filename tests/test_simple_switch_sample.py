@@ -110,6 +110,8 @@ def test_simple_switch_review_artifacts_show_compare_switch_semantics():
     assert "Rule_select_high_value_selectedValue_Switch" in simulink
     assert "Spec Mermaid To MBD Review" in viewer
     assert "One-Minute Review" in viewer
+    assert "selectHigh == true</td><td>selectedValue=100" in viewer
+    assert "selectHigh != true</td><td>selectedValue=25" in viewer
     assert "Interactive Review" in viewer
     assert "Constant: highValue = 100" in viewer
     assert "Constant: lowValue = 25" in viewer

@@ -59,6 +59,23 @@ reviewed or handed off:
 - Scenario YAML, Python preview code, virtual IC fixtures, or generated preview
   C shall not compensate for missing MBD semantics.
 
+## Compact Review Tables
+
+Human-first review tables shall explain behavior, not artifact counts. Prefer
+short rows that answer: input/stimulus, guard or decision, expected state/output,
+and pass/fail.
+
+- State transition rows: `transition`, `guard`, `output/action`, `verdict`.
+- Harness preview rows: one row per scenario step with `stimulus`, `expected`,
+  and `PASS/FAIL`. Split long scenario summaries into multiple rows.
+- Threshold rows: show boundary values, threshold parameters, and hold behavior
+  as separate rows when relevant.
+- Switch/selector rows: show each branch condition and selected output value.
+
+Keep trace IDs, matched edge counts, generated file paths, and exhaustive node
+lists behind secondary evidence sections unless they are the user's direct
+question.
+
 ## Checklist
 
 - Requirements traceability: each claimed requirement shall link to concrete
