@@ -24,7 +24,7 @@ samples/<sample-id>/model.mbd.md
   -> internal IR snapshot
   -> samples/<sample-id>/generated/
       -> Markdown review document
-      -> HTML MBD review artifact, usually named demo.html for compatibility
+      -> HTML MBD review artifact, named review.html for new samples
       -> Mermaid / PlantUML preview diagrams
       -> Simulink model-generation .m script
       -> SCXML state-machine handoff
@@ -129,8 +129,10 @@ documentation should use `samples/<sample-id>/model.mbd.md`.
 
 ## MBD Review Artifact
 
-`samples/<sample-id>/generated/demo.html` is kept as the compatibility filename,
-but its role is an HTML MBD review artifact. It should help a human answer:
+`samples/<sample-id>/generated/review.html` is the preferred HTML MBD review
+artifact name for new samples. Some legacy samples still keep
+`generated/demo.html` as a compatibility filename only. The artifact should help
+a human answer:
 "does the MBD implement the specification as written?"
 
 The review artifact should lead with specification fidelity, model behavior,

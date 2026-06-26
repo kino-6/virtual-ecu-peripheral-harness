@@ -1,0 +1,38 @@
+name: toy_dual_signal_side_request_cycle
+model: ToyDualSignalCoordinator
+steps:
+  - atMs: 0
+    setInput:
+      name: sideRequest
+      value: true
+  - atMs: 10
+    setInput:
+      name: mainWarningExpired
+      value: true
+  - atMs: 20
+    setInput:
+      name: clearanceExpired
+      value: true
+  - atMs: 30
+    setInput:
+      name: sideServed
+      value: true
+  - atMs: 40
+    setInput:
+      name: sideWarningExpired
+      value: true
+  - atMs: 50
+    setInput:
+      name: clearanceExpired
+      value: true
+expect:
+  finalState: MAIN_GO_SIDE_STOP
+  outputs:
+    mainGreen: true
+    mainYellow: false
+    mainRed: false
+    sideGreen: false
+    sideYellow: false
+    sideRed: true
+  neverBothTrue:
+    - [mainGreen, sideGreen]

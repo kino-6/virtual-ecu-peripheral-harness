@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from html import escape
+from pathlib import Path
 
 from veph.control_semantics import (
     find_threshold_pair,
@@ -31,11 +32,12 @@ from veph.exporters.state_review_html import (
 )
 from veph.ir import ControlRuleIR, MbdModelIR, TransitionIR
 from veph.model_loader import Block, Connection, PeripheralModel, Transition
+from veph.spec_state_model import StateTransitionSpec, parse_spec_state_diagram
 
 
-def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
+def export_demo_html(model: PeripheralModel | MbdModelIR, spec_path: str | Path | None = None) -> str:
     if isinstance(model, MbdModelIR):
-        return _export_ir_demo_html(model)
+        return _export_ir_demo_html(model, spec_path=spec_path)
     return "\n".join(
         [
             "<!doctype html>",
@@ -64,10 +66,12 @@ def export_demo_html(model: PeripheralModel | MbdModelIR) -> str:
     )
 
 
-def _export_ir_demo_html(model: MbdModelIR) -> str:
+def _export_ir_demo_html(model: MbdModelIR, spec_path: str | Path | None = None) -> str:
     has_spec_review = _has_spec_review(model)
     if has_spec_review:
         return _export_spec_review_html(model)
+    if _has_component_state_machine_review(model):
+        return _export_chapter_review_html(model, spec_path=spec_path)
     function_rows = _ir_function_rows(model)
     req_rows = _ir_requirement_rows(model)
     control_rows = _ir_control_rows(model)
@@ -186,6 +190,419 @@ def _export_ir_demo_html(model: MbdModelIR) -> str:
             "",
         ]
     )
+
+
+def _export_chapter_review_html(model: MbdModelIR, spec_path: str | Path | None = None) -> str:
+    return "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="ja">',
+            "<head>",
+            '  <meta charset="utf-8">',
+            '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+            "  <title>側道要求による信号切替 MBDレビュー資料</title>",
+            "  <style>",
+            _chapter_review_css(),
+            "  </style>",
+            "</head>",
+            "<body>",
+            _chapter_review_body(model, spec_path=spec_path),
+            "</body>",
+            "</html>",
+            "",
+        ]
+    )
+
+
+def _chapter_review_body(model: MbdModelIR, spec_path: str | Path | None = None) -> str:
+    spec_transitions = _spec_state_transitions(model, spec_path)
+    return "\n".join(
+        [
+            '  <main class="chapter-review">',
+            '    <header class="review-head">',
+            "      <p>MBDレビュー資料 / 1章30秒から1分で確認</p>",
+            "      <h1>側道要求による信号切替レビュー</h1>",
+            "      <strong>プレビュー確認済み。外部MBDでは未確認。</strong>",
+            "    </header>",
+            '    <section class="chapter" id="overview">',
+            "      <p class=\"chapter-label\">1 / 全体</p>",
+            "      <h2>制御全体での位置づけ</h2>",
+            "      <p>側道から通行要求が来たとき、主道路側から側道側へ通行権を渡し、側道の通行後に主道路側へ戻す架空の信号制御を扱う。</p>",
+            _overall_control_components_svg(),
+            '      <div class="fact-grid">',
+            "        <div><span>題材</span><b>架空の主道路/側道信号切替制御</b></div>",
+            "        <div><span>設計目的</span><b>側道要求に応じて通行権を安全な順序で渡す</b></div>",
+            "        <div><span>確認したいこと</span><b>両方向が同時に青にならないこと</b></div>",
+            "      </div>",
+            "    </section>",
+            '    <section class="chapter" id="components">',
+            "      <p class=\"chapter-label\">2 / 分割</p>",
+            "      <h2>この仕様書が扱うコンポーネント</h2>",
+            "      <p>仕様書の対象は、要求入力を受ける調停、主信号/側信号の出力写像、同時青の監視である。現実の信号灯や交通流は扱わない。</p>",
+            _spec_scope_components_svg(),
+            "    </section>",
+            '    <section class="chapter" id="design">',
+            "      <p class=\"chapter-label\">3 / 設計</p>",
+            "      <h2>設計図</h2>",
+            "      <p>Spec.mdから抜粋した側道要求1サイクルの状態遷移図。全状態空間ではない。対象箇所: <b>Spec.md / Side Request Scenario State Path</b></p>",
+            _spec_scenario_path_svg(spec_transitions),
+            "    </section>",
+            '    <section class="chapter" id="mbd">',
+            "      <p class=\"chapter-label\">4 / 実装</p>",
+            "      <h2>実装図（MBD）</h2>",
+            "      <p>MBDで生成した状態遷移図。調停状態を1本の遷移列として持ち、各信号状態機械はその状態から出力を決める。</p>",
+            _generated_mbd_state_svg(model),
+            '      <div class="fact-grid">',
+            f"        <div><span>主信号</span><b>主信号: {escape(_function_output_sequence(model, 'main'))}</b></div>",
+            f"        <div><span>側信号</span><b>側信号: {escape(_function_output_sequence(model, 'side'))}</b></div>",
+            "        <div><span>境界</span><b>Harnessは観測だけ。状態遷移はMBDが持つ。</b></div>",
+            "      </div>",
+            "    </section>",
+            '    <section class="chapter" id="verification">',
+            "      <p class=\"chapter-label\">5 / 検証</p>",
+            "      <h2>検証結果</h2>",
+            "      <p>Harnessプレビューでは、側要求1サイクルを流し、出力列と相互排他だけを確認した。</p>",
+            '      <div class="fact-grid">',
+            "        <div><span>シナリオ</span><b>側道要求1サイクル: PASS</b></div>",
+            "        <div><span>相互排他</span><b>同時青なし: PASS</b></div>",
+            "        <div><span>残確認</span><b>外部MBD確認: メッセージ連携、並列状態、時間制約、実行順序</b></div>",
+            "      </div>",
+            "    </section>",
+            '    <footer class="review-foot">詳細証跡は review.md、model.ir.json、state.scxml、プレビュー報告を確認する。</footer>',
+            "  </main>",
+        ]
+    )
+
+
+def _overall_control_components_svg() -> str:
+    nodes = [
+        ("側道要求", "要求入力", 24, 82, 132, 54, ""),
+        ("タイマ群", "黄完了・待ち完了", 24, 168, 132, 54, ""),
+        ("仕様対象", "調停・信号写像・監視", 318, 82, 286, 140, "scope"),
+        ("主道路信号", "青・黄・赤", 760, 70, 150, 54, ""),
+        ("側道信号", "赤・青・黄", 760, 180, 150, 54, ""),
+        ("Harnessプレビュー", "観測・レポート", 318, 270, 286, 54, "preview"),
+        ("外部MBD確認", "並列状態・時間・実行順序", 728, 270, 214, 54, "external"),
+    ]
+    arrows = [
+        (156, 108, 318, 126, "sideRequest"),
+        (156, 194, 318, 178, "timer events"),
+        (604, 126, 760, 96, "main outputs"),
+        (604, 178, 760, 206, "side outputs"),
+        (461, 222, 461, 270, "observed behavior"),
+        (604, 152, 728, 288, "handoff scope"),
+    ]
+    return "\n".join(
+        [
+            '      <svg class="review-diagram control-context" viewBox="0 0 980 350" role="img" aria-label="制御全体のコンポーネントとレビュー対象範囲">',
+            "        <defs><marker id=\"contextArrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"5\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" /></marker></defs>",
+            *(f'        <line class="arrow" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" marker-end="url(#contextArrow)" />' for x1, y1, x2, y2, _ in arrows),
+            *(_diagram_label(label, (x1 + x2) / 2, (y1 + y2) / 2 - 8) for x1, y1, x2, y2, label in arrows),
+            *(_diagram_box(title, x, y, width, height, subtitle=subtitle, class_name=class_name) for title, subtitle, x, y, width, height, class_name in nodes),
+            "      </svg>",
+        ]
+    )
+
+
+def _spec_scope_components_svg() -> str:
+    nodes = [
+        ("ToyCrossingCoordinator", "通行権の順序と両信号赤区間を決める", 312, 42, 250, 64, "scope"),
+        ("MainSignalStateMachine", "調停状態を主道路信号へ写像", 68, 174, 236, 64, "scope"),
+        ("SideSignalStateMachine", "調停状態を側道信号へ写像", 570, 174, 236, 64, "scope"),
+        ("InterlockMonitor", "同時青でないことを観測", 318, 278, 238, 58, "preview"),
+        ("Scenario Report", "Harness証跡", 620, 278, 168, 58, "preview"),
+    ]
+    arrows = [
+        (437, 106, 186, 174, "state"),
+        (437, 106, 688, 174, "state"),
+        (304, 206, 318, 300, "mainGreen"),
+        (570, 206, 556, 300, "sideGreen"),
+        (556, 307, 620, 307, "pass/fail"),
+    ]
+    return "\n".join(
+        [
+            '      <svg class="review-diagram spec-scope" viewBox="0 0 880 360" role="img" aria-label="この仕様書が扱うコンポーネント図">',
+            "        <defs><marker id=\"scopeArrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"5\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" /></marker></defs>",
+            *(f'        <line class="arrow" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" marker-end="url(#scopeArrow)" />' for x1, y1, x2, y2, _ in arrows),
+            *(_diagram_label(label, (x1 + x2) / 2, (y1 + y2) / 2 - 8) for x1, y1, x2, y2, label in arrows),
+            *(_diagram_box(title, x, y, width, height, subtitle=subtitle, class_name=class_name) for title, subtitle, x, y, width, height, class_name in nodes),
+            "      </svg>",
+        ]
+    )
+
+
+def _spec_state_transitions(model: MbdModelIR, spec_path: str | Path | None) -> list[StateTransitionSpec]:
+    if spec_path is not None:
+        transitions = parse_spec_state_diagram(spec_path)
+        if transitions:
+            return transitions
+    if model.transitions:
+        first = model.transitions[0].source
+        return [StateTransitionSpec("[*]", first, "initial")] + [
+            StateTransitionSpec(transition.source, transition.target, transition.condition)
+            for transition in model.transitions
+        ]
+    return []
+
+
+def _spec_scenario_path_svg(transitions: list[StateTransitionSpec]) -> str:
+    rendered = [transition for transition in transitions if transition.source != "[*]"]
+    initial = next((transition.target for transition in transitions if transition.source == "[*]"), "")
+    states = _ordered_spec_states(initial, rendered)
+    guards = [transition.condition for transition in rendered]
+    boxes = [(state, 24 + index * 172, 64, 158, 56) for index, state in enumerate(states)]
+    return "\n".join(
+        [
+            '      <svg class="review-diagram spec-state" viewBox="0 0 1048 190" role="img" aria-label="Spec.md Side Request Scenario State Path">',
+            "        <defs><marker id=\"specStateArrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"5\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" /></marker></defs>",
+            *(_diagram_box(state, x, y, width, height) for state, x, y, width, height in boxes),
+            *(
+                f'        <line class="arrow" x1="{x + width}" y1="{y + height / 2:.0f}" x2="{boxes[index + 1][1]}" y2="{y + height / 2:.0f}" marker-end="url(#specStateArrow)" />'
+                for index, (_, x, y, width, height) in enumerate(boxes[:-1])
+            ),
+            *(
+                _diagram_label(guards[index], boxes[index][1] + 156, 48)
+                for index in range(min(len(guards), len(boxes) - 1))
+            ),
+            '        <path class="arrow loop" d="M 996 122 C 996 166, 24 166, 24 122" marker-end="url(#specStateArrow)" />',
+            _diagram_label(guards[-1] if guards else "", 510, 174),
+            "      </svg>",
+        ]
+    )
+
+
+def _ordered_spec_states(initial: str, transitions: list[StateTransitionSpec]) -> list[str]:
+    ordered: list[str] = []
+    if initial:
+        ordered.append(initial)
+    for transition in transitions:
+        if transition.source and transition.source not in ordered:
+            ordered.append(transition.source)
+        if transition.target and transition.target not in ordered:
+            ordered.append(transition.target)
+    return ordered
+
+
+def _generated_mbd_state_svg(model: MbdModelIR) -> str:
+    states = [
+        ("MAIN_GO_SIDE_STOP", "主信号=青 / 側信号=赤"),
+        ("MAIN_WARN_SIDE_STOP", "主信号=黄 / 側信号=赤"),
+        ("ALL_STOP_BEFORE_SIDE", "両信号=赤"),
+        ("MAIN_STOP_SIDE_GO", "主信号=赤 / 側信号=青"),
+        ("MAIN_STOP_SIDE_WARN", "主信号=赤 / 側信号=黄"),
+        ("ALL_STOP_BEFORE_MAIN", "両信号=赤"),
+    ]
+    guards = [transition.condition for transition in model.transitions]
+    boxes = [(state, label, 24 + index * 172, 64, 158, 56) for index, (state, label) in enumerate(states)]
+    return "\n".join(
+        [
+            '      <svg class="review-diagram mbd-state" viewBox="0 0 1048 190" role="img" aria-label="生成MBD状態遷移図">',
+            "        <defs><marker id=\"mbdArrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"5\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" /></marker></defs>",
+            *(_diagram_box(label, x, y, width, height, subtitle=state) for state, label, x, y, width, height in boxes),
+            *(
+                f'        <line class="arrow" x1="{x + width}" y1="{y + height / 2:.0f}" x2="{boxes[index + 1][2]}" y2="{y + height / 2:.0f}" marker-end="url(#mbdArrow)" />'
+                for index, (_, _, x, y, width, height) in enumerate(boxes[:-1])
+            ),
+            *(
+                _diagram_label(_friendly_guard(guards[index]), boxes[index][2] + 156, 48)
+                for index in range(min(len(guards), len(boxes) - 1))
+            ),
+            '        <path class="arrow loop" d="M 996 122 C 996 166, 24 166, 24 122" marker-end="url(#mbdArrow)" />',
+            _diagram_label(_friendly_guard(guards[-1]) if guards else "復帰", 510, 174),
+            "      </svg>",
+        ]
+    )
+
+
+def _diagram_box(
+    label: str,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    *,
+    subtitle: str | None = None,
+    class_name: str = "",
+) -> str:
+    lines = [label] if subtitle is None else [label, subtitle]
+    text_y = y + height / 2 - (8 if subtitle else 0)
+    class_attr = f' class="node {class_name}"' if class_name else ' class="node"'
+    return "\n".join(
+        [
+            f"        <g{class_attr}><rect x=\"{x}\" y=\"{y}\" width=\"{width}\" height=\"{height}\" rx=\"8\" />",
+            *(
+                f'          <text x="{x + width / 2:.0f}" y="{text_y + index * 18:.0f}">{escape(line)}</text>'
+                for index, line in enumerate(lines)
+            ),
+            "        </g>",
+        ]
+    )
+
+
+def _diagram_label(label: str, x: float, y: float) -> str:
+    return f'        <text class="edge-label" x="{x:.0f}" y="{y:.0f}">{escape(label)}</text>'
+
+
+def _chapter_review_css() -> str:
+    return """
+    :root {
+      --ink: #172126;
+      --muted: #526066;
+      --line: #c7d2d6;
+      --paper: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .chapter-review {
+      width: min(1040px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .review-head,
+    .chapter {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .review-head {
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .review-head p,
+    .chapter-label {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+    .review-head strong {
+      color: var(--ink);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .chapter {
+      padding: 20px 24px;
+      margin-bottom: 14px;
+    }
+    .chapter h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+    .chapter p {
+      margin: 0;
+      font-size: 15px;
+    }
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .fact-grid div {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 84px;
+    }
+    .fact-grid span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .fact-grid b {
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .review-diagram {
+      width: 100%;
+      height: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f7faf9;
+    }
+    .review-diagram .node rect {
+      fill: #ffffff;
+      stroke: var(--line);
+      stroke-width: 1.5;
+    }
+    .review-diagram .node.scope rect {
+      fill: #eef8f6;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .review-diagram .node.preview rect {
+      fill: #f8fbff;
+    }
+    .review-diagram .node.external rect {
+      fill: #fbf7ef;
+      stroke: #d6b07a;
+    }
+    .review-diagram .node text {
+      fill: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .review-diagram.spec-state .node text,
+    .review-diagram.mbd-state .node text {
+      font-size: 12px;
+    }
+    .review-diagram .arrow {
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      fill: none;
+    }
+    .review-diagram marker path {
+      fill: var(--accent);
+    }
+    .review-diagram .edge-label {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: #f7faf9;
+      stroke-width: 4px;
+    }
+    .review-note {
+      margin-top: 12px !important;
+      font-weight: 800;
+    }
+    .review-foot {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 4px 2px;
+    }
+    @media (max-width: 720px) {
+      .review-head { display: block; padding: 18px; }
+      .review-head strong { display: block; margin-top: 8px; white-space: normal; }
+      .chapter { padding: 16px; }
+      .fact-grid { grid-template-columns: 1fr; }
+    }
+    """.strip()
 
 
 def _export_spec_review_html(model: MbdModelIR) -> str:
@@ -709,6 +1126,103 @@ def _ir_function_rows(model: MbdModelIR) -> str:
         "</tr>"
         for function in model.functions
     )
+
+
+def _has_component_state_machine_review(model: MbdModelIR) -> bool:
+    if len(model.functions) < 2:
+        return False
+    names = " ".join(function.name for function in model.functions)
+    return any(marker in names for marker in ["StateMachine", "Coordinator", "Interlock"])
+
+
+def _function_output_sequence(model: MbdModelIR, name_part: str) -> str:
+    function = next(
+        (
+            item
+            for item in model.functions
+            if name_part in item.name.lower() and "state" in item.name.lower()
+        ),
+        None,
+    )
+    if function is None:
+        return "未定義"
+    return _signal_sequence(model, function.outputs)
+
+
+def _coordinator_summary(model: MbdModelIR) -> str:
+    labels = [_friendly_state_name(control.actions["state"]) for control in model.controls if "state" in control.actions]
+    if not labels:
+        return "通行権の順序を明示"
+    compact = labels[:5]
+    if len(labels) > 5:
+        compact.append(labels[-1])
+    return " → ".join(compact)
+
+
+def _signal_sequence(model: MbdModelIR, outputs: list[str]) -> str:
+    sequence = [_active_output_label({name: port.default for name, port in model.ports.items()}, outputs)]
+    sequence.extend(_active_output_label(control.actions, outputs) for control in model.controls)
+    return " → ".join(_dedupe_consecutive(_dedupe_blanks(sequence)))
+
+
+def _active_output_label(values: dict[str, str | None], outputs: list[str]) -> str:
+    for output in outputs:
+        value = values.get(output)
+        if str(value).lower() == "true":
+            return _friendly_output_name(output)
+    return "unchanged"
+
+
+def _friendly_output_name(name: str) -> str:
+    for prefix in ["main", "side"]:
+        if name.startswith(prefix):
+            name = name.removeprefix(prefix)
+            break
+    mapping = {"Green": "青", "Yellow": "黄", "Red": "赤"}
+    return mapping.get(name, name.upper() or "ON")
+
+
+def _friendly_state_name(state: str) -> str:
+    if state.startswith("ALL_STOP"):
+        return "両信号=赤"
+    if "SIDE_GO" in state:
+        return "主信号=赤 / 側信号=青"
+    if "SIDE_WARN" in state:
+        return "主信号=赤 / 側信号=黄"
+    if "MAIN_WARN" in state:
+        return "主信号=黄 / 側信号=赤"
+    if "MAIN_GO" in state:
+        return "主信号=青 / 側信号=赤"
+    return (
+        state.replace("MAIN_", "main ")
+        .replace("SIDE_", "side ")
+        .replace("ALL_STOP", "all-stop")
+        .replace("_", " ")
+        .lower()
+    )
+
+
+def _friendly_guard(guard: str) -> str:
+    mapping = {
+        "sideRequest == true": "側要求",
+        "mainWarningExpired == true": "主信号の黄完了",
+        "clearanceExpired == true": "両信号赤の待ち完了",
+        "sideServed == true": "側通行完了",
+        "sideWarningExpired == true": "側信号の黄完了",
+    }
+    return mapping.get(guard, guard)
+
+
+def _dedupe_blanks(values: list[str]) -> list[str]:
+    return [value for value in values if value and value != "unchanged"]
+
+
+def _dedupe_consecutive(values: list[str]) -> list[str]:
+    compact: list[str] = []
+    for value in values:
+        if not compact or compact[-1] != value:
+            compact.append(value)
+    return compact
 
 
 def _ir_requirement_rows(model: MbdModelIR) -> str:

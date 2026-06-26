@@ -5,8 +5,9 @@ should still resemble professional Model-Based Design practice. These principles
 are adapted for a commercial-tool-free MVP and do not claim Simulink, ISO 26262,
 ASPICE, DO-178C, or tool-qualification compliance.
 
-`demo.html` is an MBD review artifact compatibility filename, not a casual
-visual demo.
+`review.html` is the preferred HTML MBD review artifact name for new samples.
+Legacy `demo.html` files are compatibility artifacts only, not casual visual
+demos.
 
 ## Review Order
 
@@ -41,6 +42,39 @@ older samples, should drive executable state/control generation. Sequence
 diagrams may feed scenario expectations and reports, but shall not add control
 behavior missing from the MBD source.
 
+For multi-component or multi-state-machine examples, the first review block
+after the high-level question should separate the coordinator/supervisor, each
+state-machine role, exchanged signals or messages, and the preview boundary.
+Do this before raw transition tables. A Mermaid state diagram alone is not a
+reviewable MBD when behavior spans components, related charts, parallel states,
+or message exchange.
+
+The first multi-component review block should still read like a behavior check,
+not a design inventory. Prefer `check`, `stimulus / relation`, `expected
+behavior`, and `verdict`. Put `role`, `owns`, `reads`, `emits`, trace IDs, and
+long state names in secondary evidence sections.
+
+When the user asks for 30-second to 1-minute readability, treat that as a
+chapter-level gate by default. Each chapter should answer one review question:
+where this artifact sits in the flow, how components are split, what the design
+diagram says, what the generated MBD implements, or what the verification result
+shows. Keep each chapter to a short claim plus a compact diagram or five rows or
+fewer. Avoid internal component/function names unless the name itself is being
+reviewed.
+
+For chapter-based reviews, the design and MBD implementation chapters should be
+visual. The design chapter should identify the source specification section and
+render the relevant specification diagram or excerpt from the actual `Spec.md`
+source. Do not hard-code a diagram in the exporter and merely label it as a
+Spec excerpt. The MBD implementation chapter should render the generated MBD
+view, such as a state-transition, component, or data-flow diagram, rather than
+replacing it with prose-only summaries.
+
+Only when the user explicitly asks for A4-one-page readability should the whole
+artifact become a single A4 review sheet. That sheet should show one conclusion,
+the minimum behavior sequence, PASS/OPEN status, and the external-verification
+boundary.
+
 ## Generated-Side Consistency Checks
 
 This repository does not verify production MBD semantics. Existing MBD tools
@@ -71,6 +105,9 @@ and pass/fail.
 - Threshold rows: show boundary values, threshold parameters, and hold behavior
   as separate rows when relevant.
 - Switch/selector rows: show each branch condition and selected output value.
+- Multi-state-machine rows: show coordinator order, per-state-machine output
+  sequence, interlock expectation, and preview boundary in short PASS/OPEN rows
+  before showing the detailed transition matrix.
 
 Keep trace IDs, matched edge counts, generated file paths, and exhaustive node
 lists behind secondary evidence sections unless they are the user's direct
@@ -141,10 +178,14 @@ Reject a generated review artifact before showing it as ready when:
   questions.
 - It reads like a generated dump rather than a curated answer to the user's
   review question.
-- A reviewer cannot make an initial accept/reject judgment in 30 seconds to
-  1 minute. The first viewport and immediately following review block shall show
-  the review verdict, spec intent, generated behavior, mismatch status, and open
-  questions without forcing long reading or repeated scrolling.
+- A reviewer cannot make an initial accept/reject judgment for a chapter in
+  30 seconds to 1 minute. The review artifact shall be organized into short
+  chapters for overview, component split, design diagram, generated MBD
+  implementation, verification result, and open questions where needed.
+- The design chapter or generated MBD chapter is prose-only when the source
+  specification or generated MBD has a diagrammatic view that can be shown.
+- The design chapter claims to show a `Spec.md` excerpt but is not derived from
+  the actual `Spec.md` file used by the sample.
 - Dense trace lists, generated element paths, and tool-handoff explanations
   appear before the concise human review summary.
 - Harness PASS is presented as formal MBD verification, or Harness/scenario YAML

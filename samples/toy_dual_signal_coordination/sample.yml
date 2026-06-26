@@ -1,0 +1,22 @@
+id: toy_dual_signal_coordination
+title: Toy Dual Signal Coordination
+kind: preview-control
+requirements: Requirements.md
+model: model.mbd.md
+spec: spec.md
+generatedDir: generated
+reportsDir: reports
+scenarios:
+  side_request_cycle: scenarios/side_request_cycle.yml
+generated:
+  ir: generated/model.ir.json
+  docs: generated/review.md
+  mermaid: generated/diagram.mmd
+  plantuml: generated/state.puml
+  scxml: generated/state.scxml
+  modelica: generated/model.mo
+  simulink: generated/create_model.m
+  fmi: generated/fmi.json
+  demo: generated/review.html
+reports:
+  side_request_cycle: reports/side_request_cycle.md

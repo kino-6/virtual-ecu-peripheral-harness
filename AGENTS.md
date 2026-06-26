@@ -17,9 +17,9 @@ samples/<sample-id>/sample.yml
 samples/<sample-id>/model.mbd.md
   -> markup parser
   -> internal IR snapshot
-  -> exporters
-      -> Markdown review document
-      -> HTML MBD review artifact, often still named `demo.html` for compatibility
+      -> exporters
+          -> Markdown review document
+      -> HTML MBD review artifact, named `review.html` for new samples
       -> Mermaid / PlantUML source for trace/debug diagrams
       -> Simulink model-generation .m script
       -> SCXML or Stateflow-oriented handoff
@@ -45,9 +45,10 @@ directory as optional compatibility input. Internal IR is a tooling snapshot,
 not a public standard.
 
 When asked to see, review, or validate the MBD, provide an HTML MBD review
-artifact, usually `samples/<sample-id>/generated/demo.html`. The filename is a
-compatibility detail, not a casual-demo claim. Mermaid `.mmd` is trace/debug
-source, not the primary deliverable. The artifact must help a human answer:
+artifact, preferably `samples/<sample-id>/generated/review.html` for new
+samples. Some legacy samples may still expose `generated/demo.html` as a
+compatibility filename only; it is not a casual-demo claim. Mermaid `.mmd` is
+trace/debug source, not the primary deliverable. The artifact must help a human answer:
 "does this MBD implement the specification?" Show spec inputs, parameters,
 decisions, outputs, state/control behavior, traceability, scenario/report
 evidence, and harness boundaries before tool-specific artifacts.
@@ -110,6 +111,23 @@ green checkpoint, run a Remaining Budget Decision:
 2. Identify the next highest-value PDCA cycle.
 3. Continue with the next cycle unless blocked, unsafe, explicitly stopped by
    the user, or too small to fit a useful cycle.
+
+Use this explicit decision shape before any final stop:
+
+```text
+Remaining Budget Decision:
+- Elapsed:
+- Remaining:
+- Last green checkpoint:
+- Revealed gap:
+- Next highest-value cycle:
+- Stop condition satisfied? yes/no:
+```
+
+Do not call `update_goal` with `complete` unless the answer is
+`Stop condition satisfied? yes` and the satisfied stop condition is named.
+If the answer is `no`, continue into the next PDCA cycle even when tests are
+green.
 
 Do not mark a timeboxed Goal complete after only one vertical slice when
 substantial budget remains and useful follow-up work exists. Completion requires

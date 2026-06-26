@@ -13,8 +13,160 @@ Archived task history:
 
 ## Current Goal
 
-Make spec-first state-machine review artifacts focus on the state diagram and
-transition behavior before Harness evidence or requirement detail.
+Run a 2h PDCA loop for a realistic multi-component / multi-state-machine MBD
+review sample. The output must help a human review component responsibilities,
+state-machine interaction, data flow, harness evidence, and preview limits
+without reading a text-heavy artifact.
+
+## Phase 53: Multi-State-Machine Review PDCA
+
+PDCA backlog:
+
+- [x] Cycle 0: research suitable public MBD examples for distributed or
+      parallel state-machine interaction.
+- [x] Cycle 1: add a fictional multi-component sample derived from the reviewed
+      patterns, starting from requirements and spec.
+- [x] Cycle 2: improve generated HTML so component/state-machine interaction is
+      visible before raw trace tables.
+- [x] Cycle 3: run the generator, preview harness, and tests; reject and refine
+      any artifact that is still text-heavy or hides the preview boundary.
+
+Acceptance gates:
+
+- [x] Review artifact separates coordinator logic, each state-machine role,
+      data flow, and harness boundary in short review rows.
+- [x] At least one scenario proves the key interaction and an interlock-style
+      invariant with expected-vs-observed evidence.
+- [x] The artifact states what the local preview validates and what external
+      MBD tools must verify.
+- [x] Tests cover the new sample and the new review surface.
+
+## Phase 54: Timeboxed Goal Stop Gate Hardening
+
+Acceptance gates:
+
+- [x] Timeboxed Goal Skill requires a final Remaining Budget Decision before
+      marking a Goal complete.
+- [x] `AGENTS.md` names the same `update_goal complete` hard gate.
+- [x] Tests reject losing the explicit stop-condition template.
+
+## Phase 55: Multi-State Review Concision Reject Fix
+
+Acceptance gates:
+
+- [x] Dual-signal review entry is an A4 review sheet, not a
+      role/owns/reads/emits allocation inventory or generic evidence map.
+- [x] The A4 sheet appears before generic review/evidence sections.
+- [x] Coordinator and signal-state summaries fit one human-readable page.
+- [x] Review-quality Skill and principles reject leading allocation inventory
+      tables and require an A4 sheet when the user asks for one-page review.
+
+## Phase 56: Review Artifact Naming
+
+Acceptance gates:
+
+- [x] New dual-signal HTML review artifact is generated as `review.html`, not
+      `demo.html`.
+- [x] Project guidance says `review.html` is preferred for new samples and
+      `demo.html` is legacy compatibility only.
+- [x] Tests cover the new sample's review artifact filename.
+
+## Phase 57: Chapter-Based Multi-Component Review Gate
+
+Acceptance gates:
+
+- [x] Dual-signal `review.html` is organized as short chapters: overview,
+      component split, design diagram, MBD implementation diagram, and
+      verification result.
+- [x] Each chapter is readable in about 30 seconds to 1 minute without relying
+      on dense trace dumps or generic generated tables.
+- [x] Component decomposition is a separate chapter, not compressed into the
+      opening summary.
+- [x] The review artifact keeps Japanese wording consistent and separates
+      preview evidence from external MBD verification.
+- [x] Tests reject returning to an over-compressed A4-only artifact or mixed
+      English/Japanese review sections.
+
+## Phase 58: Spec-Derived Design And MBD Diagrams
+
+Acceptance gates:
+
+- [x] Design chapter uses a diagram, not prose-only flow text.
+- [x] Design chapter identifies and renders the `Spec.md / Component Review
+      View` excerpt.
+- [x] MBD implementation chapter uses a generated MBD state-transition diagram,
+      not prose-only state text.
+- [x] Tests reject returning to the previous text-only design and state-strip
+      implementation views.
+
+## Phase 59: Review Topic And Purpose Clarity
+
+Acceptance gates:
+
+- [x] Dual-signal review title states the concrete fictional topic, not only
+      the abstract structure.
+- [x] The first chapter explains that the sample is a main-road/side-road
+      signal handoff triggered by a side request.
+- [x] The first chapter states the design purpose before component or MBD
+      details.
+- [x] Tests reject returning to the abstract "two-signal coordination" title.
+
+## Phase 60: Scope And Component Diagram Entry
+
+Acceptance gates:
+
+- [x] The first chapter shows the control-wide component context as a diagram.
+- [x] The first chapter visually marks the review/specification target scope.
+- [x] The component chapter shows the components handled by this specification
+      as a diagram, not as prose cards.
+- [x] Tests reject returning to the previous component-card chapter.
+
+## Phase 61: Spec-to-MBD Diagram Shape Alignment
+
+Acceptance gates:
+
+- [x] Design chapter shows `Spec.md / Coordinated Mode Path` as a state
+      transition diagram.
+- [x] Generated MBD chapter uses the same state-transition diagram shape as the
+      design chapter.
+- [x] Component/data-flow design view does not appear immediately before the
+      generated MBD state-transition view.
+- [x] Tests reject returning to mismatched chapter 3/4 diagram shapes.
+
+## Phase 62: Spec-Sourced Design Diagram
+
+Acceptance gates:
+
+- [x] Chapter 3 state-transition design diagram is parsed from the sample's
+      actual `Spec.md`.
+- [x] `export-sample` passes the sample manifest's Spec path into HTML review
+      generation.
+- [x] Sample validation compares review HTML using the same Spec path.
+- [x] Tests prove that changing the Spec state diagram changes chapter 3.
+
+## Phase 63: Dual-Signal Spec Readability
+
+Acceptance gates:
+
+- [x] `Spec.md` states the concrete fictional topic before diagrams.
+- [x] `Spec.md` separates control context, specification component scope, and
+      signal handoff state path.
+- [x] The state-path section is named by behavior intent, not the abstract
+      "Coordinated Mode Path" label.
+- [x] Review HTML references the updated Spec section name.
+
+## Phase 64: Scenario Path Vs State Space Clarity
+
+Acceptance gates:
+
+- [x] Spec names the handoff diagram as a representative side-request scenario
+      path, not the complete controller state space.
+- [x] Spec does not add a derived trigger/effect table solely for the generated
+      review artifact.
+- [x] Review HTML shows the Spec scenario path without inventing supplemental
+      columns that are not part of the Spec excerpt.
+- [x] Tests reject returning to the misleading `Signal Handoff State Path`
+      label or derived trigger/effect table.
 
 ## Phase 52: Compact Review Pattern Rollout
 

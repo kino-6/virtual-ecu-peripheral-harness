@@ -64,7 +64,7 @@ def _check_generated_artifacts(sample: Sample, model, checks: list[str], issues:
     expected = {
         "ir": json.dumps(model.to_dict(), indent=2, sort_keys=True, default=str) + "\n",
         "docs": export_markdown(model),
-        "demo": export_demo_html(model),
+        "demo": export_demo_html(model, spec_path=sample.paths.spec),
         "mermaid": export_mermaid(model),
         "plantuml": export_plantuml(model),
         "scxml": export_scxml(model),
@@ -129,7 +129,7 @@ def _check_review_html(sample: Sample, converted_model, checks: list[str], issue
     if converted_model is not None and sample.paths.spec is not None and "convertedReviewHtml" in sample.paths.generated:
         _compare_text(
             sample.paths.generated["convertedReviewHtml"],
-            export_demo_html(converted_model),
+            export_demo_html(converted_model, spec_path=sample.paths.spec),
             "converted review HTML",
             checks,
             issues,

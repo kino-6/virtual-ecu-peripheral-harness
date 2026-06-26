@@ -93,7 +93,7 @@ def run_preview(model: MbdModelIR, scenario: dict[str, Any]) -> ScenarioResult:
         "stepEvidence": step_evidence,
     }
     generated_outputs = _generated_outputs(model, outputs)
-    checks = _evaluate_expectations(state, outputs, expected_behavior)
+    checks = _evaluate_expectations(state, outputs, expected_behavior, step_evidence)
     passed = all(check.startswith("PASS") for check in checks)
     return ScenarioResult(
         name=str(scenario.get("name", "unnamed")),
@@ -157,18 +157,55 @@ def _state_scope_matches(state_scope: str, state: str) -> bool:
     return state_scope in {"*", state}
 
 
-def _evaluate_expectations(state: str, outputs: dict[str, Any], expect: dict[str, Any]) -> list[str]:
+def _evaluate_expectations(
+    state: str,
+    outputs: dict[str, Any],
+    expect: dict[str, Any],
+    step_evidence: list[dict[str, Any]],
+) -> list[str]:
     checks: list[str] = []
     if "finalState" in expect:
         checks.append(_check("finalState", state, expect["finalState"]))
     for name, expected in expect.get("outputs", {}).items():
         checks.append(_check(f"outputs.{name}", outputs.get(name), expected))
+    for pair in expect.get("neverBothTrue", []):
+        if not isinstance(pair, list) or len(pair) != 2:
+            raise PreviewScenarioError(f"neverBothTrue entries must be two-signal lists: {pair!r}")
+        checks.append(_check_never_both_true(str(pair[0]), str(pair[1]), step_evidence))
     return checks
 
 
 def _check(name: str, actual: Any, expected: Any) -> str:
     prefix = "PASS" if actual == expected else "FAIL"
     return f"{prefix} {name}: actual {actual}, expected {expected}"
+
+
+def _check_never_both_true(
+    left: str,
+    right: str,
+    step_evidence: list[dict[str, Any]],
+) -> str:
+    snapshots: list[tuple[str, dict[str, Any]]] = []
+    if step_evidence:
+        first_before = step_evidence[0].get("before", {})
+        if isinstance(first_before, dict):
+            snapshots.append(("initial", first_before))
+    for step in step_evidence:
+        after = step.get("after", {})
+        label = f"step {step.get('stepIndex', '?')}"
+        if isinstance(after, dict):
+            snapshots.append((label, after))
+    violations: list[str] = []
+    for label, snapshot in snapshots:
+        outputs = snapshot.get("outputs", {})
+        if isinstance(outputs, dict) and outputs.get(left) is True and outputs.get(right) is True:
+            violations.append(label)
+    if violations:
+        return (
+            f"FAIL neverBothTrue.{left}.{right}: both true at {', '.join(violations)}, "
+            "expected never true together"
+        )
+    return f"PASS neverBothTrue.{left}.{right}: no preview step had both true"
 
 
 def _model_inputs(model: MbdModelIR) -> dict[str, object]:

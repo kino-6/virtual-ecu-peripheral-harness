@@ -279,7 +279,7 @@ def _export_sample(args: argparse.Namespace) -> None:
     exported = {
         "ir": json.dumps(model.to_dict(), indent=2, sort_keys=True, default=str) + "\n",
         "docs": export_markdown(model),
-        "demo": export_demo_html(model),
+        "demo": export_demo_html(model, spec_path=sample.paths.spec),
         "mermaid": export_mermaid(model),
         "plantuml": export_plantuml(model),
         "scxml": export_scxml(model),
@@ -291,7 +291,7 @@ def _export_sample(args: argparse.Namespace) -> None:
         exported["convertedMbd"] = converted_mbd
     if converted_model is not None and alignment_report is not None:
         exported["specMbdViewer"] = export_spec_mbd_viewer(sample.paths.spec, converted_model, alignment_report)
-        exported["convertedReviewHtml"] = export_demo_html(converted_model)
+        exported["convertedReviewHtml"] = export_demo_html(converted_model, spec_path=sample.paths.spec)
     if "specMbdAlignment" in sample.paths.generated:
         if sample.paths.spec is None:
             raise OSError(f"sample {sample.id!r} requests spec/MBD alignment but has no spec path")

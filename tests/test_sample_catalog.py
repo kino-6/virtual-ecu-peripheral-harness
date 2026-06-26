@@ -16,6 +16,7 @@ def test_sample_catalog_discovers_sample_workspaces():
         "simple_threshold_indicator",
         "thermal_fan_control",
         "thermal_protection_controller",
+        "toy_dual_signal_coordination",
         "toy_energy_buffer_mode",
         "toy_power_monitor",
     }

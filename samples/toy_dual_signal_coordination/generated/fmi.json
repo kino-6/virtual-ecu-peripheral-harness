@@ -1,0 +1,423 @@
+{
+  "component": "ToyDualSignalCoordinator",
+  "controlRules": [
+    {
+      "actions": {
+        "mainGreen": "false",
+        "mainRed": "false",
+        "mainYellow": "true",
+        "sideGreen": "false",
+        "sideRed": "true",
+        "sideYellow": "false",
+        "state": "MAIN_WARN_SIDE_STOP"
+      },
+      "condition": "sideRequest == true",
+      "name": "request_side_prepare_main",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 10,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "MAIN_GO_SIDE_STOP",
+      "trace": [
+        "DSC-002",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "actions": {
+        "mainGreen": "false",
+        "mainRed": "true",
+        "mainYellow": "false",
+        "sideGreen": "false",
+        "sideRed": "true",
+        "sideYellow": "false",
+        "state": "ALL_STOP_BEFORE_SIDE"
+      },
+      "condition": "mainWarningExpired == true",
+      "name": "main_warning_to_all_stop",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 20,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "MAIN_WARN_SIDE_STOP",
+      "trace": [
+        "DSC-003",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "actions": {
+        "mainGreen": "false",
+        "mainRed": "true",
+        "mainYellow": "false",
+        "sideGreen": "true",
+        "sideRed": "false",
+        "sideYellow": "false",
+        "state": "MAIN_STOP_SIDE_GO"
+      },
+      "condition": "clearanceExpired == true",
+      "name": "clearance_to_side_go",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 30,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "ALL_STOP_BEFORE_SIDE",
+      "trace": [
+        "DSC-004",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "actions": {
+        "mainGreen": "false",
+        "mainRed": "true",
+        "mainYellow": "false",
+        "sideGreen": "false",
+        "sideRed": "false",
+        "sideYellow": "true",
+        "state": "MAIN_STOP_SIDE_WARN"
+      },
+      "condition": "sideServed == true",
+      "name": "side_service_prepare_main",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 40,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "MAIN_STOP_SIDE_GO",
+      "trace": [
+        "DSC-005",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "actions": {
+        "mainGreen": "false",
+        "mainRed": "true",
+        "mainYellow": "false",
+        "sideGreen": "false",
+        "sideRed": "true",
+        "sideYellow": "false",
+        "state": "ALL_STOP_BEFORE_MAIN"
+      },
+      "condition": "sideWarningExpired == true",
+      "name": "side_warning_to_all_stop",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 50,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "MAIN_STOP_SIDE_WARN",
+      "trace": [
+        "DSC-003",
+        "DSC-005",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "actions": {
+        "mainGreen": "true",
+        "mainRed": "false",
+        "mainYellow": "false",
+        "sideGreen": "false",
+        "sideRed": "true",
+        "sideYellow": "false",
+        "state": "MAIN_GO_SIDE_STOP"
+      },
+      "condition": "clearanceExpired == true",
+      "name": "clearance_to_main_go",
+      "owner": "ToyCrossingCoordinator",
+      "priority": 60,
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "stateScope": "ALL_STOP_BEFORE_MAIN",
+      "trace": [
+        "DSC-001",
+        "DSC-005",
+        "DSC-006",
+        "DSC-007"
+      ]
+    }
+  ],
+  "fmiIntent": "metadata stub only; no FMU is generated",
+  "functionalDecomposition": [
+    {
+      "inputs": [
+        "sideRequest",
+        "mainWarningExpired",
+        "clearanceExpired",
+        "sideServed",
+        "sideWarningExpired"
+      ],
+      "name": "ToyCrossingCoordinator",
+      "outputs": [
+        "state"
+      ],
+      "owns": [
+        "MAIN_GO_SIDE_STOP",
+        "MAIN_WARN_SIDE_STOP",
+        "ALL_STOP_BEFORE_SIDE",
+        "MAIN_STOP_SIDE_GO",
+        "MAIN_STOP_SIDE_WARN",
+        "ALL_STOP_BEFORE_MAIN"
+      ],
+      "responsibility": "Own request arbitration and all-stop clearance before changing directional grants",
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "trace": [
+        "DSC-001",
+        "DSC-002",
+        "DSC-003",
+        "DSC-004",
+        "DSC-005",
+        "DSC-PRE-001",
+        "DSC-PRE-002"
+      ]
+    },
+    {
+      "inputs": [
+        "state"
+      ],
+      "name": "MainSignalStateMachine",
+      "outputs": [
+        "mainGreen",
+        "mainYellow",
+        "mainRed"
+      ],
+      "owns": [
+        "mainGreen",
+        "mainYellow",
+        "mainRed"
+      ],
+      "responsibility": "Map coordinated modes to the main signal go warn stop outputs",
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "trace": [
+        "DSC-001",
+        "DSC-002",
+        "DSC-003",
+        "DSC-004",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "inputs": [
+        "state"
+      ],
+      "name": "SideSignalStateMachine",
+      "outputs": [
+        "sideGreen",
+        "sideYellow",
+        "sideRed"
+      ],
+      "owns": [
+        "sideGreen",
+        "sideYellow",
+        "sideRed"
+      ],
+      "responsibility": "Map coordinated modes to the side signal stop go warn outputs",
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "trace": [
+        "DSC-003",
+        "DSC-004",
+        "DSC-005",
+        "DSC-006",
+        "DSC-007"
+      ]
+    },
+    {
+      "inputs": [
+        "mainGreen",
+        "sideGreen"
+      ],
+      "name": "InterlockMonitor",
+      "outputs": [
+        "ScenarioReport.passFailResult"
+      ],
+      "owns": [
+        "mainGreen",
+        "sideGreen"
+      ],
+      "responsibility": "Expose the no-both-green invariant as preview evidence",
+      "scenarios": [
+        "side_request_cycle"
+      ],
+      "trace": [
+        "DSC-006",
+        "DSC-PRE-001"
+      ]
+    }
+  ],
+  "harnessDevices": [
+    {
+      "boundary": "virtual_ic",
+      "name": "ToySideRequestSource",
+      "role": "stimulus",
+      "trace": [
+        "DSC-002",
+        "DSC-004",
+        "DSC-PRE-001"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyMainWarningTimer",
+      "role": "timer",
+      "trace": [
+        "DSC-002",
+        "DSC-003",
+        "DSC-PRE-001"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToyClearanceTimer",
+      "role": "timer",
+      "trace": [
+        "DSC-003",
+        "DSC-004",
+        "DSC-005",
+        "DSC-PRE-001"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToySideServiceSource",
+      "role": "stimulus",
+      "trace": [
+        "DSC-005",
+        "DSC-PRE-001"
+      ]
+    },
+    {
+      "boundary": "virtual_ic",
+      "name": "ToySideWarningTimer",
+      "role": "timer",
+      "trace": [
+        "DSC-005",
+        "DSC-PRE-001"
+      ]
+    },
+    {
+      "boundary": "hal",
+      "name": "ToyDualSignalCoordinator",
+      "role": "controller",
+      "trace": [
+        "DSC-001",
+        "DSC-002",
+        "DSC-003",
+        "DSC-004",
+        "DSC-005",
+        "DSC-006",
+        "DSC-007"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "default": "false",
+      "name": "sideRequest",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "mainWarningExpired",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "clearanceExpired",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "sideServed",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "sideWarningExpired",
+      "type": "bool"
+    }
+  ],
+  "outputs": [
+    {
+      "default": "true",
+      "name": "mainGreen",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "mainYellow",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "mainRed",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "sideGreen",
+      "type": "bool"
+    },
+    {
+      "default": "false",
+      "name": "sideYellow",
+      "type": "bool"
+    },
+    {
+      "default": "true",
+      "name": "sideRed",
+      "type": "bool"
+    }
+  ],
+  "parameters": [],
+  "registers": [
+    {
+      "access": "ro",
+      "address": "0x01",
+      "name": "INPUT_STATUS"
+    },
+    {
+      "access": "rw",
+      "address": "0x10",
+      "name": "SIGNAL_COMMAND"
+    }
+  ],
+  "requirementRefs": [
+    "DSC-001",
+    "DSC-002",
+    "DSC-003",
+    "DSC-004",
+    "DSC-005",
+    "DSC-006",
+    "DSC-007",
+    "DSC-PRE-001",
+    "DSC-PRE-002"
+  ],
+  "source": "samples/toy_dual_signal_coordination/model.mbd.md",
+  "sourceFormat": "mbd-markdown",
+  "states": [
+    "MAIN_GO_SIDE_STOP",
+    "MAIN_WARN_SIDE_STOP",
+    "ALL_STOP_BEFORE_SIDE",
+    "MAIN_STOP_SIDE_GO",
+    "MAIN_STOP_SIDE_WARN",
+    "ALL_STOP_BEFORE_MAIN"
+  ]
+}

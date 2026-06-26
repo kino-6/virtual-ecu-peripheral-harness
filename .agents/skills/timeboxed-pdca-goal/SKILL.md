@@ -28,6 +28,8 @@ work exists.
 3. After every green checkpoint, run a Remaining Budget Decision.
 4. Continue into the next highest-value cycle unless a stop condition applies.
 5. Commit meaningful green checkpoints when the work changes tracked files.
+6. Before marking the Goal complete, write one final Remaining Budget Decision
+   and name the exact stop condition that is satisfied.
 
 ## Remaining Budget Decision
 
@@ -38,8 +40,27 @@ After each green checkpoint, explicitly decide:
 - Which next PDCA cycle gives the most value within the remaining budget?
 - Is continuing blocked, unsafe, explicitly stopped, or too small to fit?
 
+Use this template in `Tasks.md`, commentary, or the final answer:
+
+```markdown
+Remaining Budget Decision:
+- Elapsed:
+- Remaining:
+- Last green checkpoint:
+- Revealed gap:
+- Next highest-value cycle:
+- Stop condition satisfied? yes/no:
+```
+
 If more than roughly 25% of the requested timebox remains and a useful cycle
 fits, continue. Do not mark the Goal complete only because tests passed.
+
+## Completion Hard Gate
+
+Do not call `update_goal` with `complete` until the final Remaining Budget
+Decision says `Stop condition satisfied? yes` and identifies which stop
+condition applies. If it says `no`, continue into the next PDCA cycle even when
+tests are green.
 
 ## Stop Conditions
 
@@ -59,6 +80,7 @@ Report:
 - Verification run.
 - Why work stopped.
 - Useful next cycles still available.
+- The final Remaining Budget Decision, including the satisfied stop condition.
 
 If work stopped after only one vertical slice, explain which stop condition
 made that acceptable.

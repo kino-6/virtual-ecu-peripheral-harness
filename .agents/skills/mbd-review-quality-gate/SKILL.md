@@ -8,8 +8,9 @@ description: Project-local workflow for reviewing MBD demos, markup, visualizati
 Use this skill before declaring an MBD demo, visualization, trace report, or
 generated handoff artifact ready for human review.
 
-In this repository, `demo.html` is an MBD review artifact compatibility name,
-not a casual visual demo.
+In this repository, `review.html` is the preferred HTML MBD review artifact name
+for new samples. Legacy `demo.html` files are compatibility artifacts only, not
+casual visual demos.
 
 ## Source Checklist
 
@@ -34,6 +35,31 @@ Review in independent lanes before merging the result:
    - Confirm the spec and MBD identify system context, functional components,
      responsibility allocation, owned signals, and interfaces before detailed
      control rules.
+   - For multi-component or multi-state-machine examples, require a short
+     component/state-machine review block before raw transition tables. It must
+     separate the coordinator or supervisor, each state-machine role, exchanged
+     signals or messages, and preview/external-verification boundaries.
+   - That first block must be a behavior confirmation table, not an allocation
+     inventory. Prefer columns like check, stimulus/relation, expected behavior,
+     and verdict. Reject leading `Role / Owns / Reads / Emits` tables because
+     they are trace metadata, not a fast review answer.
+  - For a 30-second to 1-minute review path, use chapter-level readability by
+    default. Each chapter should answer one question: where this artifact sits
+    in the flow, how components are split, what the design diagram says, what
+    the generated MBD implements, or what the verification result shows.
+  - Design and generated-MBD implementation chapters should be visual. The
+    design chapter should identify the source specification section and render
+    the relevant specification diagram or excerpt from the actual `Spec.md`
+    source. Do not hard-code a diagram in the exporter and merely label it as a
+    Spec excerpt. The generated-MBD chapter should render the generated MBD
+    view, such as a state-transition, component, or data-flow diagram, rather
+    than replacing it with prose-only summaries.
+  - Keep each chapter to a short claim plus a compact diagram or five rows or
+    fewer. Do not collapse the whole artifact into an over-compressed sheet
+    unless the user explicitly asks for A4 one-page output.
+  - If the user asks for "A4 one page" or equivalent, make the review artifact
+    an A4 review sheet. The sheet should contain one conclusion, the minimum
+    behavior sequence, PASS/OPEN status, and the external-verification boundary.
    - Reject flat controller-only models when the requirement expects a
      decomposed system, component architecture, or MBD handoff.
    - Reject decomposition that exists only as decorative boxes without allocated
@@ -52,6 +78,10 @@ Review in independent lanes before merging the result:
 
 5. **State-machine transition-system lane**
    - Treat state-machine review as transition-system review, not diagram review.
+   - Do not treat a Mermaid state diagram as the whole MBD when the design has
+     multiple components, related charts, parallel state activity, or message
+     exchange. Review the component roles and cross-chart interactions first,
+     then review each transition/effect table.
    - Lead with state inventory, initial/default state, transition table, trigger
      or guard, effect/action, priority, trace, and scenario evidence.
    - Add a transition matrix for source-state to target-state coverage.
@@ -108,11 +138,18 @@ Reject the artifact before showing it to the user when any of these are true:
   review path.
 - A reviewer cannot answer the core question in about 30 seconds: spec intent,
   generated MBD element, trace, scenario/report evidence, and unresolved QA.
-- A reviewer cannot form an initial accept/reject judgment in 30 seconds to
-  1 minute from the first viewport and the immediately following review block.
-- The first review block is text-heavy enough that the reviewer must read
-  paragraphs, scan long evidence strings, or scroll repeatedly before seeing
-  the spec intent, generated behavior, mismatch status, and open questions.
+- A reviewer cannot form an initial accept/reject judgment for each chapter in
+  30 seconds to 1 minute.
+- The artifact lacks short chapters for overview, component split, design
+  diagram, generated MBD implementation, verification result, and open
+  questions where needed.
+- The design chapter or generated-MBD implementation chapter is prose-only when
+  the specification or generated MBD has a diagrammatic view that can be shown.
+- The design chapter claims to show a `Spec.md` excerpt but is not derived from
+  the actual `Spec.md` file used by the sample.
+- A chapter is text-heavy enough that the reviewer must read paragraphs, scan
+  long evidence strings, or scroll repeatedly before seeing the chapter's
+  review question, expected behavior, verdict, and open questions.
 - Dense trace details, generated element lists, or tool-handoff explanations
   appear before the concise review verdict. Put those details behind a
   secondary section or omit them from the human-first review artifact.

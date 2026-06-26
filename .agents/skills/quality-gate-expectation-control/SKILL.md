@@ -9,8 +9,9 @@ Use this skill before implementation when the requested outcome may be judged by
 fitness, evidence quality, reviewability, or professional realism rather than by
 "tests pass" alone.
 
-In this repository, `demo.html` should usually be treated as an MBD review artifact,
-not a casual visual demo.
+In this repository, `review.html` is the preferred HTML MBD review artifact name
+for new samples. Legacy `demo.html` files should be treated as MBD review
+artifacts, not casual visual demos.
 
 ## Trigger Signals
 

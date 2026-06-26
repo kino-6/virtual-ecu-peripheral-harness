@@ -1,0 +1,238 @@
+flowchart LR
+  %% Generated semantic MBD preview from Mermaid-like MBD markup.
+  %% Existing MBD tools remain the verification backends.
+  %% Semantic MBD Block Diagram
+  decision_request_side_prepare_main{"sideRequest == true?"}
+  action_request_side_prepare_main["State MAIN_WARN_SIDE_STOP<br/>Output mainGreen = false<br/>Output mainYellow = true<br/>Output mainRed = false<br/>Output sideGreen = false<br/>Output sideYellow = false<br/>Output sideRed = true"]
+  input_sideRequest["Input Port: sideRequest"]
+  input_sideRequest --> decision_request_side_prepare_main
+  decision_request_side_prepare_main -->|"true / request_side_prepare_main"| action_request_side_prepare_main
+  decision_main_warning_to_all_stop{"mainWarningExpired == true?"}
+  action_main_warning_to_all_stop["State ALL_STOP_BEFORE_SIDE<br/>Output mainGreen = false<br/>Output mainYellow = false<br/>Output mainRed = true<br/>Output sideGreen = false<br/>Output sideYellow = false<br/>Output sideRed = true"]
+  input_mainWarningExpired["Input Port: mainWarningExpired"]
+  input_mainWarningExpired --> decision_main_warning_to_all_stop
+  decision_main_warning_to_all_stop -->|"true / main_warning_to_all_stop"| action_main_warning_to_all_stop
+  decision_clearance_to_side_go{"clearanceExpired == true?"}
+  action_clearance_to_side_go["State MAIN_STOP_SIDE_GO<br/>Output mainGreen = false<br/>Output mainYellow = false<br/>Output mainRed = true<br/>Output sideGreen = true<br/>Output sideYellow = false<br/>Output sideRed = false"]
+  input_clearanceExpired["Input Port: clearanceExpired"]
+  input_clearanceExpired --> decision_clearance_to_side_go
+  decision_clearance_to_side_go -->|"true / clearance_to_side_go"| action_clearance_to_side_go
+  decision_side_service_prepare_main{"sideServed == true?"}
+  action_side_service_prepare_main["State MAIN_STOP_SIDE_WARN<br/>Output mainGreen = false<br/>Output mainYellow = false<br/>Output mainRed = true<br/>Output sideGreen = false<br/>Output sideYellow = true<br/>Output sideRed = false"]
+  input_sideServed["Input Port: sideServed"]
+  input_sideServed --> decision_side_service_prepare_main
+  decision_side_service_prepare_main -->|"true / side_service_prepare_main"| action_side_service_prepare_main
+  decision_side_warning_to_all_stop{"sideWarningExpired == true?"}
+  action_side_warning_to_all_stop["State ALL_STOP_BEFORE_MAIN<br/>Output mainGreen = false<br/>Output mainYellow = false<br/>Output mainRed = true<br/>Output sideGreen = false<br/>Output sideYellow = false<br/>Output sideRed = true"]
+  input_sideWarningExpired["Input Port: sideWarningExpired"]
+  input_sideWarningExpired --> decision_side_warning_to_all_stop
+  decision_side_warning_to_all_stop -->|"true / side_warning_to_all_stop"| action_side_warning_to_all_stop
+  decision_clearance_to_main_go{"clearanceExpired == true?"}
+  action_clearance_to_main_go["State MAIN_GO_SIDE_STOP<br/>Output mainGreen = true<br/>Output mainYellow = false<br/>Output mainRed = false<br/>Output sideGreen = false<br/>Output sideYellow = false<br/>Output sideRed = true"]
+  input_clearanceExpired["Input Port: clearanceExpired"]
+  input_clearanceExpired --> decision_clearance_to_main_go
+  decision_clearance_to_main_go -->|"true / clearance_to_main_go"| action_clearance_to_main_go
+  %% Detail trace carriers follow; semantic blocks above are the primary review artifact.
+  ToySideRequestSource_sideRequest["ToySideRequestSource.sideRequest"]
+  ToyCrossingCoordinator_sideRequest["ToyCrossingCoordinator.sideRequest"]
+  %% Trace: DSC-002, DSC-004
+  %% ToySideRequestSource_sideRequest --> ToyCrossingCoordinator_sideRequest
+  ToySideRequestSource_sideRequest -->|"side grant request"| ToyCrossingCoordinator_sideRequest
+  ToyMainWarningTimer_expired["ToyMainWarningTimer.expired"]
+  ToyCrossingCoordinator_mainWarningExpired["ToyCrossingCoordinator.mainWarningExpired"]
+  %% Trace: DSC-002, DSC-003
+  %% ToyMainWarningTimer_expired --> ToyCrossingCoordinator_mainWarningExpired
+  ToyMainWarningTimer_expired -->|"main warning completion"| ToyCrossingCoordinator_mainWarningExpired
+  ToyClearanceTimer_expired["ToyClearanceTimer.expired"]
+  ToyCrossingCoordinator_clearanceExpired["ToyCrossingCoordinator.clearanceExpired"]
+  %% Trace: DSC-003, DSC-004, DSC-005
+  %% ToyClearanceTimer_expired --> ToyCrossingCoordinator_clearanceExpired
+  ToyClearanceTimer_expired -->|"all-stop clearance completion"| ToyCrossingCoordinator_clearanceExpired
+  ToySideServiceSource_sideServed["ToySideServiceSource.sideServed"]
+  ToyCrossingCoordinator_sideServed["ToyCrossingCoordinator.sideServed"]
+  %% Trace: DSC-005
+  %% ToySideServiceSource_sideServed --> ToyCrossingCoordinator_sideServed
+  ToySideServiceSource_sideServed -->|"side service completion"| ToyCrossingCoordinator_sideServed
+  ToySideWarningTimer_expired["ToySideWarningTimer.expired"]
+  ToyCrossingCoordinator_sideWarningExpired["ToyCrossingCoordinator.sideWarningExpired"]
+  %% Trace: DSC-005
+  %% ToySideWarningTimer_expired --> ToyCrossingCoordinator_sideWarningExpired
+  ToySideWarningTimer_expired -->|"side warning completion"| ToyCrossingCoordinator_sideWarningExpired
+  ToyCrossingCoordinator_state["ToyCrossingCoordinator.state"]
+  MainSignalStateMachine_state["MainSignalStateMachine.state"]
+  %% Trace: DSC-001, DSC-002, DSC-003, DSC-004, DSC-007
+  %% ToyCrossingCoordinator_state --> MainSignalStateMachine_state
+  ToyCrossingCoordinator_state -->|"coordinated mode projection"| MainSignalStateMachine_state
+  ToyCrossingCoordinator_state["ToyCrossingCoordinator.state"]
+  SideSignalStateMachine_state["SideSignalStateMachine.state"]
+  %% Trace: DSC-003, DSC-004, DSC-005, DSC-007
+  %% ToyCrossingCoordinator_state --> SideSignalStateMachine_state
+  ToyCrossingCoordinator_state -->|"coordinated mode projection"| SideSignalStateMachine_state
+  ToyDualSignalCoordinator_mainGreen["ToyDualSignalCoordinator.mainGreen"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-001, DSC-006
+  %% ToyDualSignalCoordinator_mainGreen --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_mainGreen -->|"main green evidence"| ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_mainYellow["ToyDualSignalCoordinator.mainYellow"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-002
+  %% ToyDualSignalCoordinator_mainYellow --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_mainYellow -->|"main warning evidence"| ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_mainRed["ToyDualSignalCoordinator.mainRed"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-003, DSC-004
+  %% ToyDualSignalCoordinator_mainRed --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_mainRed -->|"main stop evidence"| ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideGreen["ToyDualSignalCoordinator.sideGreen"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-004, DSC-006
+  %% ToyDualSignalCoordinator_sideGreen --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideGreen -->|"side green evidence"| ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideYellow["ToyDualSignalCoordinator.sideYellow"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-005
+  %% ToyDualSignalCoordinator_sideYellow --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideYellow -->|"side warning evidence"| ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideRed["ToyDualSignalCoordinator.sideRed"]
+  ScenarioReport_observedBehavior["ScenarioReport.observedBehavior"]
+  %% Trace: DSC-001, DSC-002, DSC-003
+  %% ToyDualSignalCoordinator_sideRed --> ScenarioReport_observedBehavior
+  ToyDualSignalCoordinator_sideRed -->|"side stop evidence"| ScenarioReport_observedBehavior
+  function_ToyCrossingCoordinator["ToyCrossingCoordinator<br/>Own request arbitration and all-stop clearance before changing directional grants"]
+  %% Function Trace: DSC-001, DSC-002, DSC-003, DSC-004, DSC-005, DSC-PRE-001, DSC-PRE-002
+  state["state"]
+  function_ToyCrossingCoordinator -->|"owns"| state
+  function_MainSignalStateMachine["MainSignalStateMachine<br/>Map coordinated modes to the main signal go warn stop outputs"]
+  %% Function Trace: DSC-001, DSC-002, DSC-003, DSC-004, DSC-006, DSC-007
+  mainGreen["mainGreen"]
+  function_MainSignalStateMachine -->|"owns"| mainGreen
+  mainYellow["mainYellow"]
+  function_MainSignalStateMachine -->|"owns"| mainYellow
+  mainRed["mainRed"]
+  function_MainSignalStateMachine -->|"owns"| mainRed
+  function_SideSignalStateMachine["SideSignalStateMachine<br/>Map coordinated modes to the side signal stop go warn outputs"]
+  %% Function Trace: DSC-003, DSC-004, DSC-005, DSC-006, DSC-007
+  sideGreen["sideGreen"]
+  function_SideSignalStateMachine -->|"owns"| sideGreen
+  sideYellow["sideYellow"]
+  function_SideSignalStateMachine -->|"owns"| sideYellow
+  sideRed["sideRed"]
+  function_SideSignalStateMachine -->|"owns"| sideRed
+  function_InterlockMonitor["InterlockMonitor<br/>Expose the no-both-green invariant as preview evidence"]
+  %% Function Trace: DSC-006, DSC-PRE-001
+  ScenarioReport_passFailResult["ScenarioReport.passFailResult"]
+  function_InterlockMonitor -->|"owns"| ScenarioReport_passFailResult
+  rule_request_side_prepare_main{"priority 10<br/>rule request_side_prepare_main<br/>owner ToyCrossingCoordinator<br/>from MAIN_GO_SIDE_STOP"}
+  %% Trace: DSC-002, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| state
+  mainGreen["mainGreen"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| mainYellow
+  mainRed["mainRed"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| sideYellow
+  sideRed["sideRed"]
+  rule_request_side_prepare_main -->|"sideRequest == true"| sideRed
+  rule_main_warning_to_all_stop{"priority 20<br/>rule main_warning_to_all_stop<br/>owner ToyCrossingCoordinator<br/>from MAIN_WARN_SIDE_STOP"}
+  %% Trace: DSC-003, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| state
+  mainGreen["mainGreen"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| mainYellow
+  mainRed["mainRed"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| sideYellow
+  sideRed["sideRed"]
+  rule_main_warning_to_all_stop -->|"mainWarningExpired == true"| sideRed
+  rule_clearance_to_side_go{"priority 30<br/>rule clearance_to_side_go<br/>owner ToyCrossingCoordinator<br/>from ALL_STOP_BEFORE_SIDE"}
+  %% Trace: DSC-004, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| state
+  mainGreen["mainGreen"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| mainYellow
+  mainRed["mainRed"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| sideYellow
+  sideRed["sideRed"]
+  rule_clearance_to_side_go -->|"clearanceExpired == true"| sideRed
+  rule_side_service_prepare_main{"priority 40<br/>rule side_service_prepare_main<br/>owner ToyCrossingCoordinator<br/>from MAIN_STOP_SIDE_GO"}
+  %% Trace: DSC-005, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_side_service_prepare_main -->|"sideServed == true"| state
+  mainGreen["mainGreen"]
+  rule_side_service_prepare_main -->|"sideServed == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_side_service_prepare_main -->|"sideServed == true"| mainYellow
+  mainRed["mainRed"]
+  rule_side_service_prepare_main -->|"sideServed == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_side_service_prepare_main -->|"sideServed == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_side_service_prepare_main -->|"sideServed == true"| sideYellow
+  sideRed["sideRed"]
+  rule_side_service_prepare_main -->|"sideServed == true"| sideRed
+  rule_side_warning_to_all_stop{"priority 50<br/>rule side_warning_to_all_stop<br/>owner ToyCrossingCoordinator<br/>from MAIN_STOP_SIDE_WARN"}
+  %% Trace: DSC-003, DSC-005, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| state
+  mainGreen["mainGreen"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| mainYellow
+  mainRed["mainRed"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| sideYellow
+  sideRed["sideRed"]
+  rule_side_warning_to_all_stop -->|"sideWarningExpired == true"| sideRed
+  rule_clearance_to_main_go{"priority 60<br/>rule clearance_to_main_go<br/>owner ToyCrossingCoordinator<br/>from ALL_STOP_BEFORE_MAIN"}
+  %% Trace: DSC-001, DSC-005, DSC-006, DSC-007
+  %% Scenarios: side_request_cycle
+  state["state"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| state
+  mainGreen["mainGreen"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| mainGreen
+  mainYellow["mainYellow"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| mainYellow
+  mainRed["mainRed"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| mainRed
+  sideGreen["sideGreen"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| sideGreen
+  sideYellow["sideYellow"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| sideYellow
+  sideRed["sideRed"]
+  rule_clearance_to_main_go -->|"clearanceExpired == true"| sideRed
+  ToySideRequestSource["ToySideRequestSource<br/>virtual_ic"]
+  %% Trace: DSC-002, DSC-004, DSC-PRE-001
+  ToyMainWarningTimer["ToyMainWarningTimer<br/>virtual_ic"]
+  %% Trace: DSC-002, DSC-003, DSC-PRE-001
+  ToyClearanceTimer["ToyClearanceTimer<br/>virtual_ic"]
+  %% Trace: DSC-003, DSC-004, DSC-005, DSC-PRE-001
+  ToySideServiceSource["ToySideServiceSource<br/>virtual_ic"]
+  %% Trace: DSC-005, DSC-PRE-001
+  ToySideWarningTimer["ToySideWarningTimer<br/>virtual_ic"]
+  %% Trace: DSC-005, DSC-PRE-001
+  ToyDualSignalCoordinator["ToyDualSignalCoordinator<br/>hal"]
+  %% Trace: DSC-001, DSC-002, DSC-003, DSC-004, DSC-005, DSC-006, DSC-007

@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>側道要求による信号切替 MBDレビュー資料</title>
+  <style>
+:root {
+      --ink: #172126;
+      --muted: #526066;
+      --line: #c7d2d6;
+      --paper: #ffffff;
+      --page: #eef3f2;
+      --accent: #2f5d62;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    .chapter-review {
+      width: min(1040px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .review-head,
+    .chapter {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .review-head {
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .review-head p,
+    .chapter-label {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+    .review-head strong {
+      color: var(--ink);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .chapter {
+      padding: 20px 24px;
+      margin-bottom: 14px;
+    }
+    .chapter h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+    .chapter p {
+      margin: 0;
+      font-size: 15px;
+    }
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .fact-grid div {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 84px;
+    }
+    .fact-grid span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .fact-grid b {
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .review-diagram {
+      width: 100%;
+      height: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f7faf9;
+    }
+    .review-diagram .node rect {
+      fill: #ffffff;
+      stroke: var(--line);
+      stroke-width: 1.5;
+    }
+    .review-diagram .node.scope rect {
+      fill: #eef8f6;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .review-diagram .node.preview rect {
+      fill: #f8fbff;
+    }
+    .review-diagram .node.external rect {
+      fill: #fbf7ef;
+      stroke: #d6b07a;
+    }
+    .review-diagram .node text {
+      fill: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .review-diagram.spec-state .node text,
+    .review-diagram.mbd-state .node text {
+      font-size: 12px;
+    }
+    .review-diagram .arrow {
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      fill: none;
+    }
+    .review-diagram marker path {
+      fill: var(--accent);
+    }
+    .review-diagram .edge-label {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: #f7faf9;
+      stroke-width: 4px;
+    }
+    .review-note {
+      margin-top: 12px !important;
+      font-weight: 800;
+    }
+    .review-foot {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 4px 2px;
+    }
+    @media (max-width: 720px) {
+      .review-head { display: block; padding: 18px; }
+      .review-head strong { display: block; margin-top: 8px; white-space: normal; }
+      .chapter { padding: 16px; }
+      .fact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="chapter-review">
+    <header class="review-head">
+      <p>MBDレビュー資料 / 1章30秒から1分で確認</p>
+      <h1>側道要求による信号切替レビュー</h1>
+      <strong>プレビュー確認済み。外部MBDでは未確認。</strong>
+    </header>
+    <section class="chapter" id="overview">
+      <p class="chapter-label">1 / 全体</p>
+      <h2>制御全体での位置づけ</h2>
+      <p>側道から通行要求が来たとき、主道路側から側道側へ通行権を渡し、側道の通行後に主道路側へ戻す架空の信号制御を扱う。</p>
+      <svg class="review-diagram control-context" viewBox="0 0 980 350" role="img" aria-label="制御全体のコンポーネントとレビュー対象範囲">
+        <defs><marker id="contextArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" /></marker></defs>
+        <line class="arrow" x1="156" y1="108" x2="318" y2="126" marker-end="url(#contextArrow)" />
+        <line class="arrow" x1="156" y1="194" x2="318" y2="178" marker-end="url(#contextArrow)" />
+        <line class="arrow" x1="604" y1="126" x2="760" y2="96" marker-end="url(#contextArrow)" />
+        <line class="arrow" x1="604" y1="178" x2="760" y2="206" marker-end="url(#contextArrow)" />
+        <line class="arrow" x1="461" y1="222" x2="461" y2="270" marker-end="url(#contextArrow)" />
+        <line class="arrow" x1="604" y1="152" x2="728" y2="288" marker-end="url(#contextArrow)" />
+        <text class="edge-label" x="237" y="109">sideRequest</text>
+        <text class="edge-label" x="237" y="178">timer events</text>
+        <text class="edge-label" x="682" y="103">main outputs</text>
+        <text class="edge-label" x="682" y="184">side outputs</text>
+        <text class="edge-label" x="461" y="238">observed behavior</text>
+        <text class="edge-label" x="666" y="212">handoff scope</text>
+        <g class="node"><rect x="24" y="82" width="132" height="54" rx="8" />
+          <text x="90" y="101">側道要求</text>
+          <text x="90" y="119">要求入力</text>
+        </g>
+        <g class="node"><rect x="24" y="168" width="132" height="54" rx="8" />
+          <text x="90" y="187">タイマ群</text>
+          <text x="90" y="205">黄完了・待ち完了</text>
+        </g>
+        <g class="node scope"><rect x="318" y="82" width="286" height="140" rx="8" />
+          <text x="461" y="144">仕様対象</text>
+          <text x="461" y="162">調停・信号写像・監視</text>
+        </g>
+        <g class="node"><rect x="760" y="70" width="150" height="54" rx="8" />
+          <text x="835" y="89">主道路信号</text>
+          <text x="835" y="107">青・黄・赤</text>
+        </g>
+        <g class="node"><rect x="760" y="180" width="150" height="54" rx="8" />
+          <text x="835" y="199">側道信号</text>
+          <text x="835" y="217">赤・青・黄</text>
+        </g>
+        <g class="node preview"><rect x="318" y="270" width="286" height="54" rx="8" />
+          <text x="461" y="289">Harnessプレビュー</text>
+          <text x="461" y="307">観測・レポート</text>
+        </g>
+        <g class="node external"><rect x="728" y="270" width="214" height="54" rx="8" />
+          <text x="835" y="289">外部MBD確認</text>
+          <text x="835" y="307">並列状態・時間・実行順序</text>
+        </g>
+      </svg>
+      <div class="fact-grid">
+        <div><span>題材</span><b>架空の主道路/側道信号切替制御</b></div>
+        <div><span>設計目的</span><b>側道要求に応じて通行権を安全な順序で渡す</b></div>
+        <div><span>確認したいこと</span><b>両方向が同時に青にならないこと</b></div>
+      </div>
+    </section>
+    <section class="chapter" id="components">
+      <p class="chapter-label">2 / 分割</p>
+      <h2>この仕様書が扱うコンポーネント</h2>
+      <p>仕様書の対象は、要求入力を受ける調停、主信号/側信号の出力写像、同時青の監視である。現実の信号灯や交通流は扱わない。</p>
+      <svg class="review-diagram spec-scope" viewBox="0 0 880 360" role="img" aria-label="この仕様書が扱うコンポーネント図">
+        <defs><marker id="scopeArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" /></marker></defs>
+        <line class="arrow" x1="437" y1="106" x2="186" y2="174" marker-end="url(#scopeArrow)" />
+        <line class="arrow" x1="437" y1="106" x2="688" y2="174" marker-end="url(#scopeArrow)" />
+        <line class="arrow" x1="304" y1="206" x2="318" y2="300" marker-end="url(#scopeArrow)" />
+        <line class="arrow" x1="570" y1="206" x2="556" y2="300" marker-end="url(#scopeArrow)" />
+        <line class="arrow" x1="556" y1="307" x2="620" y2="307" marker-end="url(#scopeArrow)" />
+        <text class="edge-label" x="312" y="132">state</text>
+        <text class="edge-label" x="562" y="132">state</text>
+        <text class="edge-label" x="311" y="245">mainGreen</text>
+        <text class="edge-label" x="563" y="245">sideGreen</text>
+        <text class="edge-label" x="588" y="299">pass/fail</text>
+        <g class="node scope"><rect x="312" y="42" width="250" height="64" rx="8" />
+          <text x="437" y="66">ToyCrossingCoordinator</text>
+          <text x="437" y="84">通行権の順序と両信号赤区間を決める</text>
+        </g>
+        <g class="node scope"><rect x="68" y="174" width="236" height="64" rx="8" />
+          <text x="186" y="198">MainSignalStateMachine</text>
+          <text x="186" y="216">調停状態を主道路信号へ写像</text>
+        </g>
+        <g class="node scope"><rect x="570" y="174" width="236" height="64" rx="8" />
+          <text x="688" y="198">SideSignalStateMachine</text>
+          <text x="688" y="216">調停状態を側道信号へ写像</text>
+        </g>
+        <g class="node preview"><rect x="318" y="278" width="238" height="58" rx="8" />
+          <text x="437" y="299">InterlockMonitor</text>
+          <text x="437" y="317">同時青でないことを観測</text>
+        </g>
+        <g class="node preview"><rect x="620" y="278" width="168" height="58" rx="8" />
+          <text x="704" y="299">Scenario Report</text>
+          <text x="704" y="317">Harness証跡</text>
+        </g>
+      </svg>
+    </section>
+    <section class="chapter" id="design">
+      <p class="chapter-label">3 / 設計</p>
+      <h2>設計図</h2>
+      <p>Spec.mdから抜粋した側道要求1サイクルの状態遷移図。全状態空間ではない。対象箇所: <b>Spec.md / Side Request Scenario State Path</b></p>
+      <svg class="review-diagram spec-state" viewBox="0 0 1048 190" role="img" aria-label="Spec.md Side Request Scenario State Path">
+        <defs><marker id="specStateArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" /></marker></defs>
+        <g class="node"><rect x="24" y="64" width="158" height="56" rx="8" />
+          <text x="103" y="92">MAIN_GO_SIDE_STOP</text>
+        </g>
+        <g class="node"><rect x="196" y="64" width="158" height="56" rx="8" />
+          <text x="275" y="92">MAIN_WARN_SIDE_STOP</text>
+        </g>
+        <g class="node"><rect x="368" y="64" width="158" height="56" rx="8" />
+          <text x="447" y="92">ALL_STOP_BEFORE_SIDE</text>
+        </g>
+        <g class="node"><rect x="540" y="64" width="158" height="56" rx="8" />
+          <text x="619" y="92">MAIN_STOP_SIDE_GO</text>
+        </g>
+        <g class="node"><rect x="712" y="64" width="158" height="56" rx="8" />
+          <text x="791" y="92">MAIN_STOP_SIDE_WARN</text>
+        </g>
+        <g class="node"><rect x="884" y="64" width="158" height="56" rx="8" />
+          <text x="963" y="92">ALL_STOP_BEFORE_MAIN</text>
+        </g>
+        <line class="arrow" x1="182" y1="92" x2="196" y2="92" marker-end="url(#specStateArrow)" />
+        <line class="arrow" x1="354" y1="92" x2="368" y2="92" marker-end="url(#specStateArrow)" />
+        <line class="arrow" x1="526" y1="92" x2="540" y2="92" marker-end="url(#specStateArrow)" />
+        <line class="arrow" x1="698" y1="92" x2="712" y2="92" marker-end="url(#specStateArrow)" />
+        <line class="arrow" x1="870" y1="92" x2="884" y2="92" marker-end="url(#specStateArrow)" />
+        <text class="edge-label" x="180" y="48">sideRequest</text>
+        <text class="edge-label" x="352" y="48">mainWarningExpired</text>
+        <text class="edge-label" x="524" y="48">clearanceExpired</text>
+        <text class="edge-label" x="696" y="48">sideServed</text>
+        <text class="edge-label" x="868" y="48">sideWarningExpired</text>
+        <path class="arrow loop" d="M 996 122 C 996 166, 24 166, 24 122" marker-end="url(#specStateArrow)" />
+        <text class="edge-label" x="510" y="174">clearanceExpired</text>
+      </svg>
+    </section>
+    <section class="chapter" id="mbd">
+      <p class="chapter-label">4 / 実装</p>
+      <h2>実装図（MBD）</h2>
+      <p>MBDで生成した状態遷移図。調停状態を1本の遷移列として持ち、各信号状態機械はその状態から出力を決める。</p>
+      <svg class="review-diagram mbd-state" viewBox="0 0 1048 190" role="img" aria-label="生成MBD状態遷移図">
+        <defs><marker id="mbdArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" /></marker></defs>
+        <g class="node"><rect x="24" y="64" width="158" height="56" rx="8" />
+          <text x="103" y="84">主信号=青 / 側信号=赤</text>
+          <text x="103" y="102">MAIN_GO_SIDE_STOP</text>
+        </g>
+        <g class="node"><rect x="196" y="64" width="158" height="56" rx="8" />
+          <text x="275" y="84">主信号=黄 / 側信号=赤</text>
+          <text x="275" y="102">MAIN_WARN_SIDE_STOP</text>
+        </g>
+        <g class="node"><rect x="368" y="64" width="158" height="56" rx="8" />
+          <text x="447" y="84">両信号=赤</text>
+          <text x="447" y="102">ALL_STOP_BEFORE_SIDE</text>
+        </g>
+        <g class="node"><rect x="540" y="64" width="158" height="56" rx="8" />
+          <text x="619" y="84">主信号=赤 / 側信号=青</text>
+          <text x="619" y="102">MAIN_STOP_SIDE_GO</text>
+        </g>
+        <g class="node"><rect x="712" y="64" width="158" height="56" rx="8" />
+          <text x="791" y="84">主信号=赤 / 側信号=黄</text>
+          <text x="791" y="102">MAIN_STOP_SIDE_WARN</text>
+        </g>
+        <g class="node"><rect x="884" y="64" width="158" height="56" rx="8" />
+          <text x="963" y="84">両信号=赤</text>
+          <text x="963" y="102">ALL_STOP_BEFORE_MAIN</text>
+        </g>
+        <line class="arrow" x1="182" y1="92" x2="196" y2="92" marker-end="url(#mbdArrow)" />
+        <line class="arrow" x1="354" y1="92" x2="368" y2="92" marker-end="url(#mbdArrow)" />
+        <line class="arrow" x1="526" y1="92" x2="540" y2="92" marker-end="url(#mbdArrow)" />
+        <line class="arrow" x1="698" y1="92" x2="712" y2="92" marker-end="url(#mbdArrow)" />
+        <line class="arrow" x1="870" y1="92" x2="884" y2="92" marker-end="url(#mbdArrow)" />
+        <text class="edge-label" x="180" y="48">側要求</text>
+        <text class="edge-label" x="352" y="48">主信号の黄完了</text>
+        <text class="edge-label" x="524" y="48">両信号赤の待ち完了</text>
+        <text class="edge-label" x="696" y="48">側通行完了</text>
+        <text class="edge-label" x="868" y="48">側信号の黄完了</text>
+        <path class="arrow loop" d="M 996 122 C 996 166, 24 166, 24 122" marker-end="url(#mbdArrow)" />
+        <text class="edge-label" x="510" y="174">両信号赤の待ち完了</text>
+      </svg>
+      <div class="fact-grid">
+        <div><span>主信号</span><b>主信号: 青 → 黄 → 赤 → 青</b></div>
+        <div><span>側信号</span><b>側信号: 赤 → 青 → 黄 → 赤</b></div>
+        <div><span>境界</span><b>Harnessは観測だけ。状態遷移はMBDが持つ。</b></div>
+      </div>
+    </section>
+    <section class="chapter" id="verification">
+      <p class="chapter-label">5 / 検証</p>
+      <h2>検証結果</h2>
+      <p>Harnessプレビューでは、側要求1サイクルを流し、出力列と相互排他だけを確認した。</p>
+      <div class="fact-grid">
+        <div><span>シナリオ</span><b>側道要求1サイクル: PASS</b></div>
+        <div><span>相互排他</span><b>同時青なし: PASS</b></div>
+        <div><span>残確認</span><b>外部MBD確認: メッセージ連携、並列状態、時間制約、実行順序</b></div>
+      </div>
+    </section>
+    <footer class="review-foot">詳細証跡は review.md、model.ir.json、state.scxml、プレビュー報告を確認する。</footer>
+  </main>
+</body>
+</html>

@@ -56,10 +56,23 @@ def test_agent_rules_and_review_principles_guard_demo_and_harness_boundaries():
         assert "Harness" in text
         assert "scenario YAML" in text
 
-    assert "not a casual visual demo" in agents
+    assert "review.html" in agents
+    assert "not a casual-demo claim" in agents
+    assert "review.html" in principles
+    assert "review.html" in mbd_review_skill
     assert "Harness evidence lane" in principles
     assert "## Design Layer Separation" in principles
     assert "explicit Control Semantics View" in principles
+    assert "behavior confirmation table" in mbd_review_skill
+    assert "not an allocation" in mbd_review_skill
+    assert "Role / Owns / Reads / Emits" in mbd_review_skill
+    assert "30-second to 1-minute review path" in mbd_review_skill
+    assert "chapter-level readability" in mbd_review_skill
+    assert "overview, component split, design" in mbd_review_skill
+    for phrase in ["`check`", "`stimulus / relation`", "`expected", "`verdict`"]:
+        assert phrase in principles
+    assert "chapter-level gate by default" in principles
+    assert "Only when the user explicitly asks for A4-one-page readability" in principles
     assert "## Generated-Side Consistency Checks" in principles
     assert "Control decisions, state transitions, and output decisions" in quality_gate_skill
     assert "Reject harness shortcuts" in mbd_review_skill
@@ -83,9 +96,14 @@ def test_timeboxed_goal_policy_prevents_stopping_at_first_green_checkpoint():
         assert "green checkpoint" in text
         assert "Remaining Budget Decision" in text
         assert "not the end of a timeboxed Goal" in text
+        assert "Stop condition satisfied? yes/no" in text
+        assert "Do not call `update_goal` with `complete`" in text
 
     assert "usable work budget, not merely a deadline" in agents
     assert "Do not stop" in skill
     assert "one vertical slice" in skill
     assert "If more than roughly 25%" in skill
+    assert "Completion Hard Gate" in skill
+    assert "final Remaining Budget Decision" in skill
     assert "Timeboxed PDCA Goal" in skill_ui
+    assert "Remaining Budget Decision names a satisfied stop condition" in skill_ui

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="MAIN_GO_SIDE_STOP">
+  <!-- Generated state-machine handoff from samples/toy_dual_signal_coordination/model.mbd.md. -->
+  <!-- Lifecycle/topology view. Executable control priority is owned by mbd-control. -->
+  <!-- Requirement refs: DSC-001, DSC-002, DSC-003, DSC-004, DSC-005, DSC-006, DSC-007, DSC-PRE-001, DSC-PRE-002 -->
+  <!-- priority 10 request_side_prepare_main owner ToyCrossingCoordinator from MAIN_GO_SIDE_STOP when sideRequest == true trace DSC-002, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- priority 20 main_warning_to_all_stop owner ToyCrossingCoordinator from MAIN_WARN_SIDE_STOP when mainWarningExpired == true trace DSC-003, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- priority 30 clearance_to_side_go owner ToyCrossingCoordinator from ALL_STOP_BEFORE_SIDE when clearanceExpired == true trace DSC-004, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- priority 40 side_service_prepare_main owner ToyCrossingCoordinator from MAIN_STOP_SIDE_GO when sideServed == true trace DSC-005, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- priority 50 side_warning_to_all_stop owner ToyCrossingCoordinator from MAIN_STOP_SIDE_WARN when sideWarningExpired == true trace DSC-003, DSC-005, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- priority 60 clearance_to_main_go owner ToyCrossingCoordinator from ALL_STOP_BEFORE_MAIN when clearanceExpired == true trace DSC-001, DSC-005, DSC-006, DSC-007 scenarios side_request_cycle -->
+  <!-- function ToyCrossingCoordinator owns MAIN_GO_SIDE_STOP, MAIN_WARN_SIDE_STOP, ALL_STOP_BEFORE_SIDE, MAIN_STOP_SIDE_GO, MAIN_STOP_SIDE_WARN, ALL_STOP_BEFORE_MAIN trace DSC-001, DSC-002, DSC-003, DSC-004, DSC-005, DSC-PRE-001, DSC-PRE-002 -->
+  <!-- function MainSignalStateMachine owns mainGreen, mainYellow, mainRed trace DSC-001, DSC-002, DSC-003, DSC-004, DSC-006, DSC-007 -->
+  <!-- function SideSignalStateMachine owns sideGreen, sideYellow, sideRed trace DSC-003, DSC-004, DSC-005, DSC-006, DSC-007 -->
+  <!-- function InterlockMonitor owns mainGreen, sideGreen trace DSC-006, DSC-PRE-001 -->
+  <state id="MAIN_GO_SIDE_STOP">
+    <transition event="sideRequest == true" target="MAIN_WARN_SIDE_STOP" />
+  </state>
+  <state id="MAIN_WARN_SIDE_STOP">
+    <transition event="mainWarningExpired == true" target="ALL_STOP_BEFORE_SIDE" />
+  </state>
+  <state id="ALL_STOP_BEFORE_SIDE">
+    <transition event="clearanceExpired == true" target="MAIN_STOP_SIDE_GO" />
+  </state>
+  <state id="MAIN_STOP_SIDE_GO">
+    <transition event="sideServed == true" target="MAIN_STOP_SIDE_WARN" />
+  </state>
+  <state id="MAIN_STOP_SIDE_WARN">
+    <transition event="sideWarningExpired == true" target="ALL_STOP_BEFORE_MAIN" />
+  </state>
+  <state id="ALL_STOP_BEFORE_MAIN">
+    <transition event="clearanceExpired == true" target="MAIN_GO_SIDE_STOP" />
+  </state>
+</scxml>
